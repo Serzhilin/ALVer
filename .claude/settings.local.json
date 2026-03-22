@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(npm run:*)",
+      "Bash(grep -E \"\\\\.\\(ts|tsx|js|jsx\\)$\")",
+      "Bash(find /home/serzhilin/Projects/metastate/prototype/platforms -type f -name *Voting* -o -name *Vote* -o -name *Poll*)",
+      "Bash(psql -U postgres -c \"SELECT version\\(\\);\")",
+      "Bash(psql -c \"SELECT version\\(\\);\")",
+      "Bash(dpkg -l postgresql*)",
+      "Bash(systemctl status:*)",
+      "Bash(npx tsc:*)",
+      "Bash(docker ps:*)",
+      "Bash(find /home/serzhilin/Projects -name *.md)",
+      "Bash(grep -n \"VITE_FACILITATOR_ENAME\" /home/serzhilin/Projects/ALVer/bijeen/dist/assets/*.js)",
+      "Bash(grep -o \"9dafa031[^\"\"]*\" /home/serzhilin/Projects/ALVer/bijeen/dist/assets/*.js)",
+      "Bash(grep -o \"9dafa031[^''''\"\"]*\" dist/assets/*.js)"
+    ]
+  }
+}

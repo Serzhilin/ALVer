@@ -1,0 +1,15 @@
+{
+  "name": "alver",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n api,client -c cyan,magenta \"npm run dev --prefix api\" \"npm run dev --prefix app\"",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "db:seed": "npm run seed --prefix api",
+    "db:reset": "npm run db:down && docker volume rm alver_alver-postgres-data 2>/dev/null; npm run db:up",
+    "demo:reset": "bash scripts/reset-demo.sh"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

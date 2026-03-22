@@ -1,0 +1,20 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+app/node_modules/
+api/node_modules/
+
+# Build output
+app/dist/
+api/dist/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+.claude/

@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: alver-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: alver
+      POSTGRES_PASSWORD: alver
+      POSTGRES_DB: alver
+    ports:
+      - "5433:5432"
+    volumes:
+      - alver-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U alver -d alver"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  alver-postgres-data:

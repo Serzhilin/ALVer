@@ -1,0 +1,58 @@
+import { Request, Response } from "express";
+import { MeetingService } from "../services/MeetingService";
+import { sseService } from "../services/SSEService";
+
+const svc = new MeetingService();
+
+export class MeetingController {
+    create = async (req: Request, res: Response) => {
+        try {
+            const meeting = await svc.create(req.body);
+            res.status(201).json(meeting);
+        } catch (e: any) {
+            res.status(400).json({ error: e.message });
+        }
+    };
+
+    getAll = async (req: Request, res: Response) => {
+        try {
+            const meetings = await svc.findAll();
+            res.json(meetings);
+        } catch (e: any) {
+            res.status(500).json({ error: e.message });
+        }
+    };
+
+    getById = async (req: Request, res: Response) => {
+        try {
+            const meeting = await svc.findById(req.params.id);
+            if (!meeting) return res.status(404).json({ error: "Meeting not found" });
+            res.json(meeting);
+        } catch (e: any) {
+            res.status(500).json({ error: e.message });
+        }
+    };
+
+    update = async (req: Request, res: Response) => {
+        try {
+            const meeting = await svc.update(req.params.id, req.body);
+            res.json(meeting);
+        } catch (e: any) {
+            res.status(400).json({ error: e.message });
+        }
+    };
+
+    transitionStatus = async (req: Request, res: Response) => {
+        try {
+            const { status } = req.body;
+            const meeting = await svc.transitionStatus(req.params.id, status);
+            res.json(meeting);
+        } catch (e: any) {
+            res.status(400).json({ error: e.message });
+        }
+    };
+
+    stream = (req: Request, res: Response) => {
+        sseService.subscribe(req.params.id, res);
+    };
+}
