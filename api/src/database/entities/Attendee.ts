@@ -25,11 +25,17 @@ export class Attendee {
     @Column("uuid")
     meeting_id!: string;
 
+    @Column("uuid", { nullable: true })
+    member_id!: string;
+
     @Column()
     attendee_name!: string;
 
     @Column({ nullable: true })
     attendee_ename!: string;
+
+    @Column({ default: false })
+    is_aspirant!: boolean;
 
     @Column({
         type: "enum",

@@ -9,6 +9,8 @@ import { Poll } from "./entities/Poll";
 import { Vote } from "./entities/Vote";
 import { Decision } from "./entities/Decision";
 import { User } from "./entities/User";
+import { Community } from "./entities/Community";
+import { Member } from "./entities/Member";
 
 config({ path: path.resolve(__dirname, "../../../.env") });
 
@@ -16,7 +18,7 @@ export const dataSourceOptions: DataSourceOptions = {
     type: "postgres",
     url: process.env.ALVER_DATABASE_URL,
     synchronize: true, // auto-creates tables in dev — swap for migrations before production
-    entities: [Meeting, Attendee, Mandate, Poll, Vote, Decision, User],
+    entities: [Meeting, Attendee, Mandate, Poll, Vote, Decision, User, Community, Member],
     logging: process.env.NODE_ENV === "development",
     extra: {
         max: 10,

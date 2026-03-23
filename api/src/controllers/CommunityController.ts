@@ -1,0 +1,83 @@
+import { Request, Response } from "express";
+import { CommunityService } from "../services/CommunityService";
+import { Community } from "../database/entities/Community";
+
+const svc = new CommunityService();
+
+export class CommunityController {
+    /** GET /api/community — returns the facilitator's community */
+    get = async (req: Request, res: Response) => {
+        try {
+            const ename = req.user!.ename;
+            const community = await svc.findByFacilitatorEname(ename);
+            if (!community) return res.status(404).json({ error: "No community found for this facilitator" });
+            res.json(community);
+        } catch (e: any) {
+            res.status(500).json({ error: e.message });
+        }
+    };
+
+    /** PATCH /api/community — update name, logo_url, locations */
+    update = async (req: Request, res: Response) => {
+        try {
+            const ename = req.user!.ename;
+            const community = await svc.findByFacilitatorEname(ename);
+            if (!community) return res.status(404).json({ error: "Community not found" });
+            const { name, logo_url, locations } = req.body;
+            const data: Partial<Pick<Community, "name" | "logo_url" | "locations">> = {};
+            if (name !== undefined) data.name = name;
+            if (logo_url !== undefined) data.logo_url = logo_url;
+            if (locations !== undefined) data.locations = locations;
+            const updated = await svc.update(community.id, data);
+            res.json(updated);
+        } catch (e: any) {
+            res.status(400).json({ error: e.message });
+        }
+    };
+
+    /** GET /api/community/members */
+    listMembers = async (req: Request, res: Response) => {
+        try {
+            const ename = req.user!.ename;
+            const community = await svc.findByFacilitatorEname(ename);
+            if (!community) return res.status(404).json({ error: "Community not found" });
+            const members = await svc.getMembers(community.id);
+            res.json(members);
+        } catch (e: any) {
+            res.status(500).json({ error: e.message });
+        }
+    };
+
+    /** POST /api/community/members */
+    createMember = async (req: Request, res: Response) => {
+        try {
+            const ename = req.user!.ename;
+            const community = await svc.findByFacilitatorEname(ename);
+            if (!community) return res.status(404).json({ error: "Community not found" });
+            const member = await svc.createMember(community.id, req.body);
+            res.status(201).json(member);
+        } catch (e: any) {
+            res.status(400).json({ error: e.message });
+        }
+    };
+
+    /** PATCH /api/community/members/:memberId */
+    updateMember = async (req: Request, res: Response) => {
+        try {
+            const member = await svc.updateMember(req.params.memberId, req.body);
+            res.json(member);
+        } catch (e: any) {
+            res.status(400).json({ error: e.message });
+        }
+    };
+
+    /** DELETE /api/community/members/:memberId */
+    deleteMember = async (req: Request, res: Response) => {
+        try {
+            await svc.deleteMember(req.params.memberId);
+            res.status(204).end();
+        } catch (e: any) {
+            res.status(400).json({ error: e.message });
+        }
+    };
+}

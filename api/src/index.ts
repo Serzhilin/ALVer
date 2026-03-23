@@ -10,8 +10,9 @@ import { MandateController } from "./controllers/MandateController";
 import { PollController } from "./controllers/PollController";
 import { VoteController } from "./controllers/VoteController";
 import { WebhookController } from "./controllers/WebhookController";
+import { CommunityController } from "./controllers/CommunityController";
 import { getOffer, epassportLogin, sseAuthStream, getMe } from "./controllers/AuthController";
-import { requireAuth } from "./middleware/auth";
+import { requireAuth, optionalAuth } from "./middleware/auth";
 
 config({ path: path.resolve(__dirname, "../../.env") });
 
@@ -19,10 +20,11 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 app.use(cors({ origin: "*", methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"] }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 // ── Controllers ──────────────────────────────────────────────────────────────
 const meeting = new MeetingController();
+const community = new CommunityController();
 const attendee = new AttendeeController();
 const mandate = new MandateController();
 const poll = new PollController();
@@ -41,11 +43,20 @@ app.post("/api/auth/login", epassportLogin);
 app.get("/api/auth/sessions/:id", sseAuthStream);
 app.get("/api/auth/me", requireAuth, getMe);
 
-// ── Meetings (public reads) ───────────────────────────────────────────────────
-app.get("/api/meetings", meeting.getAll);
-app.post("/api/meetings", meeting.create);
+// ── Community ─────────────────────────────────────────────────────────────────
+app.get("/api/community", requireAuth, community.get);
+app.patch("/api/community", requireAuth, community.update);
+app.get("/api/community/members", requireAuth, community.listMembers);
+app.post("/api/community/members", requireAuth, community.createMember);
+app.patch("/api/community/members/:memberId", requireAuth, community.updateMember);
+app.delete("/api/community/members/:memberId", requireAuth, community.deleteMember);
+
+// ── Meetings (optional auth for community scoping) ────────────────────────────
+app.get("/api/meetings", optionalAuth, meeting.getAll);
+app.post("/api/meetings", requireAuth, meeting.create);
 app.get("/api/meetings/:id", meeting.getById);
-app.patch("/api/meetings/:id", meeting.update);
+app.patch("/api/meetings/:id", requireAuth, meeting.update);
+app.delete("/api/meetings/:id", requireAuth, meeting.delete);
 app.get("/api/meetings/:id/stream", meeting.stream);              // SSE
 
 // ── Facilitator actions — require eID auth ────────────────────────────────────

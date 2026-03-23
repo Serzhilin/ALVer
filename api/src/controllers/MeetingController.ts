@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
 import { MeetingService } from "../services/MeetingService";
+import { CommunityService } from "../services/CommunityService";
 import { sseService } from "../services/SSEService";
 
 const svc = new MeetingService();
+const commSvc = new CommunityService();
 
 export class MeetingController {
     create = async (req: Request, res: Response) => {
@@ -16,7 +18,13 @@ export class MeetingController {
 
     getAll = async (req: Request, res: Response) => {
         try {
-            const meetings = await svc.findAll();
+            // If authenticated facilitator, scope to their community
+            let communityId: string | undefined;
+            if (req.user?.ename) {
+                const community = await commSvc.findByFacilitatorEname(req.user.ename);
+                communityId = community?.id;
+            }
+            const meetings = await svc.findAll(communityId);
             res.json(meetings);
         } catch (e: any) {
             res.status(500).json({ error: e.message });
@@ -37,6 +45,15 @@ export class MeetingController {
         try {
             const meeting = await svc.update(req.params.id, req.body);
             res.json(meeting);
+        } catch (e: any) {
+            res.status(400).json({ error: e.message });
+        }
+    };
+
+    delete = async (req: Request, res: Response) => {
+        try {
+            await svc.delete(req.params.id);
+            res.status(204).end();
         } catch (e: any) {
             res.status(400).json({ error: e.message });
         }

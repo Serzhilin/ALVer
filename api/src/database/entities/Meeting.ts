@@ -1,12 +1,13 @@
 import {
     Entity, PrimaryGeneratedColumn, Column,
-    CreateDateColumn, UpdateDateColumn, OneToMany,
+    CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn,
 } from "typeorm";
 import { Attendee } from "./Attendee";
 import { Mandate } from "./Mandate";
 import { Poll } from "./Poll";
+import { Community } from "./Community";
 
-export type MeetingStatus = "draft" | "published" | "open" | "in_session" | "closed" | "archived";
+export type MeetingStatus = "draft" | "open" | "in_session" | "closed" | "archived";
 
 @Entity("meetings")
 export class Meeting {
@@ -19,6 +20,13 @@ export class Meeting {
 
     @Column({ type: "jsonb", nullable: true })
     acl!: object;
+
+    @ManyToOne(() => Community, (c) => c.meetings, { nullable: true })
+    @JoinColumn({ name: "community_id" })
+    community!: Community;
+
+    @Column("uuid", { nullable: true })
+    community_id!: string;
 
     @Column()
     name!: string;
@@ -37,7 +45,7 @@ export class Meeting {
 
     @Column({
         type: "enum",
-        enum: ["draft", "published", "open", "in_session", "closed", "archived"],
+        enum: ["draft", "open", "in_session", "closed", "archived"],
         default: "draft",
     })
     status!: MeetingStatus;

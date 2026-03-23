@@ -1,33 +1,53 @@
 import { AppDataSource } from "../database/data-source";
 import { Attendee } from "../database/entities/Attendee";
+import { Meeting } from "../database/entities/Meeting";
+import { Member } from "../database/entities/Member";
 import { sseService } from "./SSEService";
 
 export class AttendeeService {
     private repo = AppDataSource.getRepository(Attendee);
+    private meetingRepo = AppDataSource.getRepository(Meeting);
+    private memberRepo = AppDataSource.getRepository(Member);
+
+    /** Resolve the community member for this meeting + name. Throws if not a member. */
+    private async resolveMember(meetingId: string, name: string): Promise<Member | null> {
+        const meeting = await this.meetingRepo.findOneBy({ id: meetingId });
+        if (!meeting?.community_id) return null; // legacy meeting without community — skip validation
+        return this.memberRepo.findOne({
+            where: { community_id: meeting.community_id, name },
+        });
+    }
 
     async preRegister(meetingId: string, name: string): Promise<Attendee> {
-        // Idempotent: return existing if already registered
         const existing = await this.repo.findOne({
             where: { meeting_id: meetingId, attendee_name: name },
         });
         if (existing) return existing;
 
+        const member = await this.resolveMember(meetingId, name);
+        if (member === undefined) {
+            // community exists but member not found
+            throw new Error("not_a_member");
+        }
+
         const attendee = this.repo.create({
             meeting_id: meetingId,
+            member_id: member?.id,
             attendee_name: name,
+            is_aspirant: member?.is_aspirant ?? false,
             status: "expected",
             pre_registered_at: new Date(),
             method: "app",
         });
-        const saved = await this.repo.save(attendee);
-
-        // W3DS SYNC HOOK — to be implemented
-        // await web3Adapter.sync('attendee', saved.id, saved);
-
-        return saved;
+        return this.repo.save(attendee);
     }
 
     async checkIn(meetingId: string, name: string, method: "app" | "manual" = "app", note?: string): Promise<Attendee> {
+        const member = await this.resolveMember(meetingId, name);
+        if (member === undefined) {
+            throw new Error("not_a_member");
+        }
+
         let attendee = await this.repo.findOne({
             where: { meeting_id: meetingId, attendee_name: name },
         });
@@ -40,12 +60,16 @@ export class AttendeeService {
                 checked_in_at: new Date(),
                 method,
                 manual_note: note,
+                member_id: member?.id ?? attendee.member_id,
+                is_aspirant: member?.is_aspirant ?? attendee.is_aspirant,
             });
             attendee = await this.repo.findOneBy({ id: attendee.id }) as Attendee;
         } else {
             attendee = this.repo.create({
                 meeting_id: meetingId,
+                member_id: member?.id,
                 attendee_name: name,
+                is_aspirant: member?.is_aspirant ?? false,
                 status: "checked_in",
                 checked_in_at: new Date(),
                 method,
@@ -56,11 +80,13 @@ export class AttendeeService {
 
         sseService.emit(meetingId, "attendee_checked_in", {
             meetingId,
-            attendee: { id: attendee.id, name: attendee.attendee_name, method: attendee.method },
+            attendee: {
+                id: attendee.id,
+                name: attendee.attendee_name,
+                method: attendee.method,
+                is_aspirant: attendee.is_aspirant,
+            },
         });
-
-        // W3DS SYNC HOOK — to be implemented
-        // await web3Adapter.sync('attendee', attendee.id, attendee);
 
         return attendee;
     }

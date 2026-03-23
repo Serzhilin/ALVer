@@ -44,7 +44,7 @@ export default function Display() {
   if (!meeting) return <div style={{ minHeight: '100vh', background: '#1A1612', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.4)' }}>{t('common.loading')}</div>
 
   const phase = meeting.phase
-  const isCheckin = phase === 'open' || phase === 'published'
+  const isCheckin = phase === 'open'
   const isSession = phase === 'in_session'
   const isClosed = phase === 'closed' || phase === 'archived'
 

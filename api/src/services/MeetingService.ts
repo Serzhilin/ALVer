@@ -12,6 +12,7 @@ export class MeetingService {
         location: string;
         agenda_text: string;
         facilitator_name?: string;
+        community_id?: string;
     }): Promise<Meeting> {
         const meeting = this.repo.create({
             ...data,
@@ -32,8 +33,9 @@ export class MeetingService {
         });
     }
 
-    async findAll(): Promise<Meeting[]> {
-        return this.repo.find({ order: { created_at: "DESC" } });
+    async findAll(communityId?: string): Promise<Meeting[]> {
+        const where = communityId ? { community_id: communityId } : {};
+        return this.repo.find({ where, order: { created_at: "DESC" } });
     }
 
     async update(id: string, data: Partial<Meeting>): Promise<Meeting> {
@@ -45,6 +47,12 @@ export class MeetingService {
         // await web3Adapter.sync('meeting', id, updated);
 
         return updated;
+    }
+
+    async delete(id: string): Promise<void> {
+        const meeting = await this.repo.findOneBy({ id });
+        if (!meeting) throw new Error("Meeting not found");
+        await this.repo.delete(id);
     }
 
     async transitionStatus(id: string, status: MeetingStatus): Promise<Meeting> {
@@ -70,9 +78,8 @@ export class MeetingService {
 
     private isValidTransition(from: MeetingStatus, to: MeetingStatus): boolean {
         const allowed: Record<MeetingStatus, MeetingStatus[]> = {
-            draft: ["published"],
-            published: ["open", "draft"],
-            open: ["in_session", "published"],
+            draft: ["open"],
+            open: ["in_session", "draft"],
             in_session: ["closed"],
             closed: ["archived"],
             archived: [],

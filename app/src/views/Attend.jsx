@@ -64,6 +64,8 @@ export default function Attend() {
 
   // My mandate (am I a proxy for someone?)
   const myMandate = myName ? meeting.confirmedMandates.find(m => m.to.toLowerCase() === myName.toLowerCase()) : null
+  const myAttendee = myName ? meeting.checkedIn.find(c => c.name.toLowerCase() === myName.toLowerCase()) : null
+  const amAspirant = myAttendee?.isAspirant || false
 
   function handleVote(pollId, option, isMandate = false) {
     castVote(pollId, myName + (isMandate ? '_proxy' : ''), option, isMandate, myMandate?.from)
@@ -165,6 +167,14 @@ export default function Attend() {
             </span>
           </div>
 
+          {amAspirant && (
+            <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(196,98,45,0.08)', borderRadius: 8, border: '1px solid rgba(196,98,45,0.2)' }}>
+              <span style={{ fontSize: '0.82rem', color: 'var(--color-terracotta)', fontWeight: 500 }}>
+                {t('attend.aspirant_notice')}
+              </span>
+            </div>
+          )}
+
           {myMandate && (
             <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(45,98,196,0.08)', borderRadius: 8, border: '1px solid rgba(45,98,196,0.2)' }}>
               <span style={{ fontSize: '0.82rem', color: '#2D62C4', fontWeight: 500 }}>
@@ -189,7 +199,7 @@ export default function Attend() {
         )}
 
         {/* Active vote */}
-        {isInSession && activePoll && (
+        {isInSession && activePoll && !amAspirant && (
           <ActiveVoteCard
             poll={activePoll}
             votedPolls={votedPolls}
@@ -198,6 +208,17 @@ export default function Attend() {
             voteAnimation={voteAnimation}
             attendeeCount={attendeeCount}
           />
+        )}
+        {isInSession && activePoll && amAspirant && (
+          <div className="card" style={{ padding: 24, textAlign: 'center', marginBottom: 16 }}>
+            <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>🗳️</div>
+            <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.88rem', margin: 0 }}>
+              {activePoll.title}
+            </p>
+            <p style={{ color: 'var(--color-terracotta)', fontSize: '0.82rem', margin: '8px 0 0', fontWeight: 500 }}>
+              {t('attend.aspirant_no_vote')}
+            </p>
+          </div>
         )}
 
         {/* Waiting in session */}
@@ -260,7 +281,6 @@ function PhaseBadge({ phase }) {
   const { t } = useTranslation()
   const colors = {
     draft: 'badge-gray',
-    published: 'badge-orange',
     open: 'badge-orange',
     in_session: 'badge-green',
     closed: 'badge-gray',

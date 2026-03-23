@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useMeeting } from '../context/MeetingContext'
 import { useUser } from '../context/UserContext'
+import { useCommunity } from '../context/CommunityContext'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
@@ -17,6 +18,7 @@ export default function Facilitate() {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { user, loading: authLoading, login } = useUser()
+  const { members } = useCommunity()
 
   const [showCheckInModal, setShowCheckInModal] = useState(false)
   const [showManualVoteModal, setShowManualVoteModal] = useState(false)
@@ -25,7 +27,8 @@ export default function Facilitate() {
   const [editingPoll, setEditingPoll] = useState(null)
   const [agendaOpen, setAgendaOpen] = useState(false)
 
-  const [quickName, setQuickName] = useState('')
+  const [selectedMember, setSelectedMember] = useState('')
+  const [memberSearch, setMemberSearch] = useState('')
   const [manualVoteName, setManualVoteName] = useState('')
   const [manualVoteOption, setManualVoteOption] = useState('')
   const [mandateFrom, setMandateFrom] = useState('')
@@ -77,9 +80,11 @@ export default function Facilitate() {
   }
 
   function handleQuickCheckIn() {
-    if (quickName.trim()) {
-      checkIn(quickName.trim(), true)
-      setQuickName('')
+    const name = selectedMember.trim()
+    if (name) {
+      checkIn(name, true)
+      setSelectedMember('')
+      setMemberSearch('')
       setShowCheckInModal(false)
     }
   }
@@ -177,9 +182,6 @@ export default function Facilitate() {
             <button className="btn-secondary" style={{ fontSize: '0.82rem', padding: '7px 14px' }} onClick={() => setShowCheckInModal(true)}>
               {t('facilitate.add_without_app')}
             </button>
-            <button className="btn-secondary" style={{ fontSize: '0.82rem', padding: '7px 14px' }} onClick={() => setShowMandateModal(true)}>
-              {t('facilitate.add_mandate')}
-            </button>
             {meeting.phase === 'open' && (
               <button className="btn-green" onClick={() => updatePhase('in_session')}>
                 {t('facilitate.open_meeting')}
@@ -196,13 +198,8 @@ export default function Facilitate() {
               </button>
             )}
             {meeting.phase === 'draft' && (
-              <button className="btn-primary" onClick={() => updatePhase('published')}>
-                {t('facilitate.publish')}
-              </button>
-            )}
-            {meeting.phase === 'published' && (
               <button className="btn-primary" onClick={() => updatePhase('open')}>
-                {t('facilitate.open_registration')}
+                {t('facilitate.announce')}
               </button>
             )}
           </div>
@@ -251,8 +248,14 @@ export default function Facilitate() {
               )}
               {[...meeting.checkedIn].reverse().map(c => (
                 <div key={c.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid var(--color-sand)' }}>
-                  <span style={{ fontSize: '0.9rem', color: 'var(--color-charcoal)' }}>
-                    {c.name} {c.manual && <span title={t('facilitate.manually_added')}>📝</span>}
+                  <span style={{ fontSize: '0.9rem', color: 'var(--color-charcoal)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {c.name}
+                    {c.manual && <span title={t('facilitate.manually_added')}>📝</span>}
+                    {c.isAspirant && (
+                      <span style={{ fontSize: '0.68rem', background: 'rgba(196,98,45,0.12)', color: 'var(--color-terracotta)', borderRadius: 4, padding: '1px 6px', fontWeight: 600 }}>
+                        {t('facilitate.aspirant_badge')}
+                      </span>
+                    )}
                   </span>
                   <span style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)' }}>{c.checkedInAt}</span>
                 </div>
@@ -346,32 +349,71 @@ export default function Facilitate() {
         </div>
       </div>
 
-      {/* Quick check-in modal */}
+      {/* Quick check-in modal — member picker */}
       {showCheckInModal && (
-        <div className="modal-overlay" onClick={() => setShowCheckInModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-overlay" onClick={() => { setShowCheckInModal(false); setSelectedMember(''); setMemberSearch('') }}>
+          <div className="modal" style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
             <h3 style={{ margin: '0 0 16px', fontFamily: 'Playfair Display, serif', fontSize: '1.1rem' }}>
               {t('facilitate.modal_add_without_app_title')}
             </h3>
             <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.85rem', margin: '0 0 16px' }}>
               {t('facilitate.modal_add_without_app_hint')}
             </p>
-            <div style={{ marginBottom: 16 }}>
-              <label>{t('common.name')}</label>
-              <input
-                className="input"
-                autoFocus
-                value={quickName}
-                onChange={e => setQuickName(e.target.value)}
-                placeholder={t('facilitate.name_placeholder')}
-                onKeyDown={e => e.key === 'Enter' && handleQuickCheckIn()}
-              />
-            </div>
+            {members.length > 0 ? (
+              <>
+                <div style={{ marginBottom: 16 }}>
+                  <input
+                    className="input"
+                    autoFocus
+                    value={memberSearch}
+                    onChange={e => { setMemberSearch(e.target.value); setSelectedMember('') }}
+                    placeholder={t('facilitate.member_search_placeholder')}
+                  />
+                </div>
+                <div style={{ maxHeight: 240, overflowY: 'auto', border: '1px solid var(--color-sand)', borderRadius: 8, marginBottom: 16 }}>
+                  {members
+                    .filter(m => !meeting.checkedIn.some(c => c.name.toLowerCase() === m.name.toLowerCase()))
+                    .filter(m => !memberSearch || m.name.toLowerCase().includes(memberSearch.toLowerCase()))
+                    .map(m => (
+                      <button
+                        key={m.id}
+                        onClick={() => setSelectedMember(m.name)}
+                        style={{
+                          width: '100%', padding: '10px 14px', background: selectedMember === m.name ? 'rgba(196,98,45,0.08)' : 'white',
+                          border: 'none', borderBottom: '1px solid var(--color-sand)', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', color: 'var(--color-charcoal)',
+                          textAlign: 'left',
+                        }}
+                      >
+                        <span>{m.name}</span>
+                        {m.is_aspirant && (
+                          <span style={{ fontSize: '0.68rem', background: 'rgba(196,98,45,0.12)', color: 'var(--color-terracotta)', borderRadius: 4, padding: '1px 6px', fontWeight: 600 }}>
+                            {t('facilitate.aspirant_badge')}
+                          </span>
+                        )}
+                      </button>
+                    ))
+                  }
+                </div>
+              </>
+            ) : (
+              <div style={{ marginBottom: 16 }}>
+                <input
+                  className="input"
+                  autoFocus
+                  value={selectedMember}
+                  onChange={e => setSelectedMember(e.target.value)}
+                  placeholder={t('facilitate.name_placeholder')}
+                  onKeyDown={e => e.key === 'Enter' && handleQuickCheckIn()}
+                />
+              </div>
+            )}
             <div style={{ display: 'flex', gap: 10 }}>
-              <button className="btn-primary" onClick={handleQuickCheckIn} disabled={!quickName.trim()}>
+              <button className="btn-primary" onClick={handleQuickCheckIn} disabled={!selectedMember.trim()}>
                 {t('common.add')}
               </button>
-              <button className="btn-secondary" onClick={() => setShowCheckInModal(false)}>{t('common.cancel')}</button>
+              <button className="btn-secondary" onClick={() => { setShowCheckInModal(false); setSelectedMember(''); setMemberSearch('') }}>{t('common.cancel')}</button>
             </div>
           </div>
         </div>

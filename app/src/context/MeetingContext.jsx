@@ -32,6 +32,7 @@ function adaptMeeting(m) {
         ? new Date(a.checked_in_at).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
         : '',
       manual: a.method === 'manual',
+      isAspirant: a.is_aspirant || false,
     })),
     confirmedMandates: mandates.map(mn => ({
       id: mn.id,
@@ -90,7 +91,7 @@ export function MeetingProvider({ children }) {
   // Compute derived shape
   const meeting = adaptMeeting(raw)
   const activePoll = meeting ? (meeting.polls || []).find(p => p.id === meeting.activePollId) || null : null
-  const attendeeCount = meeting ? meeting.checkedIn.length + meeting.confirmedMandates.length : 0
+  const attendeeCount = meeting ? meeting.checkedIn.filter(c => !c.isAspirant).length + meeting.confirmedMandates.length : 0
 
   // ── Load meeting ────────────────────────────────────────────────────────────
   const load = useCallback(async (id) => {

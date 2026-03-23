@@ -40,11 +40,20 @@ export function subscribeToAuthSession(sessionId, onLogin) {
   return () => es.close()
 }
 
+// ── Community ─────────────────────────────────────────────────────────────────
+export const getCommunity = () => req('GET', '/community')
+export const updateCommunity = (data) => req('PATCH', '/community', data)
+export const getCommunityMembers = () => req('GET', '/community/members')
+export const createCommunityMember = (data) => req('POST', '/community/members', data)
+export const updateCommunityMember = (id, data) => req('PATCH', `/community/members/${id}`, data)
+export const deleteCommunityMember = (id) => req('DELETE', `/community/members/${id}`)
+
 // ── Meetings ──────────────────────────────────────────────────────────────────
 export const getMeeting = (id) => req('GET', `/meetings/${id}`)
 export const getAllMeetings = () => req('GET', '/meetings')
 export const createMeeting = (data) => req('POST', '/meetings', data)
 export const updateMeeting = (id, data) => req('PATCH', `/meetings/${id}`, data)
+export const deleteMeeting = (id) => req('DELETE', `/meetings/${id}`)
 export const transitionStatus = (id, status) => req('PATCH', `/meetings/${id}/status`, { status })
 export const getDecisions = (id) => req('GET', `/meetings/${id}/decisions`)
 

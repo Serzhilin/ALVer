@@ -127,13 +127,16 @@ export async function sseAuthStream(req: Request, res: Response) {
 }
 
 /** GET /api/auth/me
- *  Returns current user from JWT. Used by frontend on app load.
+ *  Returns current user + community from JWT. Used by frontend on app load.
  */
 export async function getMe(req: Request, res: Response) {
-    // req.user is set by requireAuth middleware
-    const { userId } = req.user!;
+    const { userId, ename } = req.user!;
     const { findById } = await import("../services/UserService");
+    const { CommunityService } = await import("../services/CommunityService");
     const user = await findById(userId);
     if (!user) { res.status(404).json({ error: "User not found" }); return; }
-    res.json(serializeUser(user));
+    const cs = new CommunityService();
+    const community = ename ? await cs.findByFacilitatorEname(ename) : null;
+    const member = (community && ename) ? await cs.findMemberByEname(community.id, ename) : null;
+    res.json({ ...serializeUser(user), community, member });
 }
