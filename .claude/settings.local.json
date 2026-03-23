@@ -16,7 +16,18 @@
       "Bash(find /home/serzhilin/Projects -name *.md)",
       "Bash(grep -n \"VITE_FACILITATOR_ENAME\" /home/serzhilin/Projects/ALVer/bijeen/dist/assets/*.js)",
       "Bash(grep -o \"9dafa031[^\"\"]*\" /home/serzhilin/Projects/ALVer/bijeen/dist/assets/*.js)",
-      "Bash(grep -o \"9dafa031[^''''\"\"]*\" dist/assets/*.js)"
+      "Bash(grep -o \"9dafa031[^''''\"\"]*\" dist/assets/*.js)",
+      "Bash(git rm:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(docker compose:*)",
+      "Bash(npx vite:*)",
+      "Bash(find /home/serzhilin/Projects -maxdepth 4 -iname *evot* -o -iname *voting*)",
+      "Bash(find /home/serzhilin/Projects/metastate/prototype/platforms/evoting/client -name \"*.{jsx,tsx,svelte}\")",
+      "Bash(cp /home/serzhilin/Projects/metastate/prototype/platforms/evoting/client/public/Logo.png /home/serzhilin/Projects/ALVer/app/public/Logo.png)",
+      "Bash(cp /home/serzhilin/Projects/metastate/prototype/platforms/evoting/client/public/W3DS.svg /home/serzhilin/Projects/ALVer/app/public/W3DS.svg)",
+      "Bash(PGPASSWORD=alver psql -h localhost -p 5433 -U alver -d alver -c \"SELECT id, name, facilitator_ename, logo_url IS NOT NULL as has_logo, jsonb_array_length\\(locations::jsonb\\) as loc_count FROM communities;\")"
     ]
   }
 }

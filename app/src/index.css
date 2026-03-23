@@ -14,6 +14,7 @@
   --color-sand-dark: #D4C5B0;
   --color-green: #2D7A4A;
   --color-red: #C42D2D;
+  --font-title: "Playfair Display", serif;
   --shadow-card: 0 2px 12px rgba(44,44,44,0.08), 0 1px 3px rgba(44,44,44,0.06);
   --shadow-card-hover: 0 6px 24px rgba(44,44,44,0.12), 0 2px 8px rgba(44,44,44,0.08);
 }
@@ -32,7 +33,7 @@ body {
 
 #root { min-height: 100vh; }
 
-h1, h2, h3 { font-family: 'Playfair Display', Georgia, serif; }
+h1, h2, h3 { font-family: var(--font-title); }
 
 .card {
   background: white;
@@ -57,15 +58,19 @@ h1, h2, h3 { font-family: 'Playfair Display', Georgia, serif; }
   font-weight: 500;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: background-color 0.15s, transform 0.1s, box-shadow 0.15s;
-  box-shadow: 0 2px 8px rgba(196,98,45,0.3);
+  transition: filter 0.15s, transform 0.1s, box-shadow 0.15s;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-terracotta) 40%, transparent);
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
-.btn-primary:hover { background-color: #B5561F; box-shadow: 0 4px 12px rgba(196,98,45,0.4); }
-.btn-primary:active { transform: translateY(1px); }
-.btn-primary:disabled { background-color: var(--color-sand-dark); box-shadow: none; cursor: not-allowed; opacity: 0.7; }
+.btn-primary:hover {
+  filter: brightness(1.12) saturate(1.1);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-terracotta) 55%, transparent);
+  transform: translateY(-1px);
+}
+.btn-primary:active { filter: brightness(0.92); transform: translateY(1px); box-shadow: none; }
+.btn-primary:disabled { background-color: var(--color-sand-dark); box-shadow: none; filter: none; transform: none; cursor: not-allowed; opacity: 0.7; }
 
 .btn-secondary {
   background-color: white;
@@ -82,7 +87,11 @@ h1, h2, h3 { font-family: 'Playfair Display', Georgia, serif; }
   align-items: center;
   gap: 6px;
 }
-.btn-secondary:hover { border-color: var(--color-terracotta); color: var(--color-terracotta); background: rgba(196,98,45,0.04); }
+.btn-secondary:hover {
+  border-color: var(--color-terracotta);
+  color: var(--color-terracotta);
+  background: color-mix(in srgb, var(--color-terracotta) 6%, transparent);
+}
 
 .btn-danger {
   background-color: var(--color-red);
@@ -218,3 +227,13 @@ label {
 ::-webkit-scrollbar-track { background: var(--color-sand); }
 ::-webkit-scrollbar-thumb { background: var(--color-sand-dark); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-charcoal-light); }
+
+/* ── Tiptap editor prose styles ─────────────────────────────────────────── */
+.tiptap { outline: none; }
+.tiptap p { margin: 0 0 6px; }
+.tiptap p:last-child { margin-bottom: 0; }
+.tiptap ul, .tiptap ol { padding-left: 20px; margin: 4px 0 8px; }
+.tiptap li { margin-bottom: 3px; }
+.tiptap blockquote { border-left: 3px solid var(--color-terracotta); margin: 8px 0; padding: 4px 12px; color: var(--color-charcoal-light); font-style: italic; }
+.tiptap hr { border: none; border-top: 1px solid var(--color-sand); margin: 10px 0; }
+.tiptap strong { font-weight: 600; }

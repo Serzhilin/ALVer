@@ -1,15 +1,29 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useCommunity } from '../context/CommunityContext'
+import { useCommunity, TITLE_FONTS } from '../context/CommunityContext'
 
 const EMPTY_LOC = { name: '', address: '', maps_url: '' }
+
+const PRESET_COLORS = [
+  '#C4622D', // terracotta (default)
+  '#2D7A4A', // green
+  '#2D62C4', // blue
+  '#8B2DC4', // purple
+  '#C42D62', // rose
+  '#C4A42D', // gold
+  '#2DC4B5', // teal
+  '#4A4A4A', // charcoal
+]
 
 export default function SettingsModal({ onClose }) {
   const { t } = useTranslation()
   const { community, updateCommunity } = useCommunity()
 
-  // ── Logo ──────────────────────────────────────────────────────────────────
+  // ── Appearance ────────────────────────────────────────────────────────────
   const [logo, setLogo] = useState(community?.logo_url || null)
+  const [color, setColor] = useState(community?.primary_color || '#C4622D')
+  const [hexInput, setHexInput] = useState(community?.primary_color || '#C4622D')
+  const [font, setFont] = useState(community?.title_font || 'Playfair Display')
 
   function handleLogoUpload(e) {
     const file = e.target.files?.[0]
@@ -28,6 +42,23 @@ export default function SettingsModal({ onClose }) {
     await updateCommunity({ logo_url: null })
   }
 
+  async function applyColor(c) {
+    setColor(c)
+    setHexInput(c)
+    await updateCommunity({ primary_color: c })
+  }
+
+  function handleHexInput(val) {
+    setHexInput(val)
+    const clean = val.startsWith('#') ? val : '#' + val
+    if (/^#[0-9a-fA-F]{6}$/.test(clean)) applyColor(clean)
+  }
+
+  async function applyFont(f) {
+    setFont(f)
+    await updateCommunity({ title_font: f })
+  }
+
   // ── Cooperative name ──────────────────────────────────────────────────────
   const [name, setName] = useState(community?.name || '')
   const [nameSaving, setNameSaving] = useState(false)
@@ -40,7 +71,7 @@ export default function SettingsModal({ onClose }) {
 
   // ── Locations ─────────────────────────────────────────────────────────────
   const [locations, setLocations] = useState(community?.locations || [])
-  const [editingLoc, setEditingLoc] = useState(null) // null | 'new' | loc id
+  const [editingLoc, setEditingLoc] = useState(null)
   const [locForm, setLocForm] = useState(EMPTY_LOC)
   const setLF = (k, v) => setLocForm(f => ({ ...f, [k]: v }))
 
@@ -83,37 +114,19 @@ export default function SettingsModal({ onClose }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" style={{ maxWidth: 500, maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-        <h3 style={{ margin: '0 0 24px', fontFamily: 'Playfair Display, serif', fontSize: '1.2rem' }}>
-          ⚙️ {t('settings.title')}
-        </h3>
-
-        {/* ── Logo ── */}
-        <div style={{ marginBottom: 28 }}>
-          <label style={{ marginBottom: 10, display: 'block' }}>{t('settings.logo_label')}</label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div style={{ width: 80, height: 48, border: '1px solid var(--color-sand)', borderRadius: 8, background: 'var(--color-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-              {logo
-                ? <img src={logo} alt="logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                : <span style={{ fontSize: '1.5rem' }}>🏛️</span>
-              }
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <label className="btn-secondary" style={{ fontSize: '0.82rem', padding: '6px 12px', cursor: 'pointer' }}>
-                {t(logo ? 'settings.logo_replace' : 'settings.logo_upload')}
-                <input type="file" accept="image/svg+xml,image/png,image/jpeg" onChange={handleLogoUpload} style={{ display: 'none' }} />
-              </label>
-              {logo && (
-                <button className="btn-secondary" style={{ fontSize: '0.82rem', padding: '6px 12px', color: 'var(--color-red)' }} onClick={removeLogo}>
-                  {t('settings.logo_remove')}
-                </button>
-              )}
-            </div>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+          <h3 style={{ margin: 0, fontFamily: 'var(--font-title)', fontSize: '1.2rem' }}>
+            ⚙️ {t('settings.title')}
+          </h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: 'var(--color-charcoal-light)', padding: 4 }}>✕</button>
         </div>
 
+        {/* ── Organisation ── */}
+        <SectionLabel>{t('settings.organisation_label')}</SectionLabel>
+
         {/* ── Cooperative name ── */}
-        <div style={{ marginBottom: 28 }}>
-          <label style={{ marginBottom: 8, display: 'block' }}>{t('settings.cooperative_name_label')}</label>
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ marginBottom: 8, display: 'block', fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>{t('settings.cooperative_name_label')}</label>
           <div style={{ display: 'flex', gap: 8 }}>
             <input
               className="input"
@@ -131,7 +144,7 @@ export default function SettingsModal({ onClose }) {
         {/* ── Locations ── */}
         <div style={{ marginBottom: 28 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <label style={{ display: 'block' }}>{t('settings.locations_label')}</label>
+            <label style={{ display: 'block', fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>{t('settings.locations_label')}</label>
             {editingLoc === null && (
               <button className="btn-secondary" style={{ fontSize: '0.8rem', padding: '4px 12px' }} onClick={() => { setLocForm(EMPTY_LOC); setEditingLoc('new') }}>
                 + {t('settings.location_add')}
@@ -160,8 +173,98 @@ export default function SettingsModal({ onClose }) {
           </div>
         </div>
 
+        <div style={{ borderTop: '1px solid var(--color-sand)', marginBottom: 28 }} />
+
+        <div style={{ borderTop: '1px solid var(--color-sand)', marginBottom: 28 }} />
+
+        {/* ── Appearance ── */}
+        <SectionLabel>{t('settings.appearance_label')}</SectionLabel>
+
+        {/* Logo */}
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ marginBottom: 8, display: 'block', fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>{t('settings.logo_label')}</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ width: 80, height: 48, border: '1px solid var(--color-sand)', borderRadius: 8, background: 'var(--color-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+              {logo
+                ? <img src={logo} alt="logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                : <span style={{ fontSize: '1.5rem' }}>🏛️</span>
+              }
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <label className="btn-secondary" style={{ fontSize: '0.82rem', padding: '6px 12px', cursor: 'pointer' }}>
+                {t(logo ? 'settings.logo_replace' : 'settings.logo_upload')}
+                <input type="file" accept="image/svg+xml,image/png,image/jpeg" onChange={handleLogoUpload} style={{ display: 'none' }} />
+              </label>
+              {logo && (
+                <button className="btn-secondary" style={{ fontSize: '0.82rem', padding: '6px 12px', color: 'var(--color-red)' }} onClick={removeLogo}>
+                  {t('settings.logo_remove')}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Primary color */}
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ marginBottom: 8, display: 'block', fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>{t('settings.primary_color_label')}</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            {PRESET_COLORS.map(c => (
+              <button
+                key={c}
+                onClick={() => applyColor(c)}
+                title={c}
+                style={{
+                  width: 28, height: 28, borderRadius: '50%', background: c, border: 'none', cursor: 'pointer',
+                  outline: color === c ? `3px solid ${c}` : '3px solid transparent',
+                  outlineOffset: 2,
+                  transition: 'outline 0.12s',
+                }}
+              />
+            ))}
+            {/* custom hex input */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 4 }}>
+              <div style={{ width: 22, height: 22, borderRadius: 4, background: color, border: '1px solid var(--color-sand-dark)', flexShrink: 0 }} />
+              <input
+                className="input"
+                value={hexInput}
+                onChange={e => handleHexInput(e.target.value)}
+                placeholder="#C4622D"
+                style={{ width: 88, fontSize: '0.8rem', padding: '4px 8px', fontFamily: 'monospace' }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Title font */}
+        <div style={{ marginBottom: 28 }}>
+          <label style={{ marginBottom: 8, display: 'block', fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>{t('settings.title_font_label')}</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <select
+              className="input"
+              value={font}
+              onChange={e => applyFont(e.target.value)}
+              style={{ flex: 1 }}
+            >
+              {TITLE_FONTS.map(f => (
+                <option key={f} value={f}>{f}</option>
+              ))}
+            </select>
+            <span style={{ fontFamily: `"${font}", serif`, fontSize: '1.1rem', color: 'var(--color-charcoal)', whiteSpace: 'nowrap' }}>
+              Aa Bb Cc
+            </span>
+          </div>
+        </div>
+
         <button className="btn-primary" onClick={onClose}>{t('common.close')}</button>
       </div>
+    </div>
+  )
+}
+
+function SectionLabel({ children }) {
+  return (
+    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>
+      {children}
     </div>
   )
 }
@@ -221,7 +324,6 @@ function LocationForm({ form, setF, onSave, onCancel, t }) {
     </div>
   )
 }
-
 
 function IconBtn({ onClick, title, children }) {
   return (

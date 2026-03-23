@@ -124,7 +124,7 @@ export default function Home() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <HeaderLogo communityLogo={community?.logo_url} onFail={() => setLogoFailed(true)} />
             <span style={{ fontFamily: 'Playfair Display, serif', fontWeight: 600, fontSize: '1.2rem', color: 'var(--color-charcoal)' }}>
-              {community?.name || 'ALVer'}
+              ALVer{!community?.logo_url && community?.name ? <span style={{ fontWeight: 400 }}> — {community.name}</span> : ''}
             </span>
           </div>
           <div ref={userMenuRef} style={{ position: 'relative' }}>
@@ -151,16 +151,13 @@ export default function Home() {
                 minWidth: 200, overflow: 'hidden',
               }}>
                 <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--color-sand)' }}>
-                  <div style={{ fontSize: '0.82rem', color: 'var(--color-charcoal-light)', marginBottom: 2 }}>
-                    {isFacilitator ? '🎙️ facilitator' : '👤 attendee'}
-                  </div>
                   <div style={{ fontWeight: 600, fontSize: '0.92rem', color: 'var(--color-charcoal)' }}>
                     {user.displayName}
                   </div>
                 </div>
 
                 <MenuItem onClick={() => { i18n.changeLanguage(i18n.language === 'nl' ? 'en' : 'nl'); setShowUserMenu(false) }}>
-                  🌐 {i18n.language === 'nl' ? 'Switch to English' : 'Schakel naar Nederlands'}
+                  {i18n.language === 'nl' ? '🇬🇧 EN' : '🇳🇱 NL'}
                 </MenuItem>
 
                 {isFacilitator && (

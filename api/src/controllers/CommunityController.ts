@@ -23,11 +23,13 @@ export class CommunityController {
             const ename = req.user!.ename;
             const community = await svc.findByFacilitatorEname(ename);
             if (!community) return res.status(404).json({ error: "Community not found" });
-            const { name, logo_url, locations } = req.body;
-            const data: Partial<Pick<Community, "name" | "logo_url" | "locations">> = {};
+            const { name, logo_url, locations, primary_color, title_font } = req.body;
+            const data: Partial<Pick<Community, "name" | "logo_url" | "locations" | "primary_color" | "title_font">> = {};
             if (name !== undefined) data.name = name;
             if (logo_url !== undefined) data.logo_url = logo_url;
             if (locations !== undefined) data.locations = locations;
+            if (primary_color !== undefined) data.primary_color = primary_color;
+            if (title_font !== undefined) data.title_font = title_font;
             const updated = await svc.update(community.id, data);
             res.json(updated);
         } catch (e: any) {

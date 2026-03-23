@@ -22,6 +22,12 @@ export class Community {
     @Column({ type: "text", nullable: true })
     logo_url!: string; // base64 data URL or external URL
 
+    @Column({ nullable: true, default: "#C4622D" })
+    primary_color!: string;
+
+    @Column({ nullable: true, default: "Playfair Display" })
+    title_font!: string;
+
     @Column({ type: "jsonb", default: [] })
     locations!: object[];
 

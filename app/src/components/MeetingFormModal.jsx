@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createMeeting, updateMeeting, deleteMeeting } from '../api/client'
+import RichTextEditor from './RichTextEditor'
 
 function buildName(date) {
   if (!date) return 'ALV'
@@ -67,9 +68,12 @@ export default function MeetingFormModal({ meeting, communityId, communityLocati
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" style={{ maxWidth: 540 }} onClick={e => e.stopPropagation()}>
-        <h3 style={{ margin: '0 0 20px', fontFamily: 'Playfair Display, serif', fontSize: '1.2rem' }}>
-          {isEdit ? t('dashboard.edit_meeting') : t('dashboard.new_meeting')}
-        </h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <h3 style={{ margin: 0, fontFamily: 'var(--font-title)', fontSize: '1.2rem' }}>
+            {isEdit ? t('dashboard.edit_meeting') : t('dashboard.new_meeting')}
+          </h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: 'var(--color-charcoal-light)', padding: 4 }}>✕</button>
+        </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -88,7 +92,7 @@ export default function MeetingFormModal({ meeting, communityId, communityLocati
             {locations.length > 0 ? (
               <select className="input" value={form.location} onChange={e => set('location', e.target.value)}>
                 {locations.map(l => (
-                  <option key={l.id} value={l.name}>{l.name}{l.address ? ` — ${l.address}` : ''}</option>
+                  <option key={l.id} value={l.name}>{l.name}</option>
                 ))}
               </select>
             ) : (
@@ -103,13 +107,9 @@ export default function MeetingFormModal({ meeting, communityId, communityLocati
 
           <div>
             <label>{t('dashboard.meeting_agenda')}</label>
-            <textarea
-              className="input"
-              rows={6}
+            <RichTextEditor
               value={form.agenda_text}
-              onChange={e => set('agenda_text', e.target.value)}
-              placeholder={t('dashboard.meeting_agenda_placeholder')}
-              style={{ resize: 'vertical', fontFamily: 'Inter, sans-serif', fontSize: '0.88rem', lineHeight: 1.7 }}
+              onChange={v => set('agenda_text', v)}
             />
           </div>
         </div>

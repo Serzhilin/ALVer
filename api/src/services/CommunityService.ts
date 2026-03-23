@@ -20,7 +20,7 @@ export class CommunityService {
         });
     }
 
-    async update(id: string, data: Partial<Pick<Community, "name" | "logo_url" | "locations">>): Promise<Community> {
+    async update(id: string, data: Partial<Pick<Community, "name" | "logo_url" | "locations" | "primary_color" | "title_font">>): Promise<Community> {
         const community = await this.repo.findOneByOrFail({ id });
         Object.assign(community, data);
         await this.repo.save(community);
