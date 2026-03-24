@@ -20,6 +20,7 @@ export default function Display() {
 
   // Detect new check-in
   useEffect(() => {
+    if (!meeting) return
     const cur = meeting.checkedIn.length
     if (cur > prevCheckedIn.current) {
       const newest = meeting.checkedIn[meeting.checkedIn.length - 1]

@@ -19,7 +19,6 @@
     "draft": "Draft",
     "open": "Announced",
     "in_session": "In session",
-    "closed": "Closed",
     "archived": "Archived",
     "unknown": "Unknown"
   },
@@ -36,7 +35,10 @@
     "nav_attendee": "Attendee",
     "nav_register": "Register",
     "nav_display": "Screen (TV)",
-    "nav_archive": "Archive"
+    "nav_archive": "Archive",
+    "btn_attend": "Enter meeting",
+    "btn_ill_come": "🙋 I'll come",
+    "btn_mandate": "📜 Can't come, mandate"
   },
   "facilitate": {
     "phase_label": "Phase",
@@ -48,9 +50,8 @@
     "add_mandate": "+ Add mandate",
     "open_meeting": "🚀 Open meeting",
     "close_meeting": "🔒 Close meeting",
-    "archive": "📁 Archive",
-    "announce": "📢 Announce & open registration",
-    "open_registration": "🔓 Open registration",
+    "reopen_meeting": "↩ Reopen meeting",
+    "announce": "Announce",
     "attendees": "Attendees",
     "expected": "Expected",
     "checked_in_label": "Checked in",
@@ -201,7 +202,10 @@
   },
   "dashboard": {
     "current_meeting": "Current meeting",
+    "meeting_announced": "Announced meeting",
+    "meeting_live": "🔴 Live meeting",
     "no_active_meeting": "No meeting scheduled.",
+    "no_announced_hint": "No meeting announced yet. Pick one to announce:",
     "new_meeting": "New ALV",
     "edit_meeting": "Edit meeting",
     "archive": "Archive",

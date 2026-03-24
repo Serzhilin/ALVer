@@ -19,7 +19,6 @@
     "draft": "Concept",
     "open": "Aangekondigd",
     "in_session": "In vergadering",
-    "closed": "Gesloten",
     "archived": "Gearchiveerd",
     "unknown": "Onbekend"
   },
@@ -36,7 +35,10 @@
     "nav_attendee": "Deelnemer",
     "nav_register": "Aanmelden",
     "nav_display": "Scherm (TV)",
-    "nav_archive": "Archief"
+    "nav_archive": "Archief",
+    "btn_attend": "Vergadering bijwonen",
+    "btn_ill_come": "🙋 Ik kom",
+    "btn_mandate": "📜 Ik kom niet, mandaat"
   },
   "facilitate": {
     "phase_label": "Fase",
@@ -48,9 +50,8 @@
     "add_mandate": "+ Mandaat toevoegen",
     "open_meeting": "🚀 Meeting openen",
     "close_meeting": "🔒 Meeting sluiten",
-    "archive": "📁 Archiveren",
-    "announce": "📢 Aankondig & open inschrijving",
-    "open_registration": "🔓 Inschrijving openen",
+    "reopen_meeting": "↩ Meeting heropenen",
+    "announce": "Aankondig",
     "attendees": "Aanwezigen",
     "expected": "Verwacht",
     "checked_in_label": "Ingecheckt",
@@ -201,7 +202,10 @@
   },
   "dashboard": {
     "current_meeting": "Huidige vergadering",
+    "meeting_announced": "Aangekondigde vergadering",
+    "meeting_live": "🔴 Vergadering live",
     "no_active_meeting": "Geen vergadering gepland.",
+    "no_announced_hint": "Nog geen vergadering aangekondigd. Kies er een om aan te kondigen:",
     "new_meeting": "Nieuwe ALV",
     "edit_meeting": "Vergadering bewerken",
     "archive": "Archief",

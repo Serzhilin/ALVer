@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useMeeting } from '../context/MeetingContext'
 import { useUser } from '../context/UserContext'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { LanguageSwitcher } from '../components/LanguageSwitcher'
+import { getMeetingMembers } from '../api/client'
 import LoginScreen from '../components/LoginScreen'
+import AppHeader from '../components/AppHeader'
 
 export default function Register() {
   const { id } = useParams()
@@ -12,33 +13,62 @@ export default function Register() {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
   const { user, login } = useUser()
+  const [regularMembers, setRegularMembers] = useState([])
 
+  useEffect(() => {
+    getMeetingMembers(id).then(setRegularMembers).catch(() => {})
+  }, [id])
+
+  const [searchParams] = useSearchParams()
   useEffect(() => { setMeetingId(id) }, [id])
-  if (!meeting) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--color-charcoal-light)' }}>{t('common.loading')}</div>
-  const [mode, setMode] = useState(null) // null | 'login' | 'attend' | 'mandate'
+
+  // All hooks must be declared before any conditional return
+  const initialMode = searchParams.get('mode') // 'attend' | 'mandate' | null
+  const [mode, setMode] = useState(initialMode) // null | 'login' | 'attend' | 'mandate'
   const [step, setStep] = useState(1)
   const [name, setName] = useState('')
   const [proxyName, setProxyName] = useState('')
   const [note, setNote] = useState('')
-  const [done, setDone] = useState(null) // { type, name, proxy? }
+  const CHECKIN_KEY = `alver_checkin_${id}`
+  const [done, setDone] = useState(() => {
+    try { const s = localStorage.getItem(`alver_checkin_${id}`); return s ? JSON.parse(s) : null }
+    catch { return null }
+  })
+
+  // Auto-submit attend when arriving via ?mode=attend and user is already known
+  useEffect(() => {
+    const effectiveName = user?.displayName || name
+    if (mode === 'attend' && meeting && !done && effectiveName) {
+      checkIn(effectiveName)
+      const doneData = { type: 'attend', name: effectiveName }
+      localStorage.setItem(CHECKIN_KEY, JSON.stringify(doneData))
+      setDone(doneData)
+    }
+  }, [meeting, user])
+
+  if (!meeting) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--color-charcoal-light)' }}>{t('common.loading')}</div>
 
   // Check if already registered
   const existingCheckIn = name ? meeting.checkedIn.find(c => c.name.toLowerCase() === name.toLowerCase()) : null
   const existingMandate = name ? meeting.confirmedMandates.find(m => m.from.toLowerCase() === name.toLowerCase()) : null
 
-  function handleAttendSubmit() {
-    const effectiveName = name || user?.displayName || ''
+  function handleAttendSubmit(overrideName) {
+    const effectiveName = overrideName || name || user?.displayName || ''
     if (!effectiveName) return
     checkIn(effectiveName)
-    setDone({ type: 'attend', name: effectiveName })
+    const doneData = { type: 'attend', name: effectiveName }
+    localStorage.setItem(CHECKIN_KEY, JSON.stringify(doneData))
+    setDone(doneData)
   }
 
   function handleMandateSubmit() {
-    addMandate(name, proxyName, note)
-    setDone({ type: 'mandate', name, proxy: proxyName })
+    const from = user?.displayName || name
+    addMandate(from, proxyName, note)
+    setDone({ type: 'mandate', name: from, proxy: proxyName })
   }
 
   function reset() {
+    localStorage.removeItem(CHECKIN_KEY)
     setMode(null)
     setStep(1)
     setName('')
@@ -87,13 +117,12 @@ export default function Register() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-cream)' }}>
-      {/* Header strip */}
-      <div style={{ background: 'var(--color-terracotta)', padding: '12px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ color: 'white', fontSize: '0.85rem', fontWeight: 500 }}>
-          {t('register.header')}
-        </span>
-        <LanguageSwitcher light />
-      </div>
+      <AppHeader
+        backTo={-1}
+        title={meeting.name}
+        user={user ?? null}
+        onLogout={user ? () => {} : undefined}
+      />
 
       <div style={{ maxWidth: 520, margin: '0 auto', padding: '32px 24px' }}>
         {/* Meeting info */}
@@ -143,8 +172,7 @@ export default function Register() {
               {t('register.your_attendance_hint')}
             </p>
 
-            {/* eID login banner — show if not yet logged in */}
-            {!user && (
+            {!user && !name && (
               <button
                 className="card"
                 style={{ padding: '16px 24px', textAlign: 'left', cursor: 'pointer', border: '2px solid var(--color-terracotta)', transition: 'border-color 0.15s', fontFamily: 'Inter, sans-serif', background: 'rgba(196,98,45,0.04)' }}
@@ -169,7 +197,7 @@ export default function Register() {
             <button
               className="card"
               style={{ padding: '20px 24px', textAlign: 'left', cursor: 'pointer', border: '2px solid transparent', transition: 'border-color 0.15s', fontFamily: 'Inter, sans-serif' }}
-              onClick={() => setMode('attend')}
+              onClick={() => (user || name) ? handleAttendSubmit(user?.displayName || name) : setMode('attend')}
               onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--color-terracotta)'}
               onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
             >
@@ -248,24 +276,31 @@ export default function Register() {
               {t('register.give_mandate_hint')}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div>
-                <label>{t('register.your_name_granter')}</label>
-                <input
-                  className="input"
-                  autoFocus
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  placeholder={t('register.your_name_granter')}
-                />
-              </div>
+              {!user && (
+                <div>
+                  <label>{t('register.your_name_granter')}</label>
+                  <input
+                    className="input"
+                    autoFocus
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder={t('register.your_name_granter')}
+                  />
+                </div>
+              )}
               <div>
                 <label>{t('register.proxy_name_label')}</label>
-                <input
+                <select
                   className="input"
+                  autoFocus={!!user}
                   value={proxyName}
                   onChange={e => setProxyName(e.target.value)}
-                  placeholder={t('register.proxy_placeholder')}
-                />
+                >
+                  <option value="">{t('register.proxy_placeholder')}</option>
+                  {regularMembers.map(m => (
+                    <option key={m.id} value={m.name}>{m.name}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label>{t('common.note_optional')}</label>
@@ -299,7 +334,7 @@ export default function Register() {
               <div style={{ display: 'flex', gap: 10 }}>
                 <button
                   className="btn-primary"
-                  disabled={!name.trim() || !proxyName.trim()}
+                  disabled={(!user && !name.trim()) || !proxyName.trim()}
                   onClick={handleMandateSubmit}
                 >
                   {t('register.sign_confirm')}

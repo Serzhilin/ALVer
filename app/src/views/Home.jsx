@@ -1,21 +1,22 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { getAllMeetings } from '../api/client'
+import { getAllMeetings, transitionStatus } from '../api/client'
 import { useUser } from '../context/UserContext'
 import { useCommunity } from '../context/CommunityContext'
 import LoginScreen from '../components/LoginScreen'
 import MeetingFormModal from '../components/MeetingFormModal'
 import SettingsModal from '../components/SettingsModal'
 import MembersModal from '../components/MembersModal'
+import AppHeader from '../components/AppHeader'
 
 const FACILITATOR_ENAME = import.meta.env.VITE_FACILITATOR_ENAME
 const CURRENT_STATUSES  = ['in_session', 'open']
 const UPCOMING_STATUSES = ['draft']
-const ARCHIVE_STATUSES  = ['closed', 'archived']
+const ARCHIVE_STATUSES  = ['archived']
 
 function statusColor(s) {
-  return { draft: 'badge-gray', open: 'badge-blue', in_session: 'badge-green', closed: 'badge-gray', archived: 'badge-gray' }[s] || 'badge-gray'
+  return { draft: 'badge-gray', open: 'badge-blue', in_session: 'badge-green', archived: 'badge-gray' }[s] || 'badge-gray'
 }
 
 function lookupLocation(name, communityLocations) {
@@ -35,19 +36,6 @@ export default function Home() {
   const [editingMeeting, setEditingMeeting] = useState(null)
   const [showSettings, setShowSettings] = useState(false)
   const [showMembers, setShowMembers] = useState(false)
-  const [showUserMenu, setShowUserMenu] = useState(false)
-  const [logoFailed, setLogoFailed] = useState(false)
-  const userMenuRef = useRef(null)
-
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
-        setShowUserMenu(false)
-      }
-    }
-    if (showUserMenu) document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [showUserMenu])
 
   const isFacilitator = user?.ename === FACILITATOR_ENAME
   const dateLocale = i18n.language === 'nl' ? 'nl-NL' : 'en-GB'
@@ -90,7 +78,120 @@ export default function Home() {
   }
 
   // ── Logged in ─────────────────────────────────────────────────────────────
-  const currentMeeting  = meetings.find(m => CURRENT_STATUSES.includes(m.status))
+  const currentMeeting = meetings.find(m => CURRENT_STATUSES.includes(m.status))
+
+  // ── Attendee phone screen ─────────────────────────────────────────────────
+  if (!isFacilitator) {
+    const loc = currentMeeting
+      ? (community?.locations ?? []).find(l => l.name === currentMeeting.location) ?? null
+      : null
+    const dateStr = currentMeeting?.date
+      ? new Date(currentMeeting.date + 'T12:00').toLocaleDateString(dateLocale, {
+          weekday: 'long', day: 'numeric', month: 'long',
+        })
+      : null
+    const isLive = currentMeeting?.status === 'in_session'
+
+    return (
+      <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', flexDirection: 'column' }}>
+        <AppHeader
+          logo={community?.logo_url}
+          user={user}
+          onLogout={logout}
+        />
+
+        {/* Content */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 20px' }}>
+          {/* Logo — centred, prominent branding */}
+          <div style={{ marginBottom: 28, textAlign: 'center' }}>
+            <HeaderLogo communityLogo={community?.logo_url} size="large" />
+          </div>
+
+          {meetingsLoading ? (
+            <span style={{ color: 'var(--color-charcoal-light)', fontSize: '0.9rem' }}>{t('common.loading')}</span>
+          ) : currentMeeting ? (
+            <div style={{ width: '100%', maxWidth: 420, display: 'flex', flexDirection: 'column', gap: 0 }}>
+              {/* Live indicator bar */}
+              {isLive && (
+                <div style={{ background: 'var(--color-green)', borderRadius: '14px 14px 0 0', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span className="animate-pulse-soft" style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255,255,255,0.9)', display: 'inline-block' }} />
+                  <span style={{ color: 'white', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    {t('dashboard.meeting_live')}
+                  </span>
+                </div>
+              )}
+
+              {/* Meeting card */}
+              <div style={{
+                background: 'white',
+                borderRadius: isLive ? '0 0 14px 14px' : 14,
+                padding: '28px 24px',
+                boxShadow: '0 2px 16px rgba(0,0,0,0.07)',
+              }}>
+                <h1 style={{ margin: '0 0 16px', fontSize: '1.5rem', fontFamily: 'Playfair Display, serif', color: 'var(--color-charcoal)', lineHeight: 1.2 }}>
+                  {currentMeeting.name}
+                </h1>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 24 }}>
+                  {dateStr && (
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: '0.9rem', color: 'var(--color-charcoal-light)' }}>
+                      <span>📅</span><span>{dateStr}</span>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: '0.9rem', color: 'var(--color-charcoal-light)' }}>
+                    <span>🕐</span><span>{currentMeeting.time}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: '0.9rem', color: 'var(--color-charcoal-light)' }}>
+                    <span>📍</span>
+                    <span>
+                      {currentMeeting.location}
+                      {loc?.address && <span style={{ display: 'block', fontSize: '0.82rem', marginTop: 2 }}>{loc.address}</span>}
+                      {loc?.maps_url && (
+                        <a href={loc.maps_url} target="_blank" rel="noopener noreferrer"
+                          style={{ display: 'inline-block', marginTop: 3, fontSize: '0.8rem', color: 'var(--color-terracotta)', textDecoration: 'none' }}>
+                          🗺️ {t('settings.location_maps_link')}
+                        </a>
+                      )}
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <button
+                    className="btn-primary"
+                    style={{ width: '100%', justifyContent: 'center', fontSize: '1rem', padding: '16px' }}
+                    onClick={() => navigate(isLive
+                      ? `/meeting/${currentMeeting.id}/attend`
+                      : `/meeting/${currentMeeting.id}/register?mode=attend`
+                    )}
+                  >
+                    {isLive ? t('home.btn_attend') : t('home.btn_ill_come')}
+                  </button>
+                  {!isLive && (
+                    <button
+                      className="btn-secondary"
+                      style={{ width: '100%', justifyContent: 'center', fontSize: '0.9rem' }}
+                      onClick={() => navigate(`/meeting/${currentMeeting.id}/register?mode=mandate`)}
+                    >
+                      {t('home.btn_mandate')}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', maxWidth: 300 }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>🏛️</div>
+              <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.95rem', margin: 0, lineHeight: 1.6 }}>
+                {t('dashboard.no_active_meeting')}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   const upcomingMeetings = meetings
     .filter(m => UPCOMING_STATUSES.includes(m.status))
     .sort((a, b) => a.date.localeCompare(b.date))
@@ -118,70 +219,15 @@ export default function Home() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-cream)' }}>
-      {/* Header */}
-      <header style={{ borderBottom: '1px solid var(--color-sand)', background: 'white', padding: '0 24px' }}>
-        <div style={{ maxWidth: 860, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <HeaderLogo communityLogo={community?.logo_url} onFail={() => setLogoFailed(true)} />
-            <span style={{ fontFamily: 'Playfair Display, serif', fontWeight: 600, fontSize: '1.2rem', color: 'var(--color-charcoal)' }}>
-              ALVer{!community?.logo_url && community?.name ? <span style={{ fontWeight: 400 }}> — {community.name}</span> : ''}
-            </span>
-          </div>
-          <div ref={userMenuRef} style={{ position: 'relative' }}>
-            <button
-              onClick={() => setShowUserMenu(v => !v)}
-              title={user.displayName}
-              style={{
-                width: 36, height: 36, borderRadius: '50%',
-                background: isFacilitator ? 'var(--color-terracotta)' : 'var(--color-sand-dark)',
-                border: 'none', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '1rem', color: 'white', fontWeight: 600,
-                fontFamily: 'Inter, sans-serif',
-              }}
-            >
-              {user.displayName?.[0]?.toUpperCase() ?? '?'}
-            </button>
-
-            {showUserMenu && (
-              <div style={{
-                position: 'absolute', top: 44, right: 0, zIndex: 100,
-                background: 'white', border: '1px solid var(--color-sand)',
-                borderRadius: 10, boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
-                minWidth: 200, overflow: 'hidden',
-              }}>
-                <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--color-sand)' }}>
-                  <div style={{ fontWeight: 600, fontSize: '0.92rem', color: 'var(--color-charcoal)' }}>
-                    {user.displayName}
-                  </div>
-                </div>
-
-                <MenuItem onClick={() => { i18n.changeLanguage(i18n.language === 'nl' ? 'en' : 'nl'); setShowUserMenu(false) }}>
-                  {i18n.language === 'nl' ? '🇬🇧 EN' : '🇳🇱 NL'}
-                </MenuItem>
-
-                {isFacilitator && (
-                  <MenuItem onClick={() => { setShowMembers(true); setShowUserMenu(false) }}>
-                    👥 {t('settings.members_label')}
-                  </MenuItem>
-                )}
-
-                {isFacilitator && (
-                  <MenuItem onClick={() => { setShowSettings(true); setShowUserMenu(false) }}>
-                    ⚙️ {t('settings.title')}
-                  </MenuItem>
-                )}
-
-                <div style={{ borderTop: '1px solid var(--color-sand)' }}>
-                  <MenuItem onClick={() => { logout(); setShowUserMenu(false) }} danger>
-                    {t('home.logout')}
-                  </MenuItem>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+      <AppHeader
+        logo={community?.logo_url}
+        title={`ALVer${!community?.logo_url && community?.name ? ` — ${community.name}` : ''}`}
+        user={user}
+        isFacilitator={isFacilitator}
+        onMembers={() => setShowMembers(true)}
+        onSettings={() => setShowSettings(true)}
+        onLogout={logout}
+      />
 
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '40px 24px' }}>
         {error && (
@@ -192,12 +238,17 @@ export default function Home() {
         )}
 
         {/* ── Facilitator dashboard ── */}
-        {isFacilitator ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
 
-            {/* Section: Current meeting */}
+            {/* Section: Current / Announced meeting */}
             <section>
-              <SectionHeader label={t('dashboard.current_meeting')} />
+              <SectionHeader label={
+                currentMeeting?.status === 'in_session'
+                  ? t('dashboard.meeting_live')
+                  : currentMeeting?.status === 'open'
+                    ? t('dashboard.meeting_announced')
+                    : t('dashboard.current_meeting')
+              } />
               {meetingsLoading
                 ? <p style={{ color: 'var(--color-charcoal-light)' }}>{t('common.loading')}</p>
                 : currentMeeting
@@ -209,11 +260,11 @@ export default function Home() {
                       t={t}
                       communityLocations={community?.locations}
                     />
-                  : <div className="card" style={{ padding: 32, textAlign: 'center' }}>
-                      <p style={{ color: 'var(--color-charcoal-light)', margin: 0, fontSize: '0.95rem' }}>
-                        {t('dashboard.no_active_meeting')}
-                      </p>
-                    </div>
+                  : <AnnounceCard
+                      upcomingMeetings={upcomingMeetings}
+                      onAnnounce={handleSaved}
+                      t={t}
+                    />
               }
             </section>
 
@@ -239,7 +290,6 @@ export default function Home() {
                         last={i === upcomingMeetings.length - 1}
                         formatDate={formatDate}
                         onEdit={() => setEditingMeeting(m)}
-                        navigate={navigate}
                         t={t}
                       />
                     ))}
@@ -283,41 +333,6 @@ export default function Home() {
               }
             </section>
           </div>
-
-        ) : (
-          /* ── Attendee view ── */
-          <>
-            <div style={{ marginBottom: 24 }}>
-              <h1 style={{ fontSize: '1.6rem', margin: '0 0 6px' }}>{t('home.title')}</h1>
-              <p style={{ color: 'var(--color-charcoal-light)', margin: 0 }}>{t('home.subtitle')}</p>
-            </div>
-            {meetingsLoading && <p style={{ color: 'var(--color-charcoal-light)' }}>{t('common.loading')}</p>}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {meetings.filter(m => CURRENT_STATUSES.includes(m.status)).map(m => (
-                <div key={m.id} className="card" style={{ padding: 20 }}>
-                  <span className={`badge ${statusColor(m.status)}`} style={{ marginBottom: 8, display: 'inline-block' }}>{t(`phases.${m.status}`)}</span>
-                  <h2 style={{ margin: '0 0 6px', fontSize: '1.1rem' }}>{m.name}</h2>
-                  <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.85rem', margin: '0 0 14px' }}>
-                    📅 {formatDate(m.date)} · 🕐 {m.time} · 📍 {m.location}
-                  </p>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button className="btn-primary" style={{ fontSize: '0.85rem' }} onClick={() => navigate(`/meeting/${m.id}/attend`)}>
-                      {t('home.nav_attendee')}
-                    </button>
-                    <button className="btn-secondary" style={{ fontSize: '0.85rem' }} onClick={() => navigate(`/meeting/${m.id}/register`)}>
-                      {t('home.nav_register')}
-                    </button>
-                  </div>
-                </div>
-              ))}
-              {!meetingsLoading && meetings.filter(m => CURRENT_STATUSES.includes(m.status)).length === 0 && (
-                <div className="card" style={{ padding: 24, textAlign: 'center' }}>
-                  <p style={{ color: 'var(--color-charcoal-light)', margin: 0 }}>{t('home.empty')}</p>
-                </div>
-              )}
-            </div>
-          </>
-        )}
       </div>
 
       {(showCreateModal || editingMeeting) && (
@@ -335,8 +350,59 @@ export default function Home() {
   )
 }
 
-function HeaderLogo({ communityLogo, onFail }) {
+function AnnounceCard({ upcomingMeetings, onAnnounce, t }) {
+  const [selected, setSelected] = useState(upcomingMeetings[0]?.id ?? '')
+  const [loading, setLoading] = useState(false)
+
+  if (upcomingMeetings.length === 0) {
+    return (
+      <div className="card" style={{ padding: 32, textAlign: 'center' }}>
+        <p style={{ color: 'var(--color-charcoal-light)', margin: 0, fontSize: '0.95rem' }}>
+          {t('dashboard.no_active_meeting')}
+        </p>
+      </div>
+    )
+  }
+
+  async function handleAnnounce() {
+    if (!selected) return
+    setLoading(true)
+    try {
+      await transitionStatus(selected, 'open')
+      onAnnounce()
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="card" style={{ padding: 28, borderLeft: '4px solid var(--color-sand-dark)', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-charcoal-light)' }}>
+        {t('dashboard.no_announced_hint')}
+      </p>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+        <select
+          className="input"
+          value={selected}
+          onChange={e => setSelected(e.target.value)}
+          style={{ flex: 1, minWidth: 180 }}
+        >
+          {upcomingMeetings.map(m => (
+            <option key={m.id} value={m.id}>{m.name}</option>
+          ))}
+        </select>
+        <button className="btn-primary" onClick={handleAnnounce} disabled={loading || !selected}>
+          📢 {loading ? t('common.loading') : t('facilitate.announce')}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function HeaderLogo({ communityLogo, onFail, size = 'small' }) {
   const [failed, setFailed] = useState(false)
+  const h = size === 'large' ? 80 : 40
+  const maxW = size === 'large' ? 200 : 120
 
   useEffect(() => {
     if (communityLogo) setFailed(false)
@@ -347,42 +413,22 @@ function HeaderLogo({ communityLogo, onFail }) {
       <img
         src={communityLogo}
         alt="logo"
-        style={{ height: 40, maxWidth: 120, objectFit: 'contain' }}
+        style={{ height: h, maxWidth: maxW, objectFit: 'contain' }}
         onError={() => { setFailed(true); onFail?.() }}
       />
     )
   }
 
-  // fallback: /Logo.png > emoji
   return (
     <img
       src="/Logo.png"
       alt="logo"
-      style={{ height: 40, maxWidth: 120, objectFit: 'contain' }}
+      style={{ height: h, maxWidth: maxW, objectFit: 'contain' }}
       onError={e => { e.currentTarget.style.display = 'none' }}
     />
   )
 }
 
-function MenuItem({ onClick, children, danger = false }) {
-  const [hover, setHover] = useState(false)
-  return (
-    <button
-      onClick={onClick}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      style={{
-        display: 'block', width: '100%', textAlign: 'left',
-        padding: '10px 16px', border: 'none', cursor: 'pointer',
-        fontSize: '0.88rem', fontFamily: 'Inter, sans-serif',
-        background: hover ? 'var(--color-cream)' : 'white',
-        color: danger ? 'var(--color-red)' : 'var(--color-charcoal)',
-      }}
-    >
-      {children}
-    </button>
-  )
-}
 
 function SectionHeader({ label, children }) {
   return (
@@ -440,29 +486,23 @@ function CurrentMeetingCard({ meeting: m, navigate, formatDate, onEdit, t, commu
   )
 }
 
-function UpcomingRow({ meeting: m, last, formatDate, onEdit, navigate, t }) {
+function UpcomingRow({ meeting: m, last, formatDate, onEdit, t }) {
   return (
     <div
-      onClick={() => navigate(`/meeting/${m.id}/facilitate`)}
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '14px 20px',
         borderBottom: last ? 'none' : '1px solid var(--color-sand)',
-        cursor: 'pointer',
       }}
-      onMouseEnter={e => e.currentTarget.style.background = 'var(--color-cream)'}
-      onMouseLeave={e => e.currentTarget.style.background = 'white'}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div>
-          <div style={{ fontWeight: 500, fontSize: '0.9rem', color: 'var(--color-charcoal)' }}>{m.name}</div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', marginTop: 2 }}>
-            {formatDate(m.date)} · 📍 {m.location}
-          </div>
+      <div>
+        <div style={{ fontWeight: 500, fontSize: '0.9rem', color: 'var(--color-charcoal)' }}>{m.name}</div>
+        <div style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', marginTop: 2 }}>
+          {formatDate(m.date)} · 📍 {m.location}
         </div>
       </div>
       <button
-        onClick={e => { e.stopPropagation(); onEdit() }}
+        onClick={onEdit}
         style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.9rem', color: 'var(--color-charcoal-light)', padding: '4px 6px' }}
       >
         ✏️

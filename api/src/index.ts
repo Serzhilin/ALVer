@@ -11,7 +11,7 @@ import { PollController } from "./controllers/PollController";
 import { VoteController } from "./controllers/VoteController";
 import { WebhookController } from "./controllers/WebhookController";
 import { CommunityController } from "./controllers/CommunityController";
-import { getOffer, epassportLogin, sseAuthStream, getMe } from "./controllers/AuthController";
+import { getOffer, epassportLogin, sseAuthStream, getMe, devLogin } from "./controllers/AuthController";
 import { requireAuth, optionalAuth } from "./middleware/auth";
 
 config({ path: path.resolve(__dirname, "../../.env") });
@@ -40,6 +40,7 @@ app.get("/api/health", (_, res) => res.json({
 // ── Auth ──────────────────────────────────────────────────────────────────────
 app.get("/api/auth/offer", getOffer);
 app.post("/api/auth/login", epassportLogin);
+app.post("/api/auth/dev-login", devLogin);
 app.get("/api/auth/sessions/:id", sseAuthStream);
 app.get("/api/auth/me", requireAuth, getMe);
 
@@ -61,6 +62,7 @@ app.get("/api/meetings/:id/stream", meeting.stream);              // SSE
 
 // ── Facilitator actions — require eID auth ────────────────────────────────────
 app.patch("/api/meetings/:id/status", requireAuth, meeting.transitionStatus);
+app.post("/api/meetings/:id/reopen", requireAuth, meeting.reopen);
 app.post("/api/meetings/:id/attendees/manual", requireAuth, attendee.manualAdd);
 app.post("/api/meetings/:id/mandates", requireAuth, mandate.create);
 app.patch("/api/meetings/:id/mandates/:mandateId/revoke", requireAuth, mandate.revoke);
@@ -69,6 +71,9 @@ app.patch("/api/meetings/:id/polls/:pollId", requireAuth, poll.update);
 app.delete("/api/meetings/:id/polls/:pollId", requireAuth, poll.delete);
 app.patch("/api/meetings/:id/polls/:pollId/open", requireAuth, poll.open);
 app.patch("/api/meetings/:id/polls/:pollId/close", requireAuth, poll.close);
+
+// ── Meeting members (public — mandate dropdown) ───────────────────────────────
+app.get("/api/meetings/:id/members", meeting.getMembers);
 
 // ── Attendees (public — self check-in) ───────────────────────────────────────
 app.get("/api/meetings/:id/attendees", attendee.list);

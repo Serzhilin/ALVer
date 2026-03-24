@@ -26,6 +26,7 @@ async function req(method, path, body) {
 // ── Auth ───────────────────────────────────────────────────────────────────────
 export const getAuthOffer = () => req('GET', '/auth/offer')
 export const loginWithWallet = (data) => req('POST', '/auth/login', data)
+export const devLogin = () => req('POST', '/auth/dev-login')
 export const getMe = () => req('GET', '/auth/me')
 
 export function subscribeToAuthSession(sessionId, onLogin) {
@@ -49,12 +50,14 @@ export const updateCommunityMember = (id, data) => req('PATCH', `/community/memb
 export const deleteCommunityMember = (id) => req('DELETE', `/community/members/${id}`)
 
 // ── Meetings ──────────────────────────────────────────────────────────────────
+export const getMeetingMembers = (id) => req('GET', `/meetings/${id}/members`)
 export const getMeeting = (id) => req('GET', `/meetings/${id}`)
 export const getAllMeetings = () => req('GET', '/meetings')
 export const createMeeting = (data) => req('POST', '/meetings', data)
 export const updateMeeting = (id, data) => req('PATCH', `/meetings/${id}`, data)
 export const deleteMeeting = (id) => req('DELETE', `/meetings/${id}`)
 export const transitionStatus = (id, status) => req('PATCH', `/meetings/${id}/status`, { status })
+export const reopenMeeting = (id) => req('POST', `/meetings/${id}/reopen`)
 export const getDecisions = (id) => req('GET', `/meetings/${id}/decisions`)
 
 // ── Attendees ─────────────────────────────────────────────────────────────────

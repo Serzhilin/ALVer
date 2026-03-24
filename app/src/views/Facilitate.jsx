@@ -6,6 +6,10 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
 import LoginScreen from '../components/LoginScreen'
+import AppHeader from '../components/AppHeader'
+import { reopenMeeting } from '../api/client'
+
+const FACILITATOR_ENAME = import.meta.env.VITE_FACILITATOR_ENAME
 
 export default function Facilitate() {
   const { id } = useParams()
@@ -40,9 +44,9 @@ export default function Facilitate() {
 
   useEffect(() => { setMeetingId(id) }, [id])
 
-  // Auth gate — facilitator must be logged in with eID
+  // Auth gate — must be logged in AND be the facilitator
   if (authLoading) return <LoadingScreen />
-  if (!user) {
+  if (!user || user.ename !== FACILITATOR_ENAME) {
     return (
       <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <div style={{ maxWidth: 420, width: '100%' }}>
@@ -126,38 +130,33 @@ export default function Facilitate() {
     setShowAddPollModal(true)
   }
 
-  const canStart = (poll) => meeting.phase === 'in_session' && !activePoll && poll.status === 'pending'
+  const canStart = (poll) => meeting.phase === 'in_session' && !activePoll && poll.status === 'prepared'
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-cream)' }}>
-      {/* Top bar */}
-      <header style={{ background: 'var(--color-charcoal)', color: 'white', padding: '0 20px' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '0.85rem' }}>
-              {t('common.back')}
-            </button>
-            <span style={{ color: 'rgba(255,255,255,0.3)' }}>|</span>
-            <span style={{ fontFamily: 'Playfair Display, serif', fontWeight: 600, fontSize: '0.95rem' }}>
-              🎙️ {user?.displayName || 'Facilitator'}
-            </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
-              {t('facilitate.phase_label')}: <strong style={{ color: 'white' }}>{t(`phases.${meeting.phase}`)}</strong>
+      <AppHeader
+        backTo="/"
+        title={`🎙️ ${user?.displayName || 'Facilitator'}`}
+        user={user}
+        isFacilitator
+        onLogout={() => {}}
+        right={
+          <>
+            <span style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)' }}>
+              {t('facilitate.phase_label')}: <strong style={{ color: 'var(--color-charcoal)' }}>{t(`phases.${meeting.phase}`)}</strong>
             </span>
             <a
               href={`/meeting/${mid}/display`}
               target="_blank"
               rel="noreferrer"
-              style={{ background: 'rgba(255,255,255,0.12)', border: 'none', color: 'white', borderRadius: 6, padding: '5px 12px', fontSize: '0.8rem', textDecoration: 'none', cursor: 'pointer' }}
+              style={{ background: 'var(--color-cream)', border: '1px solid var(--color-sand-dark)', color: 'var(--color-charcoal)', borderRadius: 6, padding: '5px 12px', fontSize: '0.8rem', textDecoration: 'none' }}
             >
               {t('facilitate.open_display')}
             </a>
-            <LanguageSwitcher light />
-          </div>
-        </div>
-      </header>
+            <LanguageSwitcher />
+          </>
+        }
+      />
 
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '20px 16px' }}>
         {/* Zone 1 — Attendance bar */}
@@ -188,18 +187,16 @@ export default function Facilitate() {
               </button>
             )}
             {meeting.phase === 'in_session' && (
-              <button className="btn-danger" onClick={() => updatePhase('closed')}>
+              <button className="btn-danger" onClick={() => updatePhase('archived')}>
                 {t('facilitate.close_meeting')}
               </button>
             )}
-            {meeting.phase === 'closed' && (
-              <button className="btn-secondary" onClick={() => updatePhase('archived')}>
-                {t('facilitate.archive')}
-              </button>
-            )}
-            {meeting.phase === 'draft' && (
-              <button className="btn-primary" onClick={() => updatePhase('open')}>
-                {t('facilitate.announce')}
+            {meeting.phase === 'archived' && meeting.date === new Date().toISOString().slice(0, 10) && (
+              <button className="btn-secondary" onClick={async () => {
+                await reopenMeeting(meeting.id)
+                window.location.reload()
+              }}>
+                {t('facilitate.reopen_meeting')}
               </button>
             )}
           </div>
@@ -290,7 +287,7 @@ export default function Facilitate() {
               <h3 style={{ margin: 0, fontSize: '1rem', fontFamily: 'Inter, sans-serif', fontWeight: 600 }}>
                 {t('facilitate.polls')}
               </h3>
-              {meeting.phase !== 'closed' && meeting.phase !== 'archived' && (
+              {meeting.phase !== 'archived' && (
                 <button
                   className="btn-secondary"
                   style={{ fontSize: '0.8rem', padding: '6px 12px' }}
@@ -598,7 +595,7 @@ function PollCard({ poll, idx, activePoll, attendeeCount, canStart, onStart, onC
             </span>
             {poll.status === 'active' && <span className="badge badge-orange animate-pulse-soft">{t('facilitate.poll_live')}</span>}
             {poll.status === 'closed' && <span className="badge badge-gray">{t('facilitate.poll_closed_badge')}</span>}
-            {poll.status === 'pending' && <span className="badge badge-gray">{t('facilitate.poll_queue')}</span>}
+            {poll.status === 'prepared' && <span className="badge badge-gray">{t('facilitate.poll_queue')}</span>}
           </div>
           <p style={{ margin: 0, fontSize: '0.92rem', color: 'var(--color-charcoal)', lineHeight: 1.5 }}>
             {poll.title}
@@ -609,7 +606,7 @@ function PollCard({ poll, idx, activePoll, attendeeCount, canStart, onStart, onC
             ))}
           </div>
         </div>
-        {poll.status === 'pending' && phase !== 'closed' && phase !== 'archived' && (
+        {poll.status === 'prepared' && phase !== 'archived' && (
           <div style={{ display: 'flex', gap: 6 }}>
             <button onClick={onEdit} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--color-charcoal-light)', padding: '4px 6px' }}>✏️</button>
             <button onClick={onDelete} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--color-red)', padding: '4px 6px' }}>🗑️</button>
@@ -677,12 +674,12 @@ function PollCard({ poll, idx, activePoll, attendeeCount, canStart, onStart, onC
             </button>
           </>
         )}
-        {!canStart && poll.status === 'pending' && !activePoll && phase === 'in_session' && (
+        {!canStart && poll.status === 'prepared' && !activePoll && phase === 'in_session' && (
           <span style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)', padding: '7px 0' }}>
             {t('facilitate.wait_for_poll')}
           </span>
         )}
-        {poll.status === 'pending' && phase !== 'in_session' && (
+        {poll.status === 'prepared' && phase !== 'in_session' && (
           <span style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)', fontStyle: 'italic' }}>
             {t('facilitate.available_during_session')}
           </span>

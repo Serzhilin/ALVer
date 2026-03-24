@@ -69,6 +69,28 @@ export class MeetingController {
         }
     };
 
+    reopen = async (req: Request, res: Response) => {
+        try {
+            const meeting = await svc.reopen(req.params.id);
+            res.json(meeting);
+        } catch (e: any) {
+            res.status(400).json({ error: e.message });
+        }
+    };
+
+    /** GET /api/meetings/:id/members — public; returns regular (non-aspirant) members for mandate dropdown */
+    getMembers = async (req: Request, res: Response) => {
+        try {
+            const meeting = await svc.findById(req.params.id);
+            if (!meeting) return res.status(404).json({ error: "Meeting not found" });
+            const members = await commSvc.getMembers(meeting.community_id);
+            const regular = members.filter(m => !m.is_aspirant).map(m => ({ id: m.id, name: m.name }));
+            res.json(regular);
+        } catch (e: any) {
+            res.status(500).json({ error: e.message });
+        }
+    };
+
     stream = (req: Request, res: Response) => {
         sseService.subscribe(req.params.id, res);
     };
