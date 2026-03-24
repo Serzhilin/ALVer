@@ -15,7 +15,14 @@ declare global {
 }
 
 function getSecret(): string {
-    return process.env.JWT_SECRET || "alver-dev-secret";
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+        if (process.env.NODE_ENV === "production") {
+            throw new Error("JWT_SECRET environment variable is required in production");
+        }
+        return "alver-dev-secret";
+    }
+    return secret;
 }
 
 export function signToken(payload: AuthPayload): string {

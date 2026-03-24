@@ -14,9 +14,9 @@ config({ path: path.resolve(__dirname, "../../.env") });
 
 const FACILITATOR_ENAME = process.env.VITE_FACILITATOR_ENAME || "facilitator@dewoonwolk";
 
-const logoPath = path.resolve(__dirname, "../../app/public/Logo.png");
+const logoPath = path.resolve(__dirname, "test_logo.svg");
 const LOGO_URL = fs.existsSync(logoPath)
-    ? `data:image/png;base64,${fs.readFileSync(logoPath).toString("base64")}`
+    ? `data:image/svg+xml;base64,${fs.readFileSync(logoPath).toString("base64")}`
     : null;
 
 async function seed() {
@@ -46,6 +46,7 @@ async function seed() {
         slug: "dewoonwolk",
         facilitator_ename: FACILITATOR_ENAME,
         logo_url: LOGO_URL,
+        primary_color: "#2D7A4A",
         locations: [
             {
                 id: "loc-1",
@@ -116,6 +117,16 @@ async function seed() {
         memberMap[first_name] = m;
     }
 
+    // Dev tester member — used with /api/auth/dev-login
+    await memberRepo.save(memberRepo.create({
+        community_id: savedComm.id,
+        name: "Tester van Vergaderen",
+        first_name: "Tester",
+        last_name: "van Vergaderen",
+        ename: "tester@dewoonwolk",
+        is_aspirant: false,
+    }));
+
     // Facilitator as community member (hidden flag)
     await memberRepo.save(memberRepo.create({
         community_id: savedComm.id,
@@ -130,14 +141,15 @@ async function seed() {
     console.log(`✅ ${regularMembers.length} members + ${aspirantMembers.length} aspirants + 1 facilitator seeded`);
 
     // ── Active meeting ────────────────────────────────────────────────────────
+    const TODAY = new Date().toISOString().slice(0, 10);
     const meeting = meetingRepo.create({
         community_id: savedComm.id,
-        name: "ALV 14-02-2026",
-        date: "2026-02-14",
+        name: `ALV ${TODAY}`,
+        date: TODAY,
         time: "19:30",
         location: "Buurtcentrum GWL Terrein",
         agenda_text: `1. Opening en vaststelling agenda\n2. Notulen vorige ALV\n3. Financieel jaarverslag 2025 — ter informatie\n4. Besluit: verhoging maandelijkse bijdrage\n5. Besluit: aanstelling nieuwe penningmeester\n6. Rondvraag en sluiting`,
-        status: "open",
+        status: "in_session",
         facilitator_name: "Facilitator",
     });
     const saved = await meetingRepo.save(meeting);

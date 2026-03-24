@@ -98,6 +98,14 @@ app.get("/api/polls/:pollId/results", vote.results);
 // ── W3DS Webhook ─────────────────────────────────────────────────────────────
 app.post("/api/webhook", webhook.handleWebhook);
 
+// ── Serve React frontend (production only) ────────────────────────────────────
+// In the Docker image, app/dist is copied to <api-root>/client/
+if (process.env.NODE_ENV === "production") {
+    const clientPath = path.join(__dirname, "../client");
+    app.use(express.static(clientPath));
+    app.use((_req, res) => res.sendFile(path.join(clientPath, "index.html")));
+}
+
 // ── DB init → listen ──────────────────────────────────────────────────────────
 AppDataSource.initialize()
     .then(() => {

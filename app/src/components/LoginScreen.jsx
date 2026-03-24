@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import QRCode from 'qrcode'
-import { getAuthOffer, subscribeToAuthSession } from '../api/client'
+import { getAuthOffer, subscribeToAuthSession, devLogin } from '../api/client'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitcher } from './LanguageSwitcher'
+
+const IS_DEV = import.meta.env.DEV
 
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
@@ -152,6 +154,29 @@ export default function LoginScreen({ onSuccess, nameOption = false, onNameConti
             </button>
           </div>
         </>
+      )}
+
+      {/* Dev quick-login */}
+      {IS_DEV && (
+        <div style={{ width: '100%', borderTop: '1px dashed var(--color-sand-dark)', paddingTop: 16 }}>
+          <p style={{ margin: '0 0 10px', fontSize: '0.75rem', color: 'var(--color-charcoal-light)', textAlign: 'center', fontFamily: 'monospace' }}>
+            🧪 dev only
+          </p>
+          <button
+            className="btn-secondary"
+            style={{ width: '100%', justifyContent: 'center', fontSize: '0.88rem' }}
+            onClick={async () => {
+              try {
+                const { token, user } = await devLogin()
+                onSuccess(token, user)
+              } catch (e) {
+                alert('Dev login failed: ' + e.message)
+              }
+            }}
+          >
+            👤 Attendee login
+          </button>
+        </div>
       )}
 
       {/* W3DS footer logo */}

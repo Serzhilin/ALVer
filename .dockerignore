@@ -1,0 +1,25 @@
+# Dependencies — reinstalled inside the image
+node_modules/
+app/node_modules/
+api/node_modules/
+vendor/*/node_modules/
+
+# Build output — rebuilt inside the image
+app/dist/
+api/dist/
+
+# Environment files — secrets must never be baked into the image
+.env
+.env.*
+!.env.example
+
+# Dev tooling
+.claude/
+.git/
+*.log
+*.md
+!vendor/
+
+# OS
+.DS_Store
+Thumbs.db

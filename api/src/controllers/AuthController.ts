@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { EventEmitter } from "events";
 import { v4 as uuidv4 } from "uuid";
-import { verifySignature } from "signature-validator";
+import { verifySignature } from "../lib/signature-validator";
 import {
     findOrCreateByEname,
     fetchEVaultProfile,
@@ -124,6 +124,24 @@ export async function sseAuthStream(req: Request, res: Response) {
         clearTimeout(timeout);
         sessions.off(id, handler);
     });
+}
+
+/** POST /api/auth/dev-login
+ *  DEV-ONLY: instantly logs in as "Tester van Vergaderen" — no eID required.
+ *  Returns 404 in production.
+ */
+export async function devLogin(req: Request, res: Response) {
+    if (process.env.NODE_ENV === "production") {
+        res.status(404).json({ error: "Not found" });
+        return;
+    }
+    const TESTER_ENAME = "tester@dewoonwolk";
+    let user = await findOrCreateByEname(TESTER_ENAME);
+    if (!user.first_name) {
+        user = await updateUser(user.id, { first_name: "Tester", last_name: "van Vergaderen" });
+    }
+    const token = signToken({ userId: user.id, ename: user.ename });
+    res.json({ token, user: serializeUser(user) });
 }
 
 /** GET /api/auth/me

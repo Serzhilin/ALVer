@@ -5,12 +5,14 @@ import { Community } from "../database/entities/Community";
 const svc = new CommunityService();
 
 export class CommunityController {
-    /** GET /api/community — returns the facilitator's community */
+    /** GET /api/community — returns the user's community (facilitator or member) */
     get = async (req: Request, res: Response) => {
         try {
             const ename = req.user!.ename;
-            const community = await svc.findByFacilitatorEname(ename);
-            if (!community) return res.status(404).json({ error: "No community found for this facilitator" });
+            const community =
+                (await svc.findByFacilitatorEname(ename)) ??
+                (await svc.findByMemberEname(ename));
+            if (!community) return res.status(404).json({ error: "No community found" });
             res.json(community);
         } catch (e: any) {
             res.status(500).json({ error: e.message });

@@ -35,7 +35,19 @@ export class MeetingService {
 
     async findAll(communityId?: string): Promise<Meeting[]> {
         const where = communityId ? { community_id: communityId } : {};
-        return this.repo.find({ where, order: { created_at: "DESC" } });
+        const meetings = await this.repo.find({ where, order: { created_at: "DESC" } });
+
+        // Auto-archive meetings whose date has passed and are still open/in_session
+        const today = new Date().toISOString().slice(0, 10);
+        const stale = meetings.filter(
+            m => (m.status === "open" || m.status === "in_session") && m.date < today
+        );
+        if (stale.length > 0) {
+            await Promise.all(stale.map(m => this.repo.update(m.id, { status: "archived" })));
+            stale.forEach(m => { m.status = "archived"; });
+        }
+
+        return meetings;
     }
 
     async update(id: string, data: Partial<Meeting>): Promise<Meeting> {
@@ -76,12 +88,24 @@ export class MeetingService {
         return updated;
     }
 
+    async reopen(id: string): Promise<Meeting> {
+        const meeting = await this.repo.findOneBy({ id });
+        if (!meeting) throw new Error("Meeting not found");
+        if (meeting.status !== "archived") throw new Error("Only archived meetings can be reopened");
+        const today = new Date().toISOString().slice(0, 10);
+        if (meeting.date !== today) throw new Error("Can only reopen a meeting on its scheduled date");
+        await this.repo.update(id, { status: "in_session" });
+        const updated = await this.findById(id);
+        if (!updated) throw new Error("Meeting not found after update");
+        sseService.emit(id, "meeting_status_changed", { meetingId: id, status: "in_session" });
+        return updated;
+    }
+
     private isValidTransition(from: MeetingStatus, to: MeetingStatus): boolean {
         const allowed: Record<MeetingStatus, MeetingStatus[]> = {
             draft: ["open"],
             open: ["in_session", "draft"],
-            in_session: ["closed"],
-            closed: ["archived"],
+            in_session: ["archived"],
             archived: [],
         };
         return allowed[from]?.includes(to) ?? false;

@@ -46,6 +46,13 @@ export class CommunityService {
         return this.memberRepo.findOne({ where: { community_id: communityId, ename } });
     }
 
+    /** Find community by member ename — used to load branding for non-facilitator users */
+    async findByMemberEname(ename: string): Promise<Community | null> {
+        const member = await this.memberRepo.findOne({ where: { ename } });
+        if (!member) return null;
+        return this.repo.findOne({ where: { id: member.community_id } });
+    }
+
     async createMember(communityId: string, data: {
         first_name: string;
         last_name: string;

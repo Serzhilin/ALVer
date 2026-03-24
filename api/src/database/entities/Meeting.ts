@@ -7,7 +7,7 @@ import { Mandate } from "./Mandate";
 import { Poll } from "./Poll";
 import { Community } from "./Community";
 
-export type MeetingStatus = "draft" | "open" | "in_session" | "closed" | "archived";
+export type MeetingStatus = "draft" | "open" | "in_session" | "archived";
 
 @Entity("meetings")
 export class Meeting {
