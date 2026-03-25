@@ -1,0 +1,46 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-alver}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-alver}
+    volumes:
+      - alver-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-alver} -d ${POSTGRES_DB:-alver}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - alver-internal
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_FACILITATOR_ENAME: ${VITE_FACILITATOR_ENAME}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      ALVER_DATABASE_URL: postgresql://${POSTGRES_USER:-alver}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-alver}
+      JWT_SECRET: ${JWT_SECRET}
+      PUBLIC_REGISTRY_URL: ${PUBLIC_REGISTRY_URL:-https://registry.w3ds.metastate.foundation}
+      PUBLIC_ALVER_BASE_URL: ${PUBLIC_ALVER_BASE_URL}
+    ports:
+      - "${PORT:-3001}:3001"
+    networks:
+      - alver-internal
+
+volumes:
+  alver-postgres-data:
+
+networks:
+  alver-internal:
