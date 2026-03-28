@@ -17,7 +17,7 @@ config({ path: path.resolve(__dirname, "../../../.env") });
 export const dataSourceOptions: DataSourceOptions = {
     type: "postgres",
     url: process.env.ALVER_DATABASE_URL,
-    synchronize: process.env.NODE_ENV !== "production", // never auto-sync in production
+    synchronize: process.env.NODE_ENV !== "production" || process.env.DB_SYNCHRONIZE === "true",
     entities: [Meeting, Attendee, Mandate, Poll, Vote, Decision, User, Community, Member],
     logging: process.env.NODE_ENV === "development",
     extra: {
