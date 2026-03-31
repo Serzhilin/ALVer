@@ -4,6 +4,7 @@ import { UserProvider } from './context/UserContext'
 import { CommunityProvider } from './context/CommunityContext'
 import Home from './views/Home'
 import Facilitate from './views/Facilitate'
+import FacilitatorLogin from './views/FacilitatorLogin'
 import Attend from './views/Attend'
 import Register from './views/Register'
 import Display from './views/Display'
@@ -18,6 +19,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/facilitator-login" element={<FacilitatorLogin />} />
           <Route path="/meeting/:id/facilitate" element={<Facilitate />} />
           <Route path="/meeting/:id/attend" element={<Attend />} />
           <Route path="/meeting/:id/register" element={<Register />} />

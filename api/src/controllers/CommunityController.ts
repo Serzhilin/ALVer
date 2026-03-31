@@ -68,7 +68,22 @@ export class CommunityController {
     /** PATCH /api/community/members/:memberId */
     updateMember = async (req: Request, res: Response) => {
         try {
-            const member = await svc.updateMember(req.params.memberId, req.body);
+            const ename = req.user!.ename;
+            const community = await svc.findByFacilitatorEname(ename);
+            if (!community) return res.status(403).json({ error: "Forbidden" });
+
+            const existing = await svc.getMemberById(req.params.memberId);
+            if (!existing || existing.community_id !== community.id) {
+                return res.status(404).json({ error: "Member not found" });
+            }
+
+            const body = { ...req.body };
+            // Prevent admin from removing their own facilitator access
+            if (existing.ename && existing.ename === ename) {
+                delete body.is_facilitator;
+            }
+
+            const member = await svc.updateMember(req.params.memberId, body);
             res.json(member);
         } catch (e: any) {
             res.status(400).json({ error: e.message });
@@ -78,6 +93,15 @@ export class CommunityController {
     /** DELETE /api/community/members/:memberId */
     deleteMember = async (req: Request, res: Response) => {
         try {
+            const ename = req.user!.ename;
+            const community = await svc.findByFacilitatorEname(ename);
+            if (!community) return res.status(403).json({ error: "Forbidden" });
+
+            const existing = await svc.getMemberById(req.params.memberId);
+            if (!existing || existing.community_id !== community.id) {
+                return res.status(404).json({ error: "Member not found" });
+            }
+
             await svc.deleteMember(req.params.memberId);
             res.status(204).end();
         } catch (e: any) {

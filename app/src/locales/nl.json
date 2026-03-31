@@ -9,6 +9,9 @@
     "edit": "Bewerken",
     "delete": "Verwijderen",
     "confirm": "Bevestigen",
+    "confirm_question": "Weet je het zeker?",
+    "yes": "Ja",
+    "reconnecting": "Verbinding herstellen…",
     "agenda": "Agenda",
     "name": "Naam",
     "note_optional": "Opmerking (optioneel)",
@@ -36,6 +39,8 @@
     "nav_register": "Aanmelden",
     "nav_display": "Scherm (TV)",
     "nav_archive": "Archief",
+    "facilitator_hint": "Ben jij de facilitator?",
+    "facilitator_link": "Facilitator login →",
     "btn_attend": "Vergadering bijwonen",
     "btn_ill_come": "🙋 Ik kom",
     "btn_mandate": "📜 Ik kom niet, mandaat"
@@ -97,7 +102,9 @@
     "available_during_session": "Beschikbaar tijdens de vergadering",
     "manually_added": "Handmatig toegevoegd",
     "aspirant_badge": "Aspirant",
-    "member_search_placeholder": "Zoek lid…"
+    "member_search_placeholder": "Zoek lid…",
+    "remove_attendee": "Aanwezige verwijderen",
+    "revoke_mandate": "Machtiging intrekken"
   },
   "attend": {
     "check_in_title": "Inchecken",
@@ -222,7 +229,8 @@
     "delete_yes": "Ja, verwijderen",
     "upcoming": "Geplande vergaderingen",
     "no_upcoming": "Geen toekomstige vergaderingen gepland.",
-    "no_archive": "Nog geen afgesloten vergaderingen."
+    "no_archive": "Nog geen afgesloten vergaderingen.",
+    "meeting_facilitator": "Facilitator"
   },
   "settings": {
     "title": "Instellingen",
@@ -258,7 +266,9 @@
     "member_ename_placeholder": "eID-identiteit (optioneel)",
     "member_aspirant_label": "Aspirant-lid",
     "members_facilitators": "Facilitatoren",
-    "member_facilitator_badge": "Facilitator"
+    "member_facilitator_badge": "Facilitator",
+    "member_facilitator_label": "Facilitator",
+    "member_facilitator_self": "eigen rol kan niet gewijzigd worden"
   },
   "auth": {
     "login_title": "Inloggen met eID",
@@ -281,6 +291,7 @@
     "continue_as_guest": "Ga verder zonder eID",
     "offer_error": "Kon geen inloglink ophalen. Probeer opnieuw.",
     "facilitator_hint": "Log in met je eID om de vergadering te faciliteren",
+    "not_facilitator": "Dit eID is niet geregistreerd als facilitator.",
     "register_hint": "Verifieer je identiteit via de eID-app",
     "logged_in_as": "Ingelogd als",
     "verified_identity": "Geverifieerde identiteit"

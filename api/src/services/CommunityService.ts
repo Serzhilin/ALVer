@@ -36,6 +36,10 @@ export class CommunityService {
         });
     }
 
+    async getMemberById(memberId: string): Promise<Member | null> {
+        return this.memberRepo.findOne({ where: { id: memberId } });
+    }
+
     async findMemberByName(communityId: string, name: string): Promise<Member | null> {
         return this.memberRepo.findOne({
             where: { community_id: communityId, name },

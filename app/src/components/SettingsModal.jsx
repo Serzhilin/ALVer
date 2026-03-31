@@ -24,6 +24,7 @@ export default function SettingsModal({ onClose }) {
   const [color, setColor] = useState(community?.primary_color || '#C4622D')
   const [hexInput, setHexInput] = useState(community?.primary_color || '#C4622D')
   const [font, setFont] = useState(community?.title_font || 'Playfair Display')
+  const [saveError, setSaveError] = useState(null)
 
   function handleLogoUpload(e) {
     const file = e.target.files?.[0]
@@ -32,20 +33,37 @@ export default function SettingsModal({ onClose }) {
     reader.onload = async (ev) => {
       const dataUrl = ev.target.result
       setLogo(dataUrl)
-      await updateCommunity({ logo_url: dataUrl })
+      try {
+        setSaveError(null)
+        await updateCommunity({ logo_url: dataUrl })
+      } catch (err) {
+        setSaveError(err.message)
+        setLogo(community?.logo_url || null)
+      }
     }
     reader.readAsDataURL(file)
   }
 
   async function removeLogo() {
-    setLogo(null)
-    await updateCommunity({ logo_url: null })
+    try {
+      setSaveError(null)
+      setLogo(null)
+      await updateCommunity({ logo_url: null })
+    } catch (err) {
+      setSaveError(err.message)
+      setLogo(community?.logo_url || null)
+    }
   }
 
   async function applyColor(c) {
     setColor(c)
     setHexInput(c)
-    await updateCommunity({ primary_color: c })
+    try {
+      setSaveError(null)
+      await updateCommunity({ primary_color: c })
+    } catch (err) {
+      setSaveError(err.message)
+    }
   }
 
   function handleHexInput(val) {
@@ -56,7 +74,12 @@ export default function SettingsModal({ onClose }) {
 
   async function applyFont(f) {
     setFont(f)
-    await updateCommunity({ title_font: f })
+    try {
+      setSaveError(null)
+      await updateCommunity({ title_font: f })
+    } catch (err) {
+      setSaveError(err.message)
+    }
   }
 
   // ── Cooperative name ──────────────────────────────────────────────────────
@@ -65,8 +88,14 @@ export default function SettingsModal({ onClose }) {
 
   async function saveName() {
     setNameSaving(true)
-    await updateCommunity({ name })
-    setNameSaving(false)
+    try {
+      setSaveError(null)
+      await updateCommunity({ name })
+    } catch (err) {
+      setSaveError(err.message)
+    } finally {
+      setNameSaving(false)
+    }
   }
 
   // ── Locations ─────────────────────────────────────────────────────────────
@@ -92,23 +121,38 @@ export default function SettingsModal({ onClose }) {
         ? { ...l, name: locForm.name.trim(), address: locForm.address.trim(), maps_url: locForm.maps_url.trim() }
         : l)
     }
-    setLocations(updated)
-    await updateCommunity({ locations: updated })
-    setEditingLoc(null)
-    setLocForm(EMPTY_LOC)
+    try {
+      setSaveError(null)
+      setLocations(updated)
+      await updateCommunity({ locations: updated })
+      setEditingLoc(null)
+      setLocForm(EMPTY_LOC)
+    } catch (err) {
+      setSaveError(err.message)
+    }
   }
 
   async function removeLocation(id) {
     const updated = locations.filter(l => l.id !== id)
     if (updated.length > 0 && !updated.some(l => l.isDefault)) updated[0].isDefault = true
-    setLocations(updated)
-    await updateCommunity({ locations: updated })
+    try {
+      setSaveError(null)
+      setLocations(updated)
+      await updateCommunity({ locations: updated })
+    } catch (err) {
+      setSaveError(err.message)
+    }
   }
 
   async function setDefaultLocation(id) {
     const updated = locations.map(l => ({ ...l, isDefault: l.id === id }))
-    setLocations(updated)
-    await updateCommunity({ locations: updated })
+    try {
+      setSaveError(null)
+      setLocations(updated)
+      await updateCommunity({ locations: updated })
+    } catch (err) {
+      setSaveError(err.message)
+    }
   }
 
   return (
@@ -255,6 +299,11 @@ export default function SettingsModal({ onClose }) {
           </div>
         </div>
 
+        {saveError && (
+          <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(196,45,45,0.08)', border: '1px solid rgba(196,45,45,0.3)', borderRadius: 8, color: '#c42d2d', fontSize: '0.85rem' }}>
+            Could not save: {saveError}
+          </div>
+        )}
         <button className="btn-primary" onClick={onClose}>{t('common.close')}</button>
       </div>
     </div>

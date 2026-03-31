@@ -9,6 +9,9 @@
     "edit": "Edit",
     "delete": "Delete",
     "confirm": "Confirm",
+    "confirm_question": "Are you sure?",
+    "yes": "Yes",
+    "reconnecting": "Reconnecting…",
     "agenda": "Agenda",
     "name": "Name",
     "note_optional": "Note (optional)",
@@ -36,6 +39,8 @@
     "nav_register": "Register",
     "nav_display": "Screen (TV)",
     "nav_archive": "Archive",
+    "facilitator_hint": "Are you the facilitator?",
+    "facilitator_link": "Facilitator login →",
     "btn_attend": "Enter meeting",
     "btn_ill_come": "🙋 I'll come",
     "btn_mandate": "📜 Can't come, mandate"
@@ -97,7 +102,9 @@
     "available_during_session": "Available during the meeting",
     "manually_added": "Added manually",
     "aspirant_badge": "Aspirant",
-    "member_search_placeholder": "Search member…"
+    "member_search_placeholder": "Search member…",
+    "remove_attendee": "Remove attendee",
+    "revoke_mandate": "Revoke mandate"
   },
   "attend": {
     "check_in_title": "Check in",
@@ -222,7 +229,8 @@
     "delete_yes": "Yes, delete",
     "upcoming": "Upcoming meetings",
     "no_upcoming": "No future meetings planned.",
-    "no_archive": "No past meetings yet."
+    "no_archive": "No past meetings yet.",
+    "meeting_facilitator": "Facilitator"
   },
   "settings": {
     "title": "Settings",
@@ -258,7 +266,9 @@
     "member_ename_placeholder": "eID identity (optional)",
     "member_aspirant_label": "Aspirant member",
     "members_facilitators": "Facilitators",
-    "member_facilitator_badge": "Facilitator"
+    "member_facilitator_badge": "Facilitator",
+    "member_facilitator_label": "Facilitator",
+    "member_facilitator_self": "cannot change own role"
   },
   "auth": {
     "login_title": "Sign in with eID",
@@ -281,6 +291,7 @@
     "continue_as_guest": "Continue without eID",
     "offer_error": "Could not fetch login link. Please try again.",
     "facilitator_hint": "Sign in with your eID to facilitate the meeting",
+    "not_facilitator": "This eID is not registered as a facilitator.",
     "register_hint": "Verify your identity via the eID app",
     "logged_in_as": "Signed in as",
     "verified_identity": "Verified identity"

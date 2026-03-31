@@ -3,6 +3,7 @@ import path from "path";
 import cors from "cors";
 import { config } from "dotenv";
 import express from "express";
+import rateLimit from "express-rate-limit";
 import { AppDataSource } from "./database/data-source";
 import { MeetingController } from "./controllers/MeetingController";
 import { AttendeeController } from "./controllers/AttendeeController";
@@ -38,8 +39,9 @@ app.get("/api/health", (_, res) => res.json({
 }));
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
-app.get("/api/auth/offer", getOffer);
-app.post("/api/auth/login", epassportLogin);
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false });
+app.get("/api/auth/offer", authLimiter, getOffer);
+app.post("/api/auth/login", authLimiter, epassportLogin);
 app.post("/api/auth/dev-login", devLogin);
 app.get("/api/auth/sessions/:id", sseAuthStream);
 app.get("/api/auth/me", requireAuth, getMe);
@@ -80,6 +82,7 @@ app.get("/api/meetings/:id/attendees", attendee.list);
 app.post("/api/meetings/:id/attendees", attendee.preRegister);
 app.post("/api/meetings/:id/attendees/checkin", attendee.checkIn);
 app.patch("/api/meetings/:id/attendees/:attendeeId", attendee.update);
+app.delete("/api/meetings/:id/attendees/:attendeeId", requireAuth, attendee.delete);
 
 // ── Mandates (public reads) ───────────────────────────────────────────────────
 app.get("/api/meetings/:id/mandates", mandate.list);

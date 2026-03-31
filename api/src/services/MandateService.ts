@@ -1,5 +1,7 @@
 import { AppDataSource } from "../database/data-source";
 import { Mandate } from "../database/entities/Mandate";
+import { Member } from "../database/entities/Member";
+import { Meeting } from "../database/entities/Meeting";
 
 export class MandateService {
     private repo = AppDataSource.getRepository(Mandate);
@@ -9,6 +11,19 @@ export class MandateService {
         proxy_name: string;
         scope_note?: string;
     }): Promise<Mandate> {
+        // Verify proxy is not an aspirant
+        const meetingRepo = AppDataSource.getRepository(Meeting);
+        const memberRepo = AppDataSource.getRepository(Member);
+        const meeting = await meetingRepo.findOneBy({ id: meetingId });
+        if (meeting) {
+            const proxyMember = await memberRepo.findOne({
+                where: { community_id: meeting.community_id, name: data.proxy_name },
+            });
+            if (proxyMember?.is_aspirant) {
+                throw new Error("Aspirants cannot receive mandates");
+            }
+        }
+
         // Revoke any existing active mandate from this granter
         await this.repo.update(
             { meeting_id: meetingId, granter_name: data.granter_name, status: "active" },

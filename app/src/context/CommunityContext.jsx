@@ -30,7 +30,7 @@ function applyTheme(community) {
     link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(font)}:wght@400;600;700&display=swap`
     document.head.appendChild(link)
   }
-  root.style.setProperty('--font-title', `"${font}", serif`)
+  root.style.setProperty('--font-title', `"${font.replace(/['"\\]/g, '')}", serif`)
 }
 
 export { TITLE_FONTS }

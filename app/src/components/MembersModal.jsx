@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCommunity } from '../context/CommunityContext'
+import { useUser } from '../context/UserContext'
 
-const EMPTY = { first_name: '', last_name: '', email: '', phone: '', ename: '', is_aspirant: false }
+const EMPTY = { first_name: '', last_name: '', email: '', phone: '', ename: '', is_aspirant: false, is_facilitator: false }
 
 export default function MembersModal({ onClose }) {
   const { t } = useTranslation()
   const { members, community, createMember, updateMember, deleteMember } = useCommunity()
+  const { user } = useUser()
 
   const [editing, setEditing]     = useState(null)  // null | 'new' | member id
   const [form, setForm]           = useState(EMPTY)
@@ -24,12 +26,13 @@ export default function MembersModal({ onClose }) {
 
   function openEdit(m) {
     setForm({
-      first_name: m.first_name || '',
-      last_name:  m.last_name  || '',
-      email:      m.email      || '',
-      phone:      m.phone      || '',
-      ename:      m.ename      || '',
-      is_aspirant: m.is_aspirant,
+      first_name:    m.first_name    || '',
+      last_name:     m.last_name     || '',
+      email:         m.email         || '',
+      phone:         m.phone         || '',
+      ename:         m.ename         || '',
+      is_aspirant:   m.is_aspirant,
+      is_facilitator: m.is_facilitator,
     })
     setEditing(m.id)
   }
@@ -45,12 +48,13 @@ export default function MembersModal({ onClose }) {
     setSaving(true)
     try {
       const payload = {
-        first_name: form.first_name.trim(),
-        last_name:  form.last_name.trim(),
-        email:      form.email.trim()  || undefined,
-        phone:      form.phone.trim()  || undefined,
-        ename:      form.ename.trim()  || undefined,
-        is_aspirant: form.is_aspirant,
+        first_name:    form.first_name.trim(),
+        last_name:     form.last_name.trim(),
+        email:         form.email.trim()  || undefined,
+        phone:         form.phone.trim()  || undefined,
+        ename:         form.ename.trim()  || undefined,
+        is_aspirant:   form.is_aspirant,
+        is_facilitator: form.is_facilitator,
       }
       if (editing === 'new') {
         await createMember(payload)
@@ -150,6 +154,21 @@ export default function MembersModal({ onClose }) {
                 />
                 {t('settings.member_aspirant_label')}
               </label>
+              {(() => {
+                const isSelf = form.ename && user?.ename && form.ename === user.ename
+                return (
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.88rem', cursor: isSelf ? 'not-allowed' : 'pointer', opacity: isSelf ? 0.5 : 1 }}>
+                    <input
+                      type="checkbox"
+                      checked={form.is_facilitator}
+                      disabled={isSelf}
+                      onChange={e => set('is_facilitator', e.target.checked)}
+                    />
+                    {t('settings.member_facilitator_label')}
+                    {isSelf && <span style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)' }}>({t('settings.member_facilitator_self')})</span>}
+                  </label>
+                )
+              })()}
               <div style={{ display: 'flex', gap: 8 }}>
                 <button className="btn-primary" onClick={handleSave} disabled={saving || !form.first_name.trim() || !form.last_name.trim()}>
                   {saving ? t('common.loading') : t('common.save')}

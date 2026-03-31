@@ -57,4 +57,13 @@ export class AttendeeController {
             res.status(400).json({ error: e.message });
         }
     };
+
+    delete = async (req: Request, res: Response) => {
+        try {
+            await svc.delete(req.params.attendeeId);
+            res.status(204).send();
+        } catch (e: any) {
+            res.status(400).json({ error: e.message });
+        }
+    };
 }

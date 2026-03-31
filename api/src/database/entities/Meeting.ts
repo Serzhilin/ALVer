@@ -7,7 +7,9 @@ import { Mandate } from "./Mandate";
 import { Poll } from "./Poll";
 import { Community } from "./Community";
 
-export type MeetingStatus = "draft" | "open" | "in_session" | "archived";
+// "closed" is a legacy enum value in the DB column but is no longer used in code.
+// Valid statuses are draft → open → in_session → archived.
+export type MeetingStatus = "draft" | "open" | "in_session" | "archived" | "closed";
 
 @Entity("meetings")
 export class Meeting {

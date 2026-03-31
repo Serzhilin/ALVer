@@ -2,14 +2,10 @@ import { useState, useEffect } from 'react'
 import { useMeeting } from '../context/MeetingContext'
 import { useUser } from '../context/UserContext'
 import { useCommunity } from '../context/CommunityContext'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { LanguageSwitcher } from '../components/LanguageSwitcher'
-import LoginScreen from '../components/LoginScreen'
-import AppHeader from '../components/AppHeader'
+import FacilitatorHeader from '../components/FacilitatorHeader'
 import { reopenMeeting } from '../api/client'
-
-const FACILITATOR_ENAME = import.meta.env.VITE_FACILITATOR_ENAME
 
 export default function Facilitate() {
   const { id } = useParams()
@@ -17,11 +13,11 @@ export default function Facilitate() {
     meeting, activePoll, attendeeCount,
     updatePhase, addPoll, updatePoll, deletePoll,
     startPoll, closePoll, addManualVote, checkIn,
-    addMandate,
+    addMandate, revokeMandate, removeAttendee,
   } = useMeeting()
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const { user, loading: authLoading, login } = useUser()
+  const { isFacilitator, loading: authLoading } = useUser()
   const { members } = useCommunity()
 
   const [showCheckInModal, setShowCheckInModal] = useState(false)
@@ -42,34 +38,17 @@ export default function Facilitate() {
   const [newPoll, setNewPoll] = useState({ title: '', options: ['Voor', 'Tegen', 'Onthouding'] })
   const [customOption, setCustomOption] = useState('')
 
+  // Confirmation state for irreversible actions
+  const [confirmCloseAttendeeId, setConfirmCloseAttendeeId] = useState(null)
+  const [confirmCloseMeeting, setConfirmCloseMeeting] = useState(false)
+  const [confirmClosePollId, setConfirmClosePollId] = useState(null)
+  const [confirmRevokeMandateId, setConfirmRevokeMandateId] = useState(null)
+
   useEffect(() => { setMeetingId(id) }, [id])
 
-  // Auth gate — must be logged in AND be the facilitator
+  // Auth gate — must be logged in as facilitator via /facilitator-login
   if (authLoading) return <LoadingScreen />
-  if (!user || user.ename !== FACILITATOR_ENAME) {
-    return (
-      <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-        <div style={{ maxWidth: 420, width: '100%' }}>
-          <div style={{ textAlign: 'center', marginBottom: 28 }}>
-            <div style={{ fontSize: '2rem', marginBottom: 8 }}>🎙️</div>
-            <h1 style={{ fontSize: '1.3rem', margin: '0 0 6px' }}>Facilitator</h1>
-            <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.85rem', margin: 0 }}>
-              {t('auth.facilitator_hint', 'Log in met je eID om de vergadering te faciliteren')}
-            </p>
-          </div>
-          <div className="card" style={{ padding: 28 }}>
-            <LoginScreen onSuccess={login} nameOption={false} />
-          </div>
-          <button
-            onClick={() => navigate('/')}
-            style={{ display: 'block', margin: '16px auto 0', background: 'none', border: 'none', color: 'var(--color-charcoal-light)', cursor: 'pointer', fontSize: '0.85rem' }}
-          >
-            {t('common.back')}
-          </button>
-        </div>
-      </div>
-    )
-  }
+  if (!isFacilitator) return <Navigate to="/facilitator-login" replace />
 
   if (!meeting) return <LoadingScreen />
 
@@ -113,11 +92,13 @@ export default function Facilitate() {
   }
 
   function handleSaveNewPoll() {
-    if (!newPoll.title.trim() || newPoll.options.length < 2) return
+    const title = newPoll.title.trim()
+    const cleanOptions = newPoll.options.map(o => o.trim()).filter(o => o.length > 0)
+    if (!title || cleanOptions.length < 2) return
     if (editingPoll) {
-      updatePoll(editingPoll.id, { title: newPoll.title, options: newPoll.options })
+      updatePoll(editingPoll.id, { title, options: cleanOptions })
     } else {
-      addPoll({ title: newPoll.title, options: newPoll.options })
+      addPoll({ title, options: cleanOptions })
     }
     setNewPoll({ title: '', options: ['Voor', 'Tegen', 'Onthouding'] })
     setEditingPoll(null)
@@ -134,12 +115,10 @@ export default function Facilitate() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-cream)' }}>
-      <AppHeader
+      <FacilitatorHeader
         backTo="/"
-        title={`🎙️ ${user?.displayName || 'Facilitator'}`}
-        user={user}
-        isFacilitator
-        onLogout={() => {}}
+        title={meeting.name}
+        liveIndicator={meeting.phase === 'in_session'}
         right={
           <>
             <span style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)' }}>
@@ -153,7 +132,6 @@ export default function Facilitate() {
             >
               {t('facilitate.open_display')}
             </a>
-            <LanguageSwitcher />
           </>
         }
       />
@@ -186,10 +164,21 @@ export default function Facilitate() {
                 {t('facilitate.open_meeting')}
               </button>
             )}
-            {meeting.phase === 'in_session' && (
-              <button className="btn-danger" onClick={() => updatePhase('archived')}>
+            {meeting.phase === 'in_session' && !confirmCloseMeeting && (
+              <button className="btn-danger" onClick={() => setConfirmCloseMeeting(true)}>
                 {t('facilitate.close_meeting')}
               </button>
+            )}
+            {meeting.phase === 'in_session' && confirmCloseMeeting && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: '0.82rem', color: 'var(--color-charcoal)' }}>{t('common.confirm_question')}</span>
+                <button className="btn-danger" style={{ fontSize: '0.82rem', padding: '5px 12px' }} onClick={() => { setConfirmCloseMeeting(false); updatePhase('archived') }}>
+                  {t('common.yes')}
+                </button>
+                <button className="btn-secondary" style={{ fontSize: '0.82rem', padding: '5px 12px' }} onClick={() => setConfirmCloseMeeting(false)}>
+                  {t('common.cancel')}
+                </button>
+              </div>
             )}
             {meeting.phase === 'archived' && meeting.date === new Date().toISOString().slice(0, 10) && (
               <button className="btn-secondary" onClick={async () => {
@@ -244,8 +233,8 @@ export default function Facilitate() {
                 <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.85rem', margin: '8px 0' }}>{t('facilitate.no_checkins')}</p>
               )}
               {[...meeting.checkedIn].reverse().map(c => (
-                <div key={c.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid var(--color-sand)' }}>
-                  <span style={{ fontSize: '0.9rem', color: 'var(--color-charcoal)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div key={c.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid var(--color-sand)', gap: 8 }}>
+                  <span style={{ fontSize: '0.9rem', color: 'var(--color-charcoal)', display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
                     {c.name}
                     {c.manual && <span title={t('facilitate.manually_added')}>📝</span>}
                     {c.isAspirant && (
@@ -254,7 +243,27 @@ export default function Facilitate() {
                       </span>
                     )}
                   </span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)' }}>{c.checkedInAt}</span>
+                  {confirmCloseAttendeeId === c.id ? (
+                    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                      <button
+                        onClick={() => { setConfirmCloseAttendeeId(null); removeAttendee(c.id) }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-red)', fontSize: '0.78rem', padding: '2px 6px', fontWeight: 600 }}
+                      >{t('common.yes')}</button>
+                      <button
+                        onClick={() => setConfirmCloseAttendeeId(null)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-charcoal-light)', fontSize: '0.78rem', padding: '2px 6px' }}
+                      >{t('common.cancel')}</button>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)' }}>{c.checkedInAt}</span>
+                      <button
+                        onClick={() => setConfirmCloseAttendeeId(c.id)}
+                        title={t('facilitate.remove_attendee')}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-charcoal-light)', fontSize: '0.8rem', padding: '2px 4px', lineHeight: 1 }}
+                      >✕</button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -271,11 +280,31 @@ export default function Facilitate() {
                 <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.85rem', margin: '8px 0' }}>{t('facilitate.no_mandates')}</p>
               )}
               {meeting.confirmedMandates.map(m => (
-                <div key={m.id} style={{ padding: '9px 0', borderBottom: '1px solid var(--color-sand)' }}>
-                  <div style={{ fontSize: '0.9rem', color: 'var(--color-charcoal)' }}>
-                    <strong>{m.from}</strong> → <strong>{m.to}</strong>
+                <div key={m.id} style={{ padding: '9px 0', borderBottom: '1px solid var(--color-sand)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '0.9rem', color: 'var(--color-charcoal)' }}>
+                      <strong>{m.from}</strong> → <strong>{m.to}</strong>
+                    </div>
+                    {m.note && <div style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', marginTop: 2 }}>{m.note}</div>}
                   </div>
-                  {m.note && <div style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', marginTop: 2 }}>{m.note}</div>}
+                  {confirmRevokeMandateId === m.id ? (
+                    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                      <button
+                        onClick={() => { setConfirmRevokeMandateId(null); revokeMandate(m.from) }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-red)', fontSize: '0.78rem', padding: '2px 6px', fontWeight: 600 }}
+                      >{t('common.yes')}</button>
+                      <button
+                        onClick={() => setConfirmRevokeMandateId(null)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-charcoal-light)', fontSize: '0.78rem', padding: '2px 6px' }}
+                      >{t('common.cancel')}</button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmRevokeMandateId(m.id)}
+                      title={t('facilitate.revoke_mandate')}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-charcoal-light)', fontSize: '0.8rem', padding: '2px 4px', lineHeight: 1 }}
+                    >✕</button>
+                  )}
                 </div>
               ))}
             </div>
@@ -319,6 +348,8 @@ export default function Facilitate() {
                   getVoteCount={getVoteCount}
                   isActive={activePoll?.id === poll.id}
                   phase={meeting.phase}
+                  confirmClosePollId={confirmClosePollId}
+                  setConfirmClosePollId={setConfirmClosePollId}
                 />
               ))}
             </div>
@@ -560,7 +591,7 @@ export default function Facilitate() {
               </div>
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
-              <button className="btn-primary" onClick={handleSaveNewPoll} disabled={!newPoll.title.trim()}>
+              <button className="btn-primary" onClick={handleSaveNewPoll} disabled={!newPoll.title.trim() || newPoll.options.filter(o => o.trim()).length < 2}>
                 {editingPoll ? t('common.save') : t('facilitate.create_poll')}
               </button>
               <button className="btn-secondary" onClick={() => { setShowAddPollModal(false); setEditingPoll(null) }}>{t('common.cancel')}</button>
@@ -572,7 +603,7 @@ export default function Facilitate() {
   )
 }
 
-function PollCard({ poll, idx, activePoll, attendeeCount, canStart, onStart, onClose, onEdit, onDelete, onManualVote, getVoteCount, isActive, phase }) {
+function PollCard({ poll, idx, activePoll, attendeeCount, canStart, onStart, onClose, onEdit, onDelete, onManualVote, getVoteCount, isActive, phase, confirmClosePollId, setConfirmClosePollId }) {
   const { t } = useTranslation()
   const voteCount = getVoteCount(poll)
   const pct = attendeeCount > 0 ? Math.round((voteCount / attendeeCount) * 100) : 0
@@ -666,9 +697,21 @@ function PollCard({ poll, idx, activePoll, attendeeCount, canStart, onStart, onC
         )}
         {isActive && (
           <>
-            <button className="btn-danger" style={{ fontSize: '0.82rem', padding: '7px 14px' }} onClick={onClose}>
-              {t('facilitate.close_poll')}
-            </button>
+            {confirmClosePollId === poll.id ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: '0.82rem', color: 'var(--color-charcoal)' }}>{t('common.confirm_question')}</span>
+                <button className="btn-danger" style={{ fontSize: '0.82rem', padding: '5px 12px' }} onClick={() => { setConfirmClosePollId(null); onClose() }}>
+                  {t('common.yes')}
+                </button>
+                <button className="btn-secondary" style={{ fontSize: '0.82rem', padding: '5px 12px' }} onClick={() => setConfirmClosePollId(null)}>
+                  {t('common.cancel')}
+                </button>
+              </div>
+            ) : (
+              <button className="btn-danger" style={{ fontSize: '0.82rem', padding: '7px 14px' }} onClick={() => setConfirmClosePollId(poll.id)}>
+                {t('facilitate.close_poll')}
+              </button>
+            )}
             <button className="btn-secondary" style={{ fontSize: '0.82rem', padding: '7px 14px' }} onClick={onManualVote}>
               {t('facilitate.add_vote')}
             </button>

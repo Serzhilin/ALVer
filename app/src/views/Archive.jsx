@@ -1,14 +1,12 @@
 import { useEffect } from 'react'
 import { useMeeting } from '../context/MeetingContext'
-import { useUser } from '../context/UserContext'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import AppHeader from '../components/AppHeader'
+import FacilitatorHeader from '../components/FacilitatorHeader'
 
 export default function Archive() {
   const { id } = useParams()
   const { meeting, attendeeCount, setMeetingId } = useMeeting()
-  const { user, logout } = useUser()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
 
@@ -23,11 +21,9 @@ export default function Archive() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-cream)' }}>
-      <AppHeader
+      <FacilitatorHeader
         backTo="/"
         title={t('archive.header')}
-        user={user}
-        onLogout={logout}
       />
 
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '40px 24px' }}>

@@ -1,6 +1,7 @@
 import { AppDataSource } from "../database/data-source";
 import { Vote, VoteMethod } from "../database/entities/Vote";
 import { Poll } from "../database/entities/Poll";
+import { Mandate } from "../database/entities/Mandate";
 import { sseService } from "./SSEService";
 
 export class VoteService {
@@ -19,6 +20,20 @@ export class VoteService {
 
         const validOption = poll.vote_options.find((o) => o.id === data.option_id);
         if (!validOption) throw new Error(`Invalid option_id: ${data.option_id}`);
+
+        // If voting on behalf of someone, verify an active mandate exists
+        if (data.on_behalf_of_name) {
+            const mandateRepo = AppDataSource.getRepository(Mandate);
+            const mandate = await mandateRepo.findOne({
+                where: {
+                    meeting_id: poll.meeting_id,
+                    proxy_name: data.voter_name,
+                    granter_name: data.on_behalf_of_name,
+                    status: "active",
+                },
+            });
+            if (!mandate) throw new Error("No active mandate found for this voter");
+        }
 
         // Prevent duplicate votes from the same voter (for same context: own vs mandate)
         const existing = await this.voteRepo.findOne({

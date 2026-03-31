@@ -47,6 +47,7 @@ async function seed() {
         facilitator_ename: FACILITATOR_ENAME,
         logo_url: LOGO_URL,
         primary_color: "#2D7A4A",
+        title_font: "Playfair Display",
         locations: [
             {
                 id: "loc-1",

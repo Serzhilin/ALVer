@@ -2,6 +2,7 @@ import { AppDataSource } from "../database/data-source";
 import { Poll, VoteOption } from "../database/entities/Poll";
 import { Vote } from "../database/entities/Vote";
 import { Decision } from "../database/entities/Decision";
+import { Meeting } from "../database/entities/Meeting";
 import { sseService } from "./SSEService";
 
 export class PollService {
@@ -22,6 +23,8 @@ export class PollService {
             status: "prepared",
         });
         const saved = await this.pollRepo.save(poll);
+
+        sseService.emit(meetingId, "poll_added", { meetingId, pollId: saved.id });
 
         // W3DS SYNC HOOK — to be implemented
         // await web3Adapter.sync('poll', saved.id, saved);
@@ -45,6 +48,14 @@ export class PollService {
     }
 
     async open(pollId: string, meetingId: string): Promise<Poll> {
+        // BUG-3: meeting must be in_session before opening a poll
+        const meetingRepo = AppDataSource.getRepository(Meeting);
+        const meeting = await meetingRepo.findOneBy({ id: meetingId });
+        if (!meeting) throw new Error("Meeting not found");
+        if (meeting.status !== "in_session") {
+            throw new Error("Meeting must be in session to open a poll");
+        }
+
         // Ensure no other poll is active for this meeting
         const active = await this.pollRepo.findOne({
             where: { meeting_id: meetingId, status: "active" },
@@ -88,12 +99,14 @@ export class PollService {
             count: tally[opt.id] ?? 0,
         }));
 
-        // Determine result: "voor" or "ja" winning = aangenomen
+        // Determine result: "voor" or "ja" winning = aangenomen; tie = verworpen
         const maxCount = Math.max(...Object.values(tally));
-        const winner = poll.vote_options.find((o) => (tally[o.id] ?? 0) === maxCount);
-        const winnerIdLower = (winner?.id ?? "").toLowerCase();
+        const winners = poll.vote_options.filter((o) => (tally[o.id] ?? 0) === maxCount);
         const aangenomen =
-            winnerIdLower === "voor" || winnerIdLower === "ja" || winnerIdLower === "yes";
+            winners.length === 1 &&
+            (winners[0].id.toLowerCase() === "voor" ||
+             winners[0].id.toLowerCase() === "ja" ||
+             winners[0].id.toLowerCase() === "yes");
 
         const decision = this.decisionRepo.create({
             poll_id: pollId,

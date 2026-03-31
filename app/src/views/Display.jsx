@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import QRCode from 'qrcode'
 import { useMeeting, getGreeting } from '../context/MeetingContext'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -6,7 +7,7 @@ import { LanguageSwitcher } from '../components/LanguageSwitcher'
 
 export default function Display() {
   const { id } = useParams()
-  const { meeting, activePoll, attendeeCount, setMeetingId } = useMeeting()
+  const { meeting, activePoll, attendeeCount, sseConnected, setMeetingId } = useMeeting()
   const { t } = useTranslation()
 
   useEffect(() => { setMeetingId(id) }, [id])
@@ -47,7 +48,7 @@ export default function Display() {
   const phase = meeting.phase
   const isCheckin = phase === 'open'
   const isSession = phase === 'in_session'
-  const isClosed = phase === 'closed' || phase === 'archived'
+  const isClosed = phase === 'archived'
 
   // Find most recently closed poll
   const closedPolls = meeting.polls.filter(p => p.status === 'closed')
@@ -118,6 +119,13 @@ export default function Display() {
         <ClosedDisplay meeting={meeting} />
       )}
 
+      {/* SSE reconnection indicator */}
+      {!sseConnected && (
+        <div style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(245,158,11,0.9)', color: 'white', borderRadius: 6, padding: '4px 12px', fontSize: '0.75rem', fontWeight: 500 }}>
+          {t('common.reconnecting')}
+        </div>
+      )}
+
       {/* Corner info */}
       <div style={{ position: 'absolute', bottom: 20, left: 0, right: 0, display: 'flex', justifyContent: 'space-between', padding: '0 32px', alignItems: 'center', opacity: 0.6 }}>
         <span style={{ fontSize: '0.8rem' }}>🏛️ ALVer</span>
@@ -130,10 +138,12 @@ export default function Display() {
 
 function CheckinDisplay({ meeting, attendeeCount }) {
   const { t } = useTranslation()
-  const [tick, setTick] = useState(0)
+  const [qrDataUrl, setQrDataUrl] = useState(null)
   useEffect(() => {
-    const timer = setInterval(() => setTick(x => x + 1), 3000)
-    return () => clearInterval(timer)
+    const url = `${window.location.origin}/aanmelden`
+    QRCode.toDataURL(url, { width: 180, margin: 2, color: { dark: '#000000', light: '#ffffff' } })
+      .then(setQrDataUrl)
+      .catch(console.error)
   }, [])
 
   const names = meeting.checkedIn.slice(-8).map(c => c.name.split(' ')[0])
@@ -142,7 +152,17 @@ function CheckinDisplay({ meeting, attendeeCount }) {
     <div style={{ textAlign: 'center', width: '100%', maxWidth: 800 }}>
       {/* QR */}
       <div style={{ marginBottom: 40 }}>
-        <QRPlaceholder />
+        <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{
+            background: 'white', padding: 16, borderRadius: 12,
+            boxShadow: '0 0 40px rgba(196,98,45,0.3)',
+          }}>
+            {qrDataUrl
+              ? <img src={qrDataUrl} alt="QR check-in" width={144} height={144} style={{ display: 'block' }} />
+              : <div style={{ width: 144, height: 144, background: 'rgba(0,0,0,0.05)', borderRadius: 4 }} />
+            }
+          </div>
+        </div>
         <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.1rem', marginTop: 16 }}>
           {t('display.scan_checkin')}
         </p>
@@ -332,42 +352,3 @@ function ClosedDisplay({ meeting }) {
   )
 }
 
-function QRPlaceholder() {
-  // Stable QR-like placeholder (no random)
-  const cells = []
-  const size = 9
-  const pattern = [
-    [1,1,1,1,1,1,1,0,1],
-    [1,0,0,0,0,0,1,0,0],
-    [1,0,1,1,1,0,1,0,1],
-    [1,0,1,1,1,0,1,0,0],
-    [1,0,1,1,1,0,1,0,1],
-    [1,0,0,0,0,0,1,0,1],
-    [1,1,1,1,1,1,1,0,0],
-    [0,0,0,1,0,0,0,1,0],
-    [1,0,1,0,1,1,0,0,1],
-  ]
-  for (let r = 0; r < size; r++) {
-    for (let c = 0; c < size; c++) {
-      const filled = pattern[r]?.[c] === 1
-      cells.push(
-        <rect key={`${r}-${c}`} x={c * 16} y={r * 16} width={14} height={14} rx={2}
-          fill={filled ? 'white' : 'transparent'} opacity={filled ? 1 : 0} />
-      )
-    }
-  }
-
-  return (
-    <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-      <div style={{
-        background: 'white', padding: 16, borderRadius: 12,
-        boxShadow: '0 0 40px rgba(196,98,45,0.3)',
-      }}>
-        <svg width={144} height={144} viewBox={`0 0 ${size * 16} ${size * 16}`} style={{ display: 'block' }}>
-          <rect width={size * 16} height={size * 16} fill="white" />
-          {cells}
-        </svg>
-      </div>
-    </div>
-  )
-}

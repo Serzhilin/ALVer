@@ -1,4 +1,5 @@
 import { AppDataSource } from "../database/data-source";
+import { ILike } from "typeorm";
 import { Attendee } from "../database/entities/Attendee";
 import { Meeting } from "../database/entities/Meeting";
 import { Member } from "../database/entities/Member";
@@ -43,13 +44,21 @@ export class AttendeeService {
     }
 
     async checkIn(meetingId: string, name: string, method: "app" | "manual" = "app", note?: string): Promise<Attendee> {
+        // BUG-2: validate meeting is accepting check-ins
+        const meeting = await this.meetingRepo.findOneBy({ id: meetingId });
+        if (!meeting) throw new Error("Meeting not found");
+        if (meeting.status === "draft" || meeting.status === "archived") {
+            throw new Error("Check-in is not available for this meeting");
+        }
+
         const member = await this.resolveMember(meetingId, name);
         if (member === undefined) {
             throw new Error("not_a_member");
         }
 
+        // BUG-1: case-insensitive duplicate check
         let attendee = await this.repo.findOne({
-            where: { meeting_id: meetingId, attendee_name: name },
+            where: { meeting_id: meetingId, attendee_name: ILike(name) },
         });
 
         if (attendee && attendee.status === "checked_in") return attendee;
@@ -105,5 +114,9 @@ export class AttendeeService {
     async update(attendeeId: string, data: Partial<Attendee>): Promise<Attendee> {
         await this.repo.update(attendeeId, data);
         return this.repo.findOneByOrFail({ id: attendeeId });
+    }
+
+    async delete(attendeeId: string): Promise<void> {
+        await this.repo.delete(attendeeId);
     }
 }

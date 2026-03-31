@@ -65,6 +65,7 @@ export const getAttendees = (id) => req('GET', `/meetings/${id}/attendees`)
 export const preRegister = (id, name) => req('POST', `/meetings/${id}/attendees`, { name })
 export const checkIn = (id, name) => req('POST', `/meetings/${id}/attendees/checkin`, { name })
 export const manualAdd = (id, name, note) => req('POST', `/meetings/${id}/attendees/manual`, { name, note })
+export const deleteAttendee = (meetingId, attendeeId) => req('DELETE', `/meetings/${meetingId}/attendees/${attendeeId}`)
 
 // ── Mandates ──────────────────────────────────────────────────────────────────
 export const getMandates = (id) => req('GET', `/meetings/${id}/mandates`)
@@ -90,13 +91,12 @@ export const hasVoted = (pollId, voterName, onBehalfOf) => {
 }
 
 // ── SSE ───────────────────────────────────────────────────────────────────────
-export function subscribeToMeeting(meetingId, onEvent) {
+export function subscribeToMeeting(meetingId, onEvent, { onDisconnect, onReconnect } = {}) {
   const es = new EventSource(`${BASE}/meetings/${meetingId}/stream`)
+  es.onopen = () => { onReconnect?.() }
   es.onmessage = (e) => {
     try { onEvent(JSON.parse(e.data)) } catch {}
   }
-  es.onerror = () => {
-    // Browser auto-reconnects; nothing to do here
-  }
+  es.onerror = () => { onDisconnect?.() }
   return () => es.close()
 }

@@ -75,9 +75,9 @@ function buildResult(p) {
     if (opt) tally[opt.label] = (tally[opt.label] || 0) + 1
   }
   const maxVotes = Math.max(...Object.values(tally))
-  const winner = Object.entries(tally).find(([, count]) => count === maxVotes)?.[0]
-  const aangenomen = winner === 'Voor' || winner === 'Ja'
-  return { tally, winner, aangenomen }
+  const winners = Object.entries(tally).filter(([, count]) => count === maxVotes)
+  const aangenomen = winners.length === 1 && (winners[0][0] === 'Voor' || winners[0][0] === 'Ja')
+  return { tally, winner: winners.length === 1 ? winners[0][0] : null, aangenomen }
 }
 
 // ── Provider ──────────────────────────────────────────────────────────────────
@@ -85,13 +85,19 @@ export function MeetingProvider({ children }) {
   const [raw, setRaw] = useState(null)       // raw API response
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [sseConnected, setSseConnected] = useState(true)
   const meetingId = useRef(null)
   const unsubRef = useRef(null)
 
   // Compute derived shape
   const meeting = adaptMeeting(raw)
   const activePoll = meeting ? (meeting.polls || []).find(p => p.id === meeting.activePollId) || null : null
-  const attendeeCount = meeting ? meeting.checkedIn.filter(c => !c.isAspirant).length + meeting.confirmedMandates.length : 0
+  // Voting units = present non-aspirants + mandates whose granter is NOT also present.
+  // If a granter shows up and forgets to revoke their mandate, we must not count them twice.
+  const checkedInNonAspirants = meeting ? meeting.checkedIn.filter(c => !c.isAspirant) : []
+  const checkedInNames = new Set(checkedInNonAspirants.map(c => c.name.toLowerCase()))
+  const unbodiedMandates = meeting ? meeting.confirmedMandates.filter(m => !checkedInNames.has(m.from.toLowerCase())) : []
+  const attendeeCount = checkedInNonAspirants.length + unbodiedMandates.length
 
   // ── Load meeting ────────────────────────────────────────────────────────────
   const load = useCallback(async (id) => {
@@ -121,6 +127,9 @@ export function MeetingProvider({ children }) {
     unsubRef.current = api.subscribeToMeeting(id, (event) => {
       // Refresh full meeting state on any event
       load(id)
+    }, {
+      onDisconnect: () => setSseConnected(false),
+      onReconnect: () => setSseConnected(true),
     })
   }, [load])
 
@@ -219,9 +228,9 @@ export function MeetingProvider({ children }) {
     }
   }
 
-  const resetToDefault = async () => {
-    // No-op in real app — seed script handles this
-    alert('Reset: run `npm run db:seed` in the terminal to reset to demo data.')
+  const removeAttendee = async (attendeeId) => {
+    await api.deleteAttendee(meetingId.current, attendeeId)
+    await load(meetingId.current)
   }
 
   return (
@@ -229,6 +238,7 @@ export function MeetingProvider({ children }) {
       meeting,
       activePoll,
       attendeeCount,
+      sseConnected,
       loading,
       error,
       setMeetingId,
@@ -244,7 +254,7 @@ export function MeetingProvider({ children }) {
       checkIn,
       addMandate,
       revokeMandate,
-      resetToDefault,
+      removeAttendee,
     }}>
       {children}
     </MeetingContext.Provider>

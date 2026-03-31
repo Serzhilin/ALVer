@@ -15,10 +15,11 @@ function buildName(date) {
  *   onSave(meeting) — called with saved meeting
  *   onClose()
  */
-export default function MeetingFormModal({ meeting, communityId, communityLocations, onSave, onClose }) {
+export default function MeetingFormModal({ meeting, communityId, communityLocations, facilitatorMembers, onSave, onClose }) {
   const { t } = useTranslation()
   const isEdit = !!meeting
   const locations = communityLocations || []
+  const facilitators = facilitatorMembers || []
   const defaultLocation = locations.find(l => l.isDefault)?.name ?? locations[0]?.name ?? ''
 
   const [form, setForm] = useState({
@@ -26,6 +27,8 @@ export default function MeetingFormModal({ meeting, communityId, communityLocati
     time: meeting?.time ?? '',
     location: meeting?.location ?? defaultLocation,
     agenda_text: meeting?.agenda_text ?? meeting?.agenda ?? '',
+    facilitator_ename: meeting?.facilitator_ename ?? '',
+    facilitator_name: meeting?.facilitator_name ?? '',
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
@@ -50,7 +53,13 @@ export default function MeetingFormModal({ meeting, communityId, communityLocati
     setSaving(true)
     setError(null)
     try {
-      const payload = { ...form, name: buildName(form.date), community_id: communityId }
+      const payload = {
+        ...form,
+        name: buildName(form.date),
+        community_id: communityId,
+        facilitator_ename: form.facilitator_ename || undefined,
+        facilitator_name: form.facilitator_name || undefined,
+      }
       let saved
       if (isEdit) {
         saved = await updateMeeting(meeting.id, payload)
@@ -112,6 +121,26 @@ export default function MeetingFormModal({ meeting, communityId, communityLocati
               onChange={v => set('agenda_text', v)}
             />
           </div>
+
+          {facilitators.length > 0 && (
+            <div>
+              <label>{t('dashboard.meeting_facilitator')}</label>
+              <select
+                className="input"
+                value={form.facilitator_ename}
+                onChange={e => {
+                  const selected = facilitators.find(m => m.ename === e.target.value)
+                  set('facilitator_ename', e.target.value)
+                  set('facilitator_name', selected?.name ?? '')
+                }}
+              >
+                <option value="">—</option>
+                {facilitators.map(m => (
+                  <option key={m.id} value={m.ename ?? m.id}>{m.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         {error && (

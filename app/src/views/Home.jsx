@@ -6,11 +6,9 @@ import { useUser } from '../context/UserContext'
 import { useCommunity } from '../context/CommunityContext'
 import LoginScreen from '../components/LoginScreen'
 import MeetingFormModal from '../components/MeetingFormModal'
-import SettingsModal from '../components/SettingsModal'
-import MembersModal from '../components/MembersModal'
+import FacilitatorHeader from '../components/FacilitatorHeader'
 import AppHeader from '../components/AppHeader'
 
-const FACILITATOR_ENAME = import.meta.env.VITE_FACILITATOR_ENAME
 const CURRENT_STATUSES  = ['in_session', 'open']
 const UPCOMING_STATUSES = ['draft']
 const ARCHIVE_STATUSES  = ['archived']
@@ -27,17 +25,14 @@ function lookupLocation(name, communityLocations) {
 export default function Home() {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
-  const { user, loading: authLoading, login, logout } = useUser()
-  const { community } = useCommunity() || {}
+  const { user, isFacilitator, loading: authLoading, login, logout } = useUser()
+  const { community, members } = useCommunity() || {}
+  const facilitatorMembers = (members || []).filter(m => m.is_facilitator)
   const [meetings, setMeetings] = useState([])
   const [meetingsLoading, setMeetingsLoading] = useState(false)
   const [error, setError] = useState(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingMeeting, setEditingMeeting] = useState(null)
-  const [showSettings, setShowSettings] = useState(false)
-  const [showMembers, setShowMembers] = useState(false)
-
-  const isFacilitator = user?.ename === FACILITATOR_ENAME
   const dateLocale = i18n.language === 'nl' ? 'nl-NL' : 'en-GB'
 
   function loadMeetings() {
@@ -72,6 +67,12 @@ export default function Home() {
           <div className="card" style={{ padding: 28 }}>
             <LoginScreen onSuccess={login} nameOption={false} />
           </div>
+          <p style={{ textAlign: 'center', marginTop: 20, fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>
+            {t('home.facilitator_hint')}{' '}
+            <a href="/facilitator-login" style={{ color: 'var(--color-terracotta)', textDecoration: 'none', fontWeight: 500 }}>
+              {t('home.facilitator_link')}
+            </a>
+          </p>
         </div>
       </div>
     )
@@ -141,6 +142,11 @@ export default function Home() {
                   <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: '0.9rem', color: 'var(--color-charcoal-light)' }}>
                     <span>🕐</span><span>{currentMeeting.time}</span>
                   </div>
+                  {currentMeeting.facilitator_name && (
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: '0.9rem', color: 'var(--color-charcoal-light)' }}>
+                      <span>🎙️</span><span>{t('dashboard.meeting_facilitator')}: {currentMeeting.facilitator_name}</span>
+                    </div>
+                  )}
                   <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: '0.9rem', color: 'var(--color-charcoal-light)' }}>
                     <span>📍</span>
                     <span>
@@ -219,15 +225,7 @@ export default function Home() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-cream)' }}>
-      <AppHeader
-        logo={community?.logo_url}
-        title={`ALVer${!community?.logo_url && community?.name ? ` — ${community.name}` : ''}`}
-        user={user}
-        isFacilitator={isFacilitator}
-        onMembers={() => setShowMembers(true)}
-        onSettings={() => setShowSettings(true)}
-        onLogout={logout}
-      />
+      <FacilitatorHeader />
 
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '40px 24px' }}>
         {error && (
@@ -340,12 +338,11 @@ export default function Home() {
           meeting={editingMeeting}
           communityId={community?.id}
           communityLocations={community?.locations}
+          facilitatorMembers={facilitatorMembers}
           onSave={saved => saved ? handleSaved() : handleDeleted()}
           onClose={() => { setShowCreateModal(false); setEditingMeeting(null) }}
         />
       )}
-      {showMembers && <MembersModal onClose={() => setShowMembers(false)} />}
-      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </div>
   )
 }

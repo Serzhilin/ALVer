@@ -154,7 +154,8 @@ export async function getMe(req: Request, res: Response) {
     const user = await findById(userId);
     if (!user) { res.status(404).json({ error: "User not found" }); return; }
     const cs = new CommunityService();
-    const community = ename ? await cs.findByFacilitatorEname(ename) : null;
+    let community = ename ? await cs.findByFacilitatorEname(ename) : null;
+    if (!community && ename) community = await cs.findByMemberEname(ename);
     const member = (community && ename) ? await cs.findMemberByEname(community.id, ename) : null;
-    res.json({ ...serializeUser(user), community, member });
+    res.json({ ...serializeUser(user), community, member, isFacilitator: member?.is_facilitator ?? false });
 }

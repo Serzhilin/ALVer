@@ -39,8 +39,10 @@ export class MeetingService {
 
         // Auto-archive meetings whose date has passed and are still open/in_session
         const today = new Date().toISOString().slice(0, 10);
+        // Only auto-archive announced (open) meetings from past dates.
+        // in_session meetings must be explicitly closed by the facilitator.
         const stale = meetings.filter(
-            m => (m.status === "open" || m.status === "in_session") && m.date < today
+            m => m.status === "open" && m.date < today
         );
         if (stale.length > 0) {
             await Promise.all(stale.map(m => this.repo.update(m.id, { status: "archived" })));
@@ -104,9 +106,10 @@ export class MeetingService {
     private isValidTransition(from: MeetingStatus, to: MeetingStatus): boolean {
         const allowed: Record<MeetingStatus, MeetingStatus[]> = {
             draft: ["open"],
-            open: ["in_session", "draft"],
+            open: ["in_session"],
             in_session: ["archived"],
             archived: [],
+            closed: [],
         };
         return allowed[from]?.includes(to) ?? false;
     }

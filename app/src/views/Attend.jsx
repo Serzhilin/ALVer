@@ -9,7 +9,7 @@ import AppHeader from '../components/AppHeader'
 
 export default function Attend() {
   const { id } = useParams()
-  const { meeting, activePoll, attendeeCount, checkIn, castVote, setMeetingId } = useMeeting()
+  const { meeting, activePoll, attendeeCount, sseConnected, checkIn, castVote, setMeetingId } = useMeeting()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
   const { user, login, logout } = useUser()
@@ -31,19 +31,24 @@ export default function Attend() {
     const name = (user.firstName && user.lastName)
       ? `${user.firstName} ${user.lastName}`
       : user.displayName
+    // Clear any stale localStorage name so Effect 1 can't race with us
+    localStorage.removeItem('alver_my_name')
     const found = meeting.checkedIn.find(c => c.name.toLowerCase() === name.toLowerCase())
     if (found) {
       setMyName(name)
       setCheckedIn(true)
     } else {
       const g = getGreeting(name)
-      checkIn(name).catch(err => console.warn('Auto check-in failed:', err))
       setMyName(name)
-      localStorage.setItem('alver_my_name', name)
-      setCheckedIn(true)
-      setGreeting(g)
-      setShowGreeting(true)
-      setTimeout(() => setShowGreeting(false), 3000)
+      checkIn(name)
+        .then(() => {
+          localStorage.setItem('alver_my_name', name)
+          setCheckedIn(true)
+          setGreeting(g)
+          setShowGreeting(true)
+          setTimeout(() => setShowGreeting(false), 3000)
+        })
+        .catch(err => console.warn('Auto check-in failed:', err))
     }
   }, [user, meeting])
 
@@ -75,7 +80,7 @@ export default function Attend() {
   }
 
   function handleVote(pollId, option, isMandate = false) {
-    castVote(pollId, myName + (isMandate ? '_proxy' : ''), option, isMandate, myMandate?.from)
+    castVote(pollId, myName, option, isMandate, myMandate?.from)
     setVotedPolls(prev => ({
       ...prev,
       [pollId]: isMandate ? { ...prev[pollId], mandate: option } : { ...prev[pollId], own: option }
@@ -234,6 +239,11 @@ export default function Attend() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', flexDirection: 'column' }}>
       {greetingFlash}
+      {!sseConnected && (
+        <div style={{ background: '#f59e0b', color: 'white', textAlign: 'center', padding: '6px 16px', fontSize: '0.82rem', fontWeight: 500 }}>
+          {t('common.reconnecting')}
+        </div>
+      )}
 
       <AppHeader
         title={meeting.name}
