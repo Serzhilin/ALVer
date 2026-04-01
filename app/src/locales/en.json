@@ -43,7 +43,9 @@
     "facilitator_link": "Facilitator login →",
     "btn_attend": "Enter meeting",
     "btn_ill_come": "🙋 I'll come",
-    "btn_mandate": "📜 Can't come, mandate"
+    "btn_mandate": "📜 Can't come, mandate",
+    "btn_modify": "✏️ Modify registration",
+    "preregistered_status": "Pre-registered: {{name}}"
   },
   "facilitate": {
     "phase_label": "Phase",

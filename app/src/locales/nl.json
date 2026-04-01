@@ -43,7 +43,9 @@
     "facilitator_link": "Facilitator login →",
     "btn_attend": "Vergadering bijwonen",
     "btn_ill_come": "🙋 Ik kom",
-    "btn_mandate": "📜 Ik kom niet, mandaat"
+    "btn_mandate": "📜 Ik kom niet, mandaat",
+    "btn_modify": "✏️ Aanmelding wijzigen",
+    "preregistered_status": "Vooraf aangemeld: {{name}}"
   },
   "facilitate": {
     "phase_label": "Fase",

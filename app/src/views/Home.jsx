@@ -93,6 +93,13 @@ export default function Home() {
       : null
     const isLive = currentMeeting?.status === 'in_session'
 
+    // Check localStorage for pre-registration state
+    const CHECKIN_KEY = currentMeeting ? `alver_checkin_${currentMeeting.id}` : null
+    const preRegStored = CHECKIN_KEY ? (() => {
+      try { const s = localStorage.getItem(CHECKIN_KEY); return s ? JSON.parse(s) : null } catch { return null }
+    })() : null
+    const isPreRegistered = preRegStored?.type === 'attend'
+
     return (
       <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', flexDirection: 'column' }}>
         <AppHeader
@@ -163,24 +170,44 @@ export default function Home() {
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <button
-                    className="btn-primary"
-                    style={{ width: '100%', justifyContent: 'center', fontSize: '1rem', padding: '16px' }}
-                    onClick={() => navigate(isLive
-                      ? `/meeting/${currentMeeting.id}/attend`
-                      : `/meeting/${currentMeeting.id}/register?mode=attend`
-                    )}
-                  >
-                    {isLive ? t('home.btn_attend') : t('home.btn_ill_come')}
-                  </button>
-                  {!isLive && (
+                  {isLive ? (
                     <button
-                      className="btn-secondary"
-                      style={{ width: '100%', justifyContent: 'center', fontSize: '0.9rem' }}
-                      onClick={() => navigate(`/meeting/${currentMeeting.id}/register?mode=mandate`)}
+                      className="btn-primary"
+                      style={{ width: '100%', justifyContent: 'center', fontSize: '1rem', padding: '16px' }}
+                      onClick={() => navigate(`/meeting/${currentMeeting.id}/attend`)}
                     >
-                      {t('home.btn_mandate')}
+                      {t('home.btn_attend')}
                     </button>
+                  ) : isPreRegistered ? (
+                    <>
+                      <div style={{ padding: '12px 16px', background: 'rgba(45,122,74,0.08)', border: '1.5px solid rgba(45,122,74,0.3)', borderRadius: 10, fontSize: '0.88rem', color: 'var(--color-green)', fontWeight: 500, textAlign: 'center' }}>
+                        🙋 {t('home.preregistered_status', { name: preRegStored.name })}
+                      </div>
+                      <button
+                        className="btn-secondary"
+                        style={{ width: '100%', justifyContent: 'center', fontSize: '0.9rem' }}
+                        onClick={() => navigate(`/meeting/${currentMeeting.id}/register`)}
+                      >
+                        {t('home.btn_modify')}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        className="btn-primary"
+                        style={{ width: '100%', justifyContent: 'center', fontSize: '1rem', padding: '16px' }}
+                        onClick={() => navigate(`/meeting/${currentMeeting.id}/register?mode=attend`)}
+                      >
+                        {t('home.btn_ill_come')}
+                      </button>
+                      <button
+                        className="btn-secondary"
+                        style={{ width: '100%', justifyContent: 'center', fontSize: '0.9rem' }}
+                        onClick={() => navigate(`/meeting/${currentMeeting.id}/register?mode=mandate`)}
+                      >
+                        {t('home.btn_mandate')}
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
