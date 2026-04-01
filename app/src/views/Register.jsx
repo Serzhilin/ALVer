@@ -62,6 +62,7 @@ export default function Register() {
   }
 
   function handleCannotCome() {
+    localStorage.removeItem(CHECKIN_KEY)
     setDone({ type: 'decline' })
   }
 
@@ -71,6 +72,17 @@ export default function Register() {
     setDone({ type: 'mandate', name: from, proxy: proxyName })
   }
 
+  // Modify: show options again but keep localStorage so Back still shows pre-reg status
+  function modify() {
+    setMode(null)
+    setStep(1)
+    setName('')
+    setProxyName('')
+    setNote('')
+    setDone(null)
+  }
+
+  // Full reset: clears localStorage — used only when user makes a new explicit choice
   function reset() {
     localStorage.removeItem(CHECKIN_KEY)
     setMode(null)
@@ -116,7 +128,7 @@ export default function Register() {
             </>
           )}
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button className="btn-secondary" onClick={reset}>{t('register.modify_cancel')}</button>
+            <button className="btn-secondary" onClick={modify}>{t('register.modify_cancel')}</button>
           </div>
         </div>
       </div>
