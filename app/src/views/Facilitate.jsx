@@ -203,27 +203,26 @@ export default function Facilitate() {
                 <span className="badge badge-green">{meeting.checkedIn.length}</span>
               </div>
 
-              {/* Expected but not yet checked in */}
-              {meeting.preRegistrations
-                .filter(pr => pr.type === 'attending' && !meeting.checkedIn.some(c => c.name.toLowerCase() === pr.name.toLowerCase()))
-                .length > 0 && (
-                <div style={{ marginBottom: 12 }}>
-                  <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
-                    {t('facilitate.expected')}
-                  </div>
-                  {meeting.preRegistrations
-                    .filter(pr => pr.type === 'attending' && !meeting.checkedIn.some(c => c.name.toLowerCase() === pr.name.toLowerCase()))
-                    .map(pr => (
+              {/* Pre-registered but not yet checked in */}
+              {(() => {
+                const pending = meeting.preRegistrations.filter(pr => !meeting.checkedIn.some(c => c.name.toLowerCase() === pr.name.toLowerCase()))
+                if (pending.length === 0) return null
+                return (
+                  <div style={{ marginBottom: 12 }}>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span>{t('facilitate.expected')}</span>
+                      <span className="badge badge-gray">{pending.length}</span>
+                    </div>
+                    {pending.map(pr => (
                       <div key={pr.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--color-sand)' }}>
-                        <span style={{ fontSize: '0.88rem', color: 'var(--color-charcoal-light)' }}>
-                          {pr.name}
-                        </span>
+                        <span style={{ fontSize: '0.88rem', color: 'var(--color-charcoal-light)' }}>{pr.name}</span>
                         <span className="badge badge-gray">{t('facilitate.expected_badge')}</span>
                       </div>
                     ))}
-                  <hr className="divider" />
-                </div>
-              )}
+                    <hr className="divider" />
+                  </div>
+                )
+              })()}
 
               {/* Checked in */}
               <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>

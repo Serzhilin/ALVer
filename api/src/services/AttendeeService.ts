@@ -40,7 +40,9 @@ export class AttendeeService {
             pre_registered_at: new Date(),
             method: "app",
         });
-        return this.repo.save(attendee);
+        const saved = await this.repo.save(attendee);
+        sseService.emit(meetingId, "attendee_pre_registered", { meetingId, name });
+        return saved;
     }
 
     async checkIn(meetingId: string, name: string, method: "app" | "manual" = "app", note?: string): Promise<Attendee> {

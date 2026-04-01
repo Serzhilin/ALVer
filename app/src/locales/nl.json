@@ -131,7 +131,9 @@
     "save_placeholder": "💾 Sla op (binnenkort)",
     "your_vote_history": "Jouw stem:",
     "aspirant_notice": "Je bent aspirant-lid — je kunt de vergadering bijwonen maar niet stemmen.",
-    "aspirant_no_vote": "Als aspirant-lid kun je niet deelnemen aan deze stemming."
+    "aspirant_no_vote": "Als aspirant-lid kun je niet deelnemen aan deze stemming.",
+    "preregistered_welcome": "Welkom {{name}}! Je hebt je vooraf aangemeld voor deze vergadering.",
+    "not_you": "Niet jij? Voer een andere naam in"
   },
   "register": {
     "header": "🏛️ ALVer — Aanmelding",
@@ -155,10 +157,16 @@
     "sign_confirm": "Ondertekenen & bevestigen",
     "modify_cancel": "Wijzigen / Annuleren",
     "to_meeting": "Naar vergadering →",
+    "preregistered_title": "Je staat op de lijst!",
+    "preregistered_hint": "{{name}} is vooraf aangemeld. Check in aan de deur om {{time}} in {{location}}.",
+    "decline_title": "Kan niet komen",
+    "decline_hint": "Begrepen — je bent afwezig bij deze vergadering.",
     "registered_title": "Je bent aangemeld!",
     "registered_hint": "{{name}} staat op de lijst. Tot {{time}} in {{location}}.",
     "mandate_confirmed_title": "Mandaat bevestigd",
-    "mandate_confirmed_hint": "{{name}} geeft mandaat aan {{proxy}}."
+    "mandate_confirmed_hint": "{{name}} geeft mandaat aan {{proxy}}.",
+    "decline_card_title": "Ik kom niet",
+    "decline_card_hint": "Ik ben afwezig, geen mandaat nodig"
   },
   "display": {
     "scan_checkin": "Scan om in te checken",

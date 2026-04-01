@@ -131,7 +131,9 @@
     "save_placeholder": "💾 Save (coming soon)",
     "your_vote_history": "Your vote:",
     "aspirant_notice": "You are an aspirant member — you can attend but not vote.",
-    "aspirant_no_vote": "As an aspirant member you cannot vote in this poll."
+    "aspirant_no_vote": "As an aspirant member you cannot vote in this poll.",
+    "preregistered_welcome": "Welcome {{name}}! You pre-registered for this meeting.",
+    "not_you": "Not you? Enter a different name"
   },
   "register": {
     "header": "🏛️ ALVer — Registration",
@@ -155,10 +157,16 @@
     "sign_confirm": "Sign & confirm",
     "modify_cancel": "Modify / Cancel",
     "to_meeting": "Go to meeting →",
+    "preregistered_title": "You're on the list!",
+    "preregistered_hint": "{{name}} is pre-registered. Check in at the door on {{time}} in {{location}}.",
+    "decline_title": "Can't make it",
+    "decline_hint": "Got it — you won't be attending this meeting.",
     "registered_title": "You are registered!",
     "registered_hint": "{{name}} is on the list. See you at {{time}} in {{location}}.",
     "mandate_confirmed_title": "Mandate confirmed",
-    "mandate_confirmed_hint": "{{name}} gives mandate to {{proxy}}."
+    "mandate_confirmed_hint": "{{name}} gives mandate to {{proxy}}.",
+    "decline_card_title": "I cannot come",
+    "decline_card_hint": "I won't be attending, no mandate needed"
   },
   "display": {
     "scan_checkin": "Scan to check in",

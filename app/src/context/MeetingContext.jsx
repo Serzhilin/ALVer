@@ -43,10 +43,9 @@ function adaptMeeting(m) {
         ? new Date(mn.granted_at).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
         : '',
     })),
-    preRegistrations: (m.attendees || []).map(a => ({
+    preRegistrations: (m.attendees || []).filter(a => a.status === 'expected').map(a => ({
       id: a.id,
       name: a.attendee_name,
-      type: 'attending',
     })),
     polls: (m.polls || []).map(adaptPoll),
     activePollId: activePoll?.id || null,
@@ -211,6 +210,11 @@ export function MeetingProvider({ children }) {
     await load(meetingId.current)
   }
 
+  const preRegister = async (name) => {
+    await api.preRegister(meetingId.current, name)
+    await load(meetingId.current)
+  }
+
   const addMandate = async (from, to, note = '') => {
     await api.createMandate(meetingId.current, {
       granter_name: from,
@@ -252,6 +256,7 @@ export function MeetingProvider({ children }) {
       castVote: castVoteAction,
       addManualVote,
       checkIn,
+      preRegister,
       addMandate,
       revokeMandate,
       removeAttendee,

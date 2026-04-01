@@ -9,7 +9,7 @@ import AppHeader from '../components/AppHeader'
 
 export default function Register() {
   const { id } = useParams()
-  const { meeting, checkIn, addMandate, revokeMandate, setMeetingId } = useMeeting()
+  const { meeting, checkIn, preRegister, addMandate, revokeMandate, setMeetingId } = useMeeting()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
   const { user, login } = useUser()
@@ -35,11 +35,11 @@ export default function Register() {
     catch { return null }
   })
 
-  // Auto-submit attend when arriving via ?mode=attend and user is already known
+  // Auto-submit pre-registration when arriving via ?mode=attend and user is already known
   useEffect(() => {
     const effectiveName = user?.displayName || name
     if (mode === 'attend' && meeting && !done && effectiveName) {
-      checkIn(effectiveName)
+      preRegister(effectiveName).catch(() => {})
       const doneData = { type: 'attend', name: effectiveName }
       localStorage.setItem(CHECKIN_KEY, JSON.stringify(doneData))
       setDone(doneData)
@@ -55,10 +55,14 @@ export default function Register() {
   function handleAttendSubmit(overrideName) {
     const effectiveName = overrideName || name || user?.displayName || ''
     if (!effectiveName) return
-    checkIn(effectiveName)
+    preRegister(effectiveName).catch(() => {})
     const doneData = { type: 'attend', name: effectiveName }
     localStorage.setItem(CHECKIN_KEY, JSON.stringify(doneData))
     setDone(doneData)
+  }
+
+  function handleCannotCome() {
+    setDone({ type: 'decline' })
   }
 
   function handleMandateSubmit() {
@@ -87,13 +91,20 @@ export default function Register() {
       <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <div className="card animate-scale-in" style={{ padding: 40, maxWidth: 440, width: '100%', textAlign: 'center' }}>
           <div style={{ fontSize: '3rem', marginBottom: 16 }}>
-            {done.type === 'attend' ? '✅' : '📝'}
+            {done.type === 'attend' ? '🙋' : done.type === 'decline' ? '👋' : '📝'}
           </div>
           {done.type === 'attend' ? (
             <>
-              <h2 style={{ margin: '0 0 10px' }}>{t('register.registered_title')}</h2>
+              <h2 style={{ margin: '0 0 10px' }}>{t('register.preregistered_title')}</h2>
               <p style={{ color: 'var(--color-charcoal-light)', margin: '0 0 24px' }}>
-                {t('register.registered_hint', { name: done.name, time: meeting.time, location: meeting.location })}
+                {t('register.preregistered_hint', { name: done.name, time: meeting.time, location: meeting.location })}
+              </p>
+            </>
+          ) : done.type === 'decline' ? (
+            <>
+              <h2 style={{ margin: '0 0 10px' }}>{t('register.declined_title')}</h2>
+              <p style={{ color: 'var(--color-charcoal-light)', margin: '0 0 24px' }}>
+                {t('register.declined_hint')}
               </p>
             </>
           ) : (
@@ -106,9 +117,6 @@ export default function Register() {
           )}
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
             <button className="btn-secondary" onClick={reset}>{t('register.modify_cancel')}</button>
-            <button className="btn-primary" onClick={() => navigate(`/meeting/${meeting.id}/attend`)}>
-              {t('register.to_meeting')}
-            </button>
           </div>
         </div>
       </div>
@@ -218,6 +226,20 @@ export default function Register() {
               <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: 4 }}>{t('register.mandate_title')}</div>
               <div style={{ fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>
                 {t('register.mandate_hint')}
+              </div>
+            </button>
+
+            <button
+              className="card"
+              style={{ padding: '20px 24px', textAlign: 'left', cursor: 'pointer', border: '2px solid transparent', transition: 'border-color 0.15s', fontFamily: 'Inter, sans-serif' }}
+              onClick={handleCannotCome}
+              onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--color-charcoal-light)'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
+            >
+              <div style={{ fontSize: '1.5rem', marginBottom: 6 }}>👋</div>
+              <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: 4 }}>{t('register.decline_card_title')}</div>
+              <div style={{ fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>
+                {t('register.decline_card_hint')}
               </div>
             </button>
           </div>

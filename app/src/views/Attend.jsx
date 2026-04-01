@@ -52,8 +52,8 @@ export default function Attend() {
     }
   }, [user, meeting])
 
-  // Check if already in the list (name-based, no eID).
-  // Also clears a stale localStorage name if it doesn't appear in this meeting at all.
+  // Check if already checked in (name-based, no eID).
+  // Also pre-fills name from pre-registration and clears stale localStorage.
   useEffect(() => {
     if (!meeting || !myName || user) return
     const found = meeting.checkedIn.find(c => c.name.toLowerCase() === myName.toLowerCase())
@@ -65,6 +65,9 @@ export default function Attend() {
       setMyName('')
     }
   }, [myName, meeting?.checkedIn])
+
+  // Pre-fill name input from pre-registration record
+  const myPreReg = meeting ? meeting.preRegistrations.find(p => p.name.toLowerCase() === (myName || nameInput).toLowerCase()) : null
 
   function handleCheckIn() {
     const name = nameInput.trim()
@@ -173,26 +176,62 @@ export default function Attend() {
               <h2 style={{ margin: '0 0 20px', fontSize: '1.2rem', fontFamily: 'Inter, sans-serif', fontWeight: 600 }}>
                 {t('attend.check_in_title')}
               </h2>
-              <p style={{ margin: '0 0 20px', color: 'var(--color-charcoal-light)', fontSize: '0.88rem' }}>
-                {t('attend.check_in_hint')}
-              </p>
 
-              <label style={{ marginBottom: 6, fontSize: '0.82rem', fontWeight: 600, color: 'var(--color-charcoal)' }}>
-                {t('attend.your_name')}
-              </label>
-              <input
-                className="input"
-                autoFocus
-                style={{ fontSize: '1rem', padding: '14px 16px', marginBottom: 16 }}
-                value={nameInput}
-                onChange={e => setNameInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleCheckIn()}
-                placeholder={t('common.fullname_placeholder')}
-              />
+              {/* Pre-registered shortcut — one-tap check-in */}
+              {myPreReg && !myName && (
+                <div style={{ marginBottom: 20, padding: '16px 20px', background: 'rgba(45,122,74,0.07)', border: '1.5px solid rgba(45,122,74,0.25)', borderRadius: 12 }}>
+                  <p style={{ margin: '0 0 12px', fontSize: '0.88rem', color: 'var(--color-charcoal-light)' }}>
+                    {t('attend.preregistered_welcome', { name: myPreReg.name })}
+                  </p>
+                  <button
+                    className="btn-primary"
+                    style={{ width: '100%', justifyContent: 'center', fontSize: '1rem', padding: '14px' }}
+                    onClick={() => {
+                      setNameInput(myPreReg.name)
+                      setMyName(myPreReg.name)
+                      localStorage.setItem('alver_my_name', myPreReg.name)
+                      const g = getGreeting(myPreReg.name)
+                      checkIn(myPreReg.name).catch(err => console.warn('Check-in failed:', err))
+                      setCheckedIn(true)
+                      setGreeting(g)
+                      setShowGreeting(true)
+                      setTimeout(() => setShowGreeting(false), 3000)
+                    }}
+                  >
+                    {t('attend.check_in_btn')}
+                  </button>
+                  <button
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-charcoal-light)', fontSize: '0.8rem', marginTop: 10, display: 'block', width: '100%', textAlign: 'center' }}
+                    onClick={() => {}}
+                  >
+                    {t('attend.not_you')}
+                  </button>
+                </div>
+              )}
+
+              {(!myPreReg || myName) && (
+                <>
+                  <p style={{ margin: '0 0 20px', color: 'var(--color-charcoal-light)', fontSize: '0.88rem' }}>
+                    {t('attend.check_in_hint')}
+                  </p>
+                  <label style={{ marginBottom: 6, fontSize: '0.82rem', fontWeight: 600, color: 'var(--color-charcoal)' }}>
+                    {t('attend.your_name')}
+                  </label>
+                  <input
+                    className="input"
+                    autoFocus
+                    style={{ fontSize: '1rem', padding: '14px 16px', marginBottom: 16 }}
+                    value={nameInput}
+                    onChange={e => setNameInput(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleCheckIn()}
+                    placeholder={t('common.fullname_placeholder')}
+                  />
+                </>
+              )}
 
               <button
                 className="btn-primary"
-                style={{ width: '100%', justifyContent: 'center', fontSize: '1rem', padding: '16px', marginBottom: 16 }}
+                style={{ width: '100%', justifyContent: 'center', fontSize: '1rem', padding: '16px', marginBottom: 16, display: myPreReg && !myName ? 'none' : undefined }}
                 disabled={!nameInput.trim()}
                 onClick={handleCheckIn}
               >
