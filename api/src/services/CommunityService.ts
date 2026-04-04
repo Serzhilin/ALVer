@@ -6,6 +6,12 @@ export class CommunityService {
     private repo = AppDataSource.getRepository(Community);
     private memberRepo = AppDataSource.getRepository(Member);
 
+    /** Returns branding fields for the single community in this installation */
+    async getFirstBranding(): Promise<Pick<Community, "name" | "logo_url" | "primary_color" | "title_font"> | null> {
+        const c = await this.repo.findOne({ where: {}, select: ["name", "logo_url", "primary_color", "title_font"] });
+        return c ?? null;
+    }
+
     async findByFacilitatorEname(ename: string): Promise<Community | null> {
         return this.repo.findOne({
             where: { facilitator_ename: ename },
@@ -54,7 +60,7 @@ export class CommunityService {
     async findByMemberEname(ename: string): Promise<Community | null> {
         const member = await this.memberRepo.findOne({ where: { ename } });
         if (!member) return null;
-        return this.repo.findOne({ where: { id: member.community_id } });
+        return this.repo.findOne({ where: { id: member.community_id }, relations: ["members"] });
     }
 
     async createMember(communityId: string, data: {

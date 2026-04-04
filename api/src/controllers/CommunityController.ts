@@ -5,6 +5,17 @@ import { Community } from "../database/entities/Community";
 const svc = new CommunityService();
 
 export class CommunityController {
+    /** GET /api/community/branding — public; returns logo, colour, font for unauthenticated views */
+    getBranding = async (_req: Request, res: Response) => {
+        try {
+            const branding = await svc.getFirstBranding();
+            if (!branding) return res.status(404).json({ error: "No community configured" });
+            res.json(branding);
+        } catch (e: any) {
+            res.status(500).json({ error: e.message });
+        }
+    };
+
     /** GET /api/community — returns the user's community (facilitator or member) */
     get = async (req: Request, res: Response) => {
         try {

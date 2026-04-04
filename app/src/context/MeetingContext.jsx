@@ -61,6 +61,7 @@ function adaptPoll(p) {
     _optionIds: (p.vote_options || []).map(o => o.id),
     votes: Object.fromEntries((p.votes || []).filter(v => !v.on_behalf_of_name).map(v => [v.voter_name, v.option_id])),
     manualVotes: (p.votes || []).filter(v => v.method === 'manual').map(v => ({ id: v.id, option: v.option_id, name: v.voter_name })),
+    onBehalfVoters: new Set((p.votes || []).filter(v => v.on_behalf_of_name).map(v => v.on_behalf_of_name)),
     result: p.status === 'closed' ? buildResult(p) : null,
     closedAt: p.closed_at ? new Date(p.closed_at).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }) : null,
   }
@@ -95,7 +96,11 @@ export function MeetingProvider({ children }) {
   // If a granter shows up and forgets to revoke their mandate, we must not count them twice.
   const checkedInNonAspirants = meeting ? meeting.checkedIn.filter(c => !c.isAspirant) : []
   const checkedInNames = new Set(checkedInNonAspirants.map(c => c.name.toLowerCase()))
-  const unbodiedMandates = meeting ? meeting.confirmedMandates.filter(m => !checkedInNames.has(m.from.toLowerCase())) : []
+  // A mandate counts as an eligible vote only when the granter is absent AND the proxy has checked in
+  const unbodiedMandates = meeting ? meeting.confirmedMandates.filter(m =>
+    !checkedInNames.has(m.from.toLowerCase()) &&
+    checkedInNames.has(m.to.toLowerCase())
+  ) : []
   const attendeeCount = checkedInNonAspirants.length + unbodiedMandates.length
 
   // ── Load meeting ────────────────────────────────────────────────────────────
@@ -132,7 +137,10 @@ export function MeetingProvider({ children }) {
     })
   }, [load])
 
-  useEffect(() => () => { if (unsubRef.current) unsubRef.current() }, [])
+  useEffect(() => () => {
+    if (unsubRef.current) { unsubRef.current(); unsubRef.current = null }
+    meetingId.current = null  // Reset so StrictMode remount (or hot reload) can re-subscribe
+  }, [])
 
   // ── Actions ─────────────────────────────────────────────────────────────────
   const updatePhase = async (status) => {
@@ -192,12 +200,14 @@ export function MeetingProvider({ children }) {
     await load(meetingId.current)
   }
 
-  const addManualVote = async (pollId, optionLabel, name) => {
+  const addManualVote = async (pollId, optionLabel, name, onBehalfOf) => {
     const poll = (raw?.polls || []).find(p => p.id === pollId)
     const opt = (poll?.vote_options || []).find(o => o.label === optionLabel)
     const optionId = opt?.id ?? optionLabel.toLowerCase().replace(/\s+/g, '_')
 
-    await api.manualVote(pollId, { voter_name: name || 'Facilitator', option_id: optionId })
+    const payload = { voter_name: name || 'Facilitator', option_id: optionId }
+    if (onBehalfOf) payload.on_behalf_of_name = onBehalfOf
+    await api.manualVote(pollId, payload)
     await load(meetingId.current)
   }
 

@@ -5,6 +5,7 @@ import { useCommunity } from '../context/CommunityContext'
 import { useNavigate, useParams, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import FacilitatorHeader from '../components/FacilitatorHeader'
+import AgendaHtml from '../components/AgendaHtml'
 import { reopenMeeting } from '../api/client'
 
 export default function Facilitate() {
@@ -55,7 +56,7 @@ export default function Facilitate() {
   const mid = meeting.id
 
   function getVoteCount(poll) {
-    return Object.keys(poll.votes).length + poll.manualVotes.length
+    return Object.keys(poll.votes).length + (poll.onBehalfVoters?.size ?? 0)
   }
 
   function totalEligible() {
@@ -73,12 +74,20 @@ export default function Facilitate() {
   }
 
   function handleManualVote() {
-    if (activePoll && manualVoteOption) {
-      addManualVote(activePoll.id, manualVoteOption, manualVoteName || 'Onbekend')
-      setManualVoteName('')
-      setManualVoteOption('')
-      setShowManualVoteModal(false)
+    if (!activePoll || !manualVoteOption || !manualVoteName) return
+    const isMandate = manualVoteName.startsWith('mandate:')
+    if (isMandate) {
+      const [, granterName, proxyName] = manualVoteName.split(':')
+      if (activePoll.onBehalfVoters?.has(granterName)) return
+      addManualVote(activePoll.id, manualVoteOption, proxyName, granterName)
+    } else {
+      const alreadyVoted = manualVoteName in activePoll.votes || activePoll.manualVotes.some(v => v.name.toLowerCase() === manualVoteName.toLowerCase())
+      if (alreadyVoted) return
+      addManualVote(activePoll.id, manualVoteOption, manualVoteName)
     }
+    setManualVoteName('')
+    setManualVoteOption('')
+    setShowManualVoteModal(false)
   }
 
   function handleAddMandate() {
@@ -116,7 +125,6 @@ export default function Facilitate() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-cream)' }}>
       <FacilitatorHeader
-        backTo="/"
         title={meeting.name}
         liveIndicator={meeting.phase === 'in_session'}
         right={
@@ -124,14 +132,6 @@ export default function Facilitate() {
             <span style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)' }}>
               {t('facilitate.phase_label')}: <strong style={{ color: 'var(--color-charcoal)' }}>{t(`phases.${meeting.phase}`)}</strong>
             </span>
-            <a
-              href={`/meeting/${mid}/display`}
-              target="_blank"
-              rel="noreferrer"
-              style={{ background: 'var(--color-cream)', border: '1px solid var(--color-sand-dark)', color: 'var(--color-charcoal)', borderRadius: 6, padding: '5px 12px', fontSize: '0.8rem', textDecoration: 'none' }}
-            >
-              {t('facilitate.open_display')}
-            </a>
           </>
         }
       />
@@ -141,8 +141,8 @@ export default function Facilitate() {
         <div className="card" style={{ padding: '16px 24px', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
             <div>
-              <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-charcoal)', lineHeight: 1 }}>{meeting.checkedIn.length}</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)', marginTop: 2 }}>{t('facilitate.present')}</div>
+              <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-charcoal)', lineHeight: 1 }}>{attendeeCount}</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)', marginTop: 2 }}>{t('facilitate.eligible')}</div>
             </div>
             <div style={{ width: 1, height: 40, background: 'var(--color-sand)' }} />
             <div>
@@ -151,19 +151,26 @@ export default function Facilitate() {
             </div>
             <div style={{ width: 1, height: 40, background: 'var(--color-sand)' }} />
             <div>
-              <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-terracotta)', lineHeight: 1 }}>{attendeeCount}</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)', marginTop: 2 }}>{t('facilitate.eligible')}</div>
+              <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-terracotta)', lineHeight: 1 }}>
+                {attendeeCount}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)', marginTop: 2 }}>{t('facilitate.total_votes')}</div>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button className="btn-secondary" style={{ fontSize: '0.82rem', padding: '7px 14px' }} onClick={() => setShowCheckInModal(true)}>
-              {t('facilitate.add_without_app')}
-            </button>
             {meeting.phase === 'open' && (
               <button className="btn-green" onClick={() => updatePhase('in_session')}>
                 {t('facilitate.open_meeting')}
               </button>
             )}
+            <a
+              href={`/meeting/${mid}/display`}
+              target="_blank"
+              rel="noreferrer"
+              style={{ background: 'transparent', border: '1px solid var(--color-green)', color: 'var(--color-green)', borderRadius: 8, padding: '9px 20px', fontSize: '0.9rem', fontWeight: 500, textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+            >
+              {t('facilitate.open_display')}
+            </a>
             {meeting.phase === 'in_session' && !confirmCloseMeeting && (
               <button className="btn-danger" onClick={() => setConfirmCloseMeeting(true)}>
                 {t('facilitate.close_meeting')}
@@ -196,11 +203,10 @@ export default function Facilitate() {
           {/* Zone 2 — Check-in list */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div className="card" style={{ padding: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <div style={{ marginBottom: 14 }}>
                 <h3 style={{ margin: 0, fontSize: '0.95rem', fontFamily: 'Inter, sans-serif', fontWeight: 600 }}>
                   {t('facilitate.attendees')}
                 </h3>
-                <span className="badge badge-green">{meeting.checkedIn.length}</span>
               </div>
 
               {/* Pre-registered but not yet checked in */}
@@ -214,19 +220,25 @@ export default function Facilitate() {
                       <span className="badge badge-gray">{pending.length}</span>
                     </div>
                     {pending.map(pr => (
-                      <div key={pr.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--color-sand)' }}>
+                      <div key={pr.id} style={{ display: 'flex', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid var(--color-sand)' }}>
                         <span style={{ fontSize: '0.88rem', color: 'var(--color-charcoal-light)' }}>{pr.name}</span>
-                        <span className="badge badge-gray">{t('facilitate.expected_badge')}</span>
                       </div>
                     ))}
-                    <hr className="divider" />
+                    <div style={{ height: 12 }} />
                   </div>
                 )
               })()}
 
               {/* Checked in */}
-              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
-                {t('facilitate.checked_in_label')}
+              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span>{t('facilitate.checked_in_label')}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span className="badge badge-green">{meeting.checkedIn.length}</span>
+                  <button
+                    onClick={() => setShowCheckInModal(true)}
+                    style={{ background: 'none', border: '1px solid var(--color-sand-dark)', borderRadius: 4, cursor: 'pointer', color: 'var(--color-charcoal-light)', fontSize: '0.75rem', padding: '1px 7px', lineHeight: '18px' }}
+                  >+</button>
+                </div>
               </div>
               {meeting.checkedIn.length === 0 && (
                 <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.85rem', margin: '8px 0' }}>{t('facilitate.no_checkins')}</p>
@@ -273,7 +285,13 @@ export default function Facilitate() {
                 <h3 style={{ margin: 0, fontSize: '0.95rem', fontFamily: 'Inter, sans-serif', fontWeight: 600 }}>
                   {t('facilitate.mandates')}
                 </h3>
-                <span className="badge badge-blue">{meeting.confirmedMandates.length}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span className="badge badge-blue">{meeting.confirmedMandates.length}</span>
+                  <button
+                    onClick={() => setShowMandateModal(true)}
+                    style={{ background: 'none', border: '1px solid var(--color-sand-dark)', borderRadius: 4, cursor: 'pointer', color: 'var(--color-charcoal-light)', fontSize: '0.75rem', padding: '1px 7px', lineHeight: '18px' }}
+                  >+</button>
+                </div>
               </div>
               {meeting.confirmedMandates.length === 0 && (
                 <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.85rem', margin: '8px 0' }}>{t('facilitate.no_mandates')}</p>
@@ -363,14 +381,12 @@ export default function Facilitate() {
           >
             <span>📋 {t('common.agenda')}</span>
             <span style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)' }}>
-              {agendaOpen ? t('facilitate.collapse') : t('facilitate.expand')}
+              {agendaOpen ? '▼' : '▶'}
             </span>
           </button>
           {agendaOpen && (
             <div style={{ padding: '0 24px 20px', borderTop: '1px solid var(--color-sand)' }}>
-              <pre style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.88rem', color: 'var(--color-charcoal)', margin: '16px 0 0', whiteSpace: 'pre-wrap', lineHeight: 1.8 }}>
-                {meeting.agenda}
-              </pre>
+              <AgendaHtml html={meeting.agenda} style={{ marginTop: 16 }} />
             </div>
           )}
         </div>
@@ -380,7 +396,7 @@ export default function Facilitate() {
       {showCheckInModal && (
         <div className="modal-overlay" onClick={() => { setShowCheckInModal(false); setSelectedMember(''); setMemberSearch('') }}>
           <div className="modal" style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
-            <h3 style={{ margin: '0 0 16px', fontFamily: 'Playfair Display, serif', fontSize: '1.1rem' }}>
+            <h3 style={{ margin: '0 0 16px', fontFamily: 'var(--font-title)', fontSize: '1.1rem' }}>
               {t('facilitate.modal_add_without_app_title')}
             </h3>
             <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.85rem', margin: '0 0 16px' }}>
@@ -450,7 +466,7 @@ export default function Facilitate() {
       {showManualVoteModal && activePoll && (
         <div className="modal-overlay" onClick={() => setShowManualVoteModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h3 style={{ margin: '0 0 6px', fontFamily: 'Playfair Display, serif', fontSize: '1.1rem' }}>
+            <h3 style={{ margin: '0 0 6px', fontFamily: 'var(--font-title)', fontSize: '1.1rem' }}>
               {t('facilitate.modal_manual_vote_title')}
             </h3>
             <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.82rem', margin: '0 0 16px' }}>
@@ -458,7 +474,25 @@ export default function Facilitate() {
             </p>
             <div style={{ marginBottom: 12 }}>
               <label>{t('facilitate.member_name_optional')}</label>
-              <input className="input" value={manualVoteName} onChange={e => setManualVoteName(e.target.value)} placeholder={t('facilitate.member_name_placeholder')} />
+              <select className="input" value={manualVoteName} onChange={e => setManualVoteName(e.target.value)}>
+                <option value="">— {t('facilitate.member_search_placeholder')}</option>
+                {meeting.checkedIn.filter(c => !c.isAspirant).map(c => {
+                  const voted = c.name in (activePoll?.votes ?? {}) || (activePoll?.manualVotes ?? []).some(v => v.name.toLowerCase() === c.name.toLowerCase())
+                  return (
+                    <option key={c.name} value={c.name} disabled={voted}>
+                      {c.name}{voted ? ' ✓' : ''}
+                    </option>
+                  )
+                })}
+                {meeting.confirmedMandates.map(m => {
+                  const voted = activePoll?.onBehalfVoters?.has(m.from)
+                  return (
+                    <option key={`mandate-${m.from}`} value={`mandate:${m.from}:${m.to}`} disabled={voted}>
+                      📜 {m.from} → {m.to}{voted ? ' ✓' : ''}
+                    </option>
+                  )
+                })}
+              </select>
             </div>
             <div style={{ marginBottom: 20 }}>
               <label>{t('facilitate.vote_label')}</label>
@@ -481,7 +515,7 @@ export default function Facilitate() {
               </div>
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
-              <button className="btn-primary" onClick={handleManualVote} disabled={!manualVoteOption}>
+              <button className="btn-primary" onClick={handleManualVote} disabled={!manualVoteOption || !manualVoteName}>
                 {t('facilitate.register_vote')}
               </button>
               <button className="btn-secondary" onClick={() => setShowManualVoteModal(false)}>{t('common.cancel')}</button>
@@ -494,23 +528,46 @@ export default function Facilitate() {
       {showMandateModal && (
         <div className="modal-overlay" onClick={() => setShowMandateModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h3 style={{ margin: '0 0 16px', fontFamily: 'Playfair Display, serif', fontSize: '1.1rem' }}>
+            <h3 style={{ margin: '0 0 16px', fontFamily: 'var(--font-title)', fontSize: '1.1rem' }}>
               {t('facilitate.add_mandate')}
             </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
-              <div>
-                <label>{t('facilitate.granter')}</label>
-                <input className="input" autoFocus value={mandateFrom} onChange={e => setMandateFrom(e.target.value)} placeholder={t('facilitate.granter_placeholder')} />
-              </div>
-              <div>
-                <label>{t('facilitate.proxy')}</label>
-                <input className="input" value={mandateTo} onChange={e => setMandateTo(e.target.value)} placeholder={t('facilitate.proxy_placeholder')} />
-              </div>
-              <div>
-                <label>{t('common.note_optional')}</label>
-                <input className="input" value={mandateNote} onChange={e => setMandateNote(e.target.value)} placeholder={t('facilitate.note_placeholder')} />
-              </div>
-            </div>
+            {(() => {
+              const checkedInNames = new Set(meeting.checkedIn.map(c => c.name.toLowerCase()))
+              const alreadyGranted = new Set(meeting.confirmedMandates.map(m => m.from.toLowerCase()))
+              // Granter = community members who are absent and haven't already granted
+              const granterOptions = (members || []).filter(m =>
+                !checkedInNames.has(m.name.toLowerCase()) &&
+                !alreadyGranted.has(m.name.toLowerCase())
+              )
+              // Proxy = checked-in non-aspirants
+              const proxyOptions = meeting.checkedIn.filter(c => !c.isAspirant)
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
+                  <div>
+                    <label>{t('facilitate.granter')}</label>
+                    <select className="input" autoFocus value={mandateFrom} onChange={e => setMandateFrom(e.target.value)}>
+                      <option value="">— {t('facilitate.granter_placeholder')} —</option>
+                      {granterOptions.map(m => (
+                        <option key={m.id} value={m.name}>{m.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label>{t('facilitate.proxy')}</label>
+                    <select className="input" value={mandateTo} onChange={e => setMandateTo(e.target.value)}>
+                      <option value="">— {t('facilitate.proxy_placeholder')} —</option>
+                      {proxyOptions.map(c => (
+                        <option key={c.id} value={c.name}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label>{t('common.note_optional')}</label>
+                    <input className="input" value={mandateNote} onChange={e => setMandateNote(e.target.value)} placeholder={t('facilitate.note_placeholder')} />
+                  </div>
+                </div>
+              )
+            })()}
             <div style={{ display: 'flex', gap: 10 }}>
               <button className="btn-primary" onClick={handleAddMandate} disabled={!mandateFrom.trim() || !mandateTo.trim()}>
                 {t('common.add')}
@@ -525,7 +582,7 @@ export default function Facilitate() {
       {showAddPollModal && (
         <div className="modal-overlay" onClick={() => setShowAddPollModal(false)}>
           <div className="modal" style={{ maxWidth: 500 }} onClick={e => e.stopPropagation()}>
-            <h3 style={{ margin: '0 0 20px', fontFamily: 'Playfair Display, serif', fontSize: '1.1rem' }}>
+            <h3 style={{ margin: '0 0 20px', fontFamily: 'var(--font-title)', fontSize: '1.1rem' }}>
               {editingPoll ? t('facilitate.poll_edit_title') : t('facilitate.poll_add_title')}
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 20 }}>
@@ -664,17 +721,8 @@ function PollCard({ poll, idx, activePoll, attendeeCount, canStart, onStart, onC
         <div style={{ marginBottom: 12 }}>
           <div style={{ marginBottom: 8 }}>
             <span
-              style={{
-                display: 'inline-block',
-                padding: '4px 14px',
-                borderRadius: 6,
-                fontWeight: 700,
-                fontSize: '0.9rem',
-                background: poll.result.aangenomen ? 'rgba(45,122,74,0.12)' : 'rgba(196,45,45,0.12)',
-                color: poll.result.aangenomen ? 'var(--color-green)' : 'var(--color-red)',
-              }}
+              style={{ display: 'none' }}
             >
-              {poll.result.aangenomen ? t('results.adopted') : t('results.rejected')}
             </span>
           </div>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>

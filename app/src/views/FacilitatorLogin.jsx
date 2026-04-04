@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Navigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { useUser } from '../context/UserContext'
 import { useTranslation } from 'react-i18next'
 import { getMe } from '../api/client'
@@ -7,8 +7,8 @@ import LoginScreen from '../components/LoginScreen'
 
 export default function FacilitatorLogin() {
   const { isFacilitator, loginAsFacilitator } = useUser()
-  const navigate = useNavigate()
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const [authError, setAuthError] = useState(false)
 
   // Already logged in as facilitator — go straight to dashboard
@@ -37,7 +37,7 @@ export default function FacilitatorLogin() {
       <div style={{ maxWidth: 420, width: '100%' }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <div style={{ fontSize: '2rem', marginBottom: 8 }}>🎙️</div>
-          <h1 style={{ fontSize: '1.3rem', margin: '0 0 6px', fontFamily: 'Playfair Display, serif' }}>Facilitator</h1>
+          <h1 style={{ fontSize: '1.3rem', margin: '0 0 6px', fontFamily: 'var(--font-title)' }}>Facilitator</h1>
           <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.85rem', margin: 0 }}>
             {t('auth.facilitator_hint')}
           </p>
@@ -50,7 +50,7 @@ export default function FacilitatorLogin() {
               {t('auth.not_facilitator')}
             </p>
             <button className="btn-secondary" onClick={() => setAuthError(false)}>
-              {t('common.back')}
+              {t('common.retry')}
             </button>
           </div>
         ) : (
@@ -59,12 +59,6 @@ export default function FacilitatorLogin() {
           </div>
         )}
 
-        <button
-          onClick={() => navigate('/')}
-          style={{ display: 'block', margin: '16px auto 0', background: 'none', border: 'none', color: 'var(--color-charcoal-light)', cursor: 'pointer', fontSize: '0.85rem' }}
-        >
-          {t('common.back')}
-        </button>
       </div>
     </div>
   )

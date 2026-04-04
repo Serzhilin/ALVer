@@ -33,7 +33,7 @@ services:
       ALVER_DATABASE_URL: postgresql://${POSTGRES_USER:-alver}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-alver}
       JWT_SECRET: ${JWT_SECRET}
       PUBLIC_REGISTRY_URL: ${PUBLIC_REGISTRY_URL:-https://registry.w3ds.metastate.foundation}
-      PUBLIC_ALVER_BASE_URL: ${PUBLIC_ALVER_BASE_URL}
+      VITE_PUBLIC_ALVER_BASE_URL: ${VITE_PUBLIC_ALVER_BASE_URL}
     ports:
       - "${PORT:-3001}:3001"
     networks:

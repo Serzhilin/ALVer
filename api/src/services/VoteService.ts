@@ -2,7 +2,9 @@ import { AppDataSource } from "../database/data-source";
 import { Vote, VoteMethod } from "../database/entities/Vote";
 import { Poll } from "../database/entities/Poll";
 import { Mandate } from "../database/entities/Mandate";
+import { Attendee } from "../database/entities/Attendee";
 import { sseService } from "./SSEService";
+import { PollService } from "./PollService";
 
 export class VoteService {
     private voteRepo = AppDataSource.getRepository(Vote);
@@ -64,6 +66,9 @@ export class VoteService {
         const count = await this.voteRepo.count({ where: { poll_id: pollId } });
         sseService.emit(poll.meeting_id, "vote_cast", { meetingId: poll.meeting_id, pollId, count });
 
+        // Auto-close when all eligible votes are cast
+        await this.autoCloseIfComplete(poll);
+
         // W3DS SYNC HOOK — to be implemented
         // await web3Adapter.sync('vote', saved.id, saved);
 
@@ -88,6 +93,38 @@ export class VoteService {
             breakdown: poll.vote_options.map((o) => ({ option_id: o.id, label: o.label, count: tally[o.id] ?? 0 })),
             total: poll.votes.length,
         };
+    }
+
+    private async autoCloseIfComplete(poll: Poll): Promise<void> {
+        const attendeeRepo = AppDataSource.getRepository(Attendee);
+        const mandateRepo  = AppDataSource.getRepository(Mandate);
+
+        // Eligible = non-aspirant checked-in + mandates from absent granters
+        const checkedIn = await attendeeRepo.find({
+            where: { meeting_id: poll.meeting_id, status: "checked_in", is_aspirant: false },
+        });
+        const checkedInNames = new Set(checkedIn.map(a => a.attendee_name.toLowerCase()));
+        const mandates = await mandateRepo.find({
+            where: { meeting_id: poll.meeting_id, status: "active" },
+        });
+        // A mandate counts only when the granter is absent AND the proxy has checked in
+        const unbodiedMandates = mandates.filter(m =>
+            !checkedInNames.has(m.granter_name.toLowerCase()) &&
+            checkedInNames.has(m.proxy_name.toLowerCase())
+        );
+        const eligible = checkedIn.length + unbodiedMandates.length;
+        if (eligible === 0) return;
+
+        // Cast = own votes + unique on-behalf votes
+        const allVotes = await this.voteRepo.find({ where: { poll_id: poll.id } });
+        const ownVoters = new Set(allVotes.filter(v => !v.on_behalf_of_name).map(v => v.voter_name.toLowerCase()));
+        const behalfGranters = new Set(allVotes.filter(v => v.on_behalf_of_name).map(v => v.on_behalf_of_name.toLowerCase()));
+        const totalCast = ownVoters.size + behalfGranters.size;
+
+        if (totalCast >= eligible) {
+            const pollService = new PollService();
+            await pollService.close(poll.id, poll.meeting_id);
+        }
     }
 
     async hasVoted(pollId: string, voterName: string, onBehalfOf?: string): Promise<boolean> {

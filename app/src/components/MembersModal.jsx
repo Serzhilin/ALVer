@@ -86,7 +86,7 @@ export default function MembersModal({ onClose }) {
       >
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h3 style={{ margin: 0, fontFamily: 'Playfair Display, serif', fontSize: '1.2rem' }}>
+          <h3 style={{ margin: 0, fontFamily: 'var(--font-title)', fontSize: '1.2rem' }}>
             {community?.name ?? t('settings.members_label')}
           </h3>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -277,9 +277,6 @@ function MemberRow({ member: m, rowBg, isEditing, confirmDelete, onEdit, onDelet
           )}
           {m.phone && (
             <span style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)' }}>{m.phone}</span>
-          )}
-          {m.ename && (
-            <span style={{ fontSize: '0.72rem', color: 'var(--color-charcoal-light)', fontStyle: 'italic' }}>{m.ename}</span>
           )}
         </div>
       </div>

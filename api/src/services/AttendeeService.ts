@@ -86,7 +86,16 @@ export class AttendeeService {
                 method,
                 manual_note: note,
             });
-            attendee = await this.repo.save(attendee);
+            try {
+                attendee = await this.repo.save(attendee);
+            } catch (e: any) {
+                // Unique constraint violation — concurrent request already inserted; return existing
+                if (e.code === "23505") {
+                    const existing = await this.repo.findOne({ where: { meeting_id: meetingId, attendee_name: name } });
+                    if (existing) return existing;
+                }
+                throw e;
+            }
         }
 
         sseService.emit(meetingId, "attendee_checked_in", {

@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 import * as api from '../api/client'
 import { useUser } from './UserContext'
 
+
 const TITLE_FONTS = [
   'Playfair Display',
   'Lora',
@@ -44,15 +45,22 @@ export function CommunityProvider({ children }) {
   const [loading, setLoading] = useState(false)
 
   const load = useCallback(async () => {
-    if (!user) return
     setLoading(true)
     try {
-      const c = await api.getCommunity()
-      setCommunity(c)
-      setMembers(c.members || [])
-      applyTheme(c)
+      if (user) {
+        // Authenticated: load full community data (members, settings, etc.)
+        const c = await api.getCommunity()
+        setCommunity(c)
+        setMembers(c.members || [])
+        applyTheme(c)
+      } else {
+        // Unauthenticated: load just branding so logo/colour/font work everywhere
+        const branding = await api.getCommunityBranding()
+        setCommunity(prev => prev ?? branding)  // don't overwrite full data if already loaded
+        applyTheme(branding)
+      }
     } catch {
-      // non-facilitator users won't have a community — that's fine
+      // community may not be configured yet — that's fine
     } finally {
       setLoading(false)
     }

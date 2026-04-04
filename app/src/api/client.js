@@ -1,5 +1,12 @@
 const BASE = '/api'
 
+// SSE connections bypass Vite's dev proxy — it buffers chunks until connection closes,
+// making real-time events only appear on page reload. In dev we connect directly to the
+// API port. In production there is no proxy so /api works fine.
+const SSE_BASE = import.meta.env.DEV
+  ? `http://localhost:${import.meta.env.VITE_API_PORT || 3001}/api`
+  : '/api'
+
 function getToken() {
   return localStorage.getItem('alver_token')
 }
@@ -24,13 +31,13 @@ async function req(method, path, body) {
 }
 
 // ── Auth ───────────────────────────────────────────────────────────────────────
-export const getAuthOffer = () => req('GET', '/auth/offer')
+export const getAuthOffer = (returnTo) => req('GET', `/auth/offer${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`)
 export const loginWithWallet = (data) => req('POST', '/auth/login', data)
 export const devLogin = () => req('POST', '/auth/dev-login')
 export const getMe = () => req('GET', '/auth/me')
 
 export function subscribeToAuthSession(sessionId, onLogin) {
-  const es = new EventSource(`${BASE}/auth/sessions/${sessionId}`)
+  const es = new EventSource(`${SSE_BASE}/auth/sessions/${sessionId}`)
   es.onmessage = (e) => {
     try {
       const data = JSON.parse(e.data)
@@ -41,7 +48,11 @@ export function subscribeToAuthSession(sessionId, onLogin) {
   return () => es.close()
 }
 
+export const pollAuthSessionResult = (sessionId) =>
+  fetch(`${BASE}/auth/sessions/${sessionId}/result`).then(r => r.status === 200 ? r.json() : null)
+
 // ── Community ─────────────────────────────────────────────────────────────────
+export const getCommunityBranding = () => req('GET', '/community/branding')
 export const getCommunity = () => req('GET', '/community')
 export const updateCommunity = (data) => req('PATCH', '/community', data)
 export const getCommunityMembers = () => req('GET', '/community/members')
@@ -92,7 +103,7 @@ export const hasVoted = (pollId, voterName, onBehalfOf) => {
 
 // ── SSE ───────────────────────────────────────────────────────────────────────
 export function subscribeToMeeting(meetingId, onEvent, { onDisconnect, onReconnect } = {}) {
-  const es = new EventSource(`${BASE}/meetings/${meetingId}/stream`)
+  const es = new EventSource(`${SSE_BASE}/meetings/${meetingId}/stream`)
   es.onopen = () => { onReconnect?.() }
   es.onmessage = (e) => {
     try { onEvent(JSON.parse(e.data)) } catch {}

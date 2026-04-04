@@ -14,6 +14,15 @@ import { signToken } from "../middleware/auth";
 const sessions = new EventEmitter();
 sessions.setMaxListeners(500);
 
+// In-memory result cache: sessionId → payload (for mobile polling after browser resumes)
+const sessionResults = new Map<string, object>();
+// returnTo store: sessionId → returnTo path (wallet strips query params from redirect URL)
+const sessionReturnTo = new Map<string, string>();
+setTimeout(() => {
+    // Clean up stale results every 30 min
+    setInterval(() => { sessionResults.clear(); sessionReturnTo.clear(); }, 30 * 60 * 1000);
+}, 0);
+
 function serializeUser(user: any) {
     return {
         id: user.id,
@@ -28,10 +37,13 @@ function serializeUser(user: any) {
  *  Returns the w3ds:// deep link and a sessionId for the SSE poll.
  */
 export async function getOffer(req: Request, res: Response) {
-    const baseUrl = process.env.PUBLIC_ALVER_BASE_URL || `http://localhost:${process.env.PORT || 3001}`;
+    const baseUrl = process.env.VITE_PUBLIC_ALVER_BASE_URL || `http://localhost:${process.env.PORT || 3001}`;
     const sessionId = uuidv4();
-    const redirectUrl = new URL("/api/auth/login", baseUrl).toString();
-    const offer = `w3ds://auth?redirect=${encodeURIComponent(redirectUrl)}&session=${sessionId}&platform=ALVer`;
+    // returnTo is a relative path the wallet browser will land on after auth (e.g. /meeting/xxx/attend)
+    const returnTo = typeof req.query.returnTo === 'string' && req.query.returnTo.startsWith('/') ? req.query.returnTo : '/';
+    sessionReturnTo.set(sessionId, returnTo);
+    const redirectUrl = new URL(`/api/auth/login`, baseUrl).toString();
+    const offer = `w3ds://auth?redirect=${redirectUrl}&session=${sessionId}&platform=ALVer`;
     res.json({ offer, sessionId });
 }
 
@@ -40,8 +52,10 @@ export async function getOffer(req: Request, res: Response) {
  *  Verifies signature → findOrCreate user → issue JWT → unblock desktop SSE.
  */
 export async function epassportLogin(req: Request, res: Response) {
+    console.log("[Auth] POST /api/auth/login", { body: req.body, query: req.query });
     const { ename, session, signature } = req.body;
     if (!ename || !session || !signature) {
+        console.log("[Auth] Missing fields:", { ename: !!ename, session: !!session, signature: !!signature });
         res.status(400).json({ error: "Missing ename, session, or signature" });
         return;
     }
@@ -52,6 +66,7 @@ export async function epassportLogin(req: Request, res: Response) {
         return;
     }
 
+    console.log("[Auth] Verifying signature for ename:", ename);
     try {
         const result = await verifySignature({
             eName: ename,
@@ -60,6 +75,7 @@ export async function epassportLogin(req: Request, res: Response) {
             registryBaseUrl: registryUrl,
         });
 
+        console.log("[Auth] Signature valid:", result.valid);
         if (!result.valid) {
             res.status(401).json({ error: "Invalid signature" });
             return;
@@ -84,11 +100,17 @@ export async function epassportLogin(req: Request, res: Response) {
     }
 
     const token = signToken({ userId: user.id, ename: user.ename });
-    const payload = { token, user: serializeUser(user) };
+    const returnTo = sessionReturnTo.get(session) ?? '/';
+    sessionReturnTo.delete(session);
+    const payload = { token, user: serializeUser(user), returnTo };
+
+    // Cache for polling fallback
+    sessionResults.set(session, payload);
 
     // Unblock desktop browser waiting on SSE
     sessions.emit(session, payload);
 
+    console.log("[Auth] Auth complete, returnTo:", returnTo);
     res.json(payload);
 }
 
@@ -124,6 +146,20 @@ export async function sseAuthStream(req: Request, res: Response) {
         clearTimeout(timeout);
         sessions.off(id, handler);
     });
+}
+
+/** GET /api/auth/sessions/:id/result
+ *  Mobile polling endpoint — returns cached result if auth completed, else 204.
+ */
+export async function getSessionResult(req: Request, res: Response) {
+    const { id } = req.params;
+    const result = sessionResults.get(id);
+    if (result) {
+        sessionResults.delete(id);
+        res.json(result);
+    } else {
+        res.status(204).end();
+    }
 }
 
 /** POST /api/auth/dev-login

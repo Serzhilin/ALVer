@@ -3,6 +3,8 @@
     "loading": "Loading…",
     "back": "← Back",
     "cancel": "Cancel",
+    "other": "Other",
+    "retry": "Try again",
     "save": "Save",
     "add": "Add",
     "close": "Close",
@@ -44,8 +46,13 @@
     "btn_attend": "Enter meeting",
     "btn_ill_come": "🙋 I'll come",
     "btn_mandate": "📜 Can't come, mandate",
+    "btn_mandate_short": "📜 Give mandate",
+    "btn_cant_come": "I can't make it",
     "btn_modify": "✏️ Modify registration",
-    "preregistered_status": "Pre-registered: {{name}}"
+    "preregistered_status": "🙋 Pre-registered to attend",
+    "mandate_status": "📜 Mandate given to {{proxy}}",
+    "decline_status": "You indicated you won't attend",
+    "scan_qr_to_checkin": "📱 Scan the QR code at the venue to check in"
   },
   "facilitate": {
     "phase_label": "Phase",
@@ -106,7 +113,8 @@
     "aspirant_badge": "Aspirant",
     "member_search_placeholder": "Search member…",
     "remove_attendee": "Remove attendee",
-    "revoke_mandate": "Revoke mandate"
+    "revoke_mandate": "Revoke mandate",
+    "total_votes": "Total votes in room"
   },
   "attend": {
     "check_in_title": "Check in",
@@ -115,6 +123,7 @@
     "check_in_btn": "Check in ✓",
     "register_or_mandate": "Register or give a mandate",
     "checked_in_badge": "✓ Checked in",
+    "welcome_flash": "Welcome to the meeting!",
     "eligible_count": "{{count}} eligible voters",
     "has_mandate_prefix": "📜 You hold a mandate from",
     "not_started_title": "Meeting not started yet",

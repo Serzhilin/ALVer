@@ -4,10 +4,13 @@ import { useMeeting, getGreeting } from '../context/MeetingContext'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
+import { useCommunity } from '../context/CommunityContext'
+import AgendaHtml from '../components/AgendaHtml'
 
 export default function Display() {
   const { id } = useParams()
   const { meeting, activePoll, attendeeCount, sseConnected, setMeetingId } = useMeeting()
+  const { community } = useCommunity() || {}
   const { t } = useTranslation()
 
   useEffect(() => { setMeetingId(id) }, [id])
@@ -57,8 +60,8 @@ export default function Display() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#1A1612',
-      color: 'white',
+      background: isCheckin ? 'var(--color-cream)' : '#1A1612',
+      color: isCheckin ? 'var(--color-charcoal)' : 'white',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -68,12 +71,12 @@ export default function Display() {
       overflow: 'hidden',
       fontFamily: 'Inter, sans-serif',
     }}>
-      {/* Background texture */}
-      <div style={{
+      {/* Background texture — dark mode only */}
+      {!isCheckin && <div style={{
         position: 'absolute', inset: 0,
         background: 'radial-gradient(ellipse at 30% 40%, rgba(196,98,45,0.08) 0%, transparent 60%), radial-gradient(ellipse at 70% 70%, rgba(212,136,74,0.05) 0%, transparent 50%)',
         pointerEvents: 'none',
-      }} />
+      }} />}
 
       {/* Greeting flash */}
       {showGreeting && greeting && (
@@ -88,7 +91,7 @@ export default function Display() {
           }}
         >
           <div style={{ fontSize: '5rem', marginBottom: 24 }}>👋</div>
-          <div style={{ fontSize: '4rem', fontFamily: 'Playfair Display, serif', fontWeight: 600, textAlign: 'center', padding: '0 60px', lineHeight: 1.2 }}>
+          <div style={{ fontSize: '4rem', fontFamily: 'var(--font-title)', fontWeight: 600, textAlign: 'center', padding: '0 60px', lineHeight: 1.2 }}>
             {greeting}
           </div>
         </div>
@@ -96,7 +99,7 @@ export default function Display() {
 
       {/* Check-in phase */}
       {isCheckin && !showGreeting && (
-        <CheckinDisplay meeting={meeting} attendeeCount={attendeeCount} />
+        <CheckinDisplay meeting={meeting} attendeeCount={attendeeCount} community={community} meetingId={id} dark={false} />
       )}
 
       {/* Active vote */}
@@ -119,91 +122,151 @@ export default function Display() {
         <ClosedDisplay meeting={meeting} />
       )}
 
+      {/* Language switcher — top right */}
+      <div style={{ position: 'absolute', top: 20, right: 24 }}>
+        <LanguageSwitcher light={!isCheckin} />
+      </div>
+
       {/* SSE reconnection indicator */}
       {!sseConnected && (
-        <div style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(245,158,11,0.9)', color: 'white', borderRadius: 6, padding: '4px 12px', fontSize: '0.75rem', fontWeight: 500 }}>
+        <div style={{ position: 'absolute', top: 16, right: 100, background: 'rgba(245,158,11,0.9)', color: 'white', borderRadius: 6, padding: '4px 12px', fontSize: '0.75rem', fontWeight: 500 }}>
           {t('common.reconnecting')}
         </div>
       )}
 
-      {/* Corner info */}
-      <div style={{ position: 'absolute', bottom: 20, left: 0, right: 0, display: 'flex', justifyContent: 'space-between', padding: '0 32px', alignItems: 'center', opacity: 0.6 }}>
-        <span style={{ fontSize: '0.8rem' }}>🏛️ ALVer</span>
-        <LanguageSwitcher light />
-        <span style={{ fontSize: '0.8rem' }}>{meeting.time} · {meeting.location}</span>
+      {/* Bottom left brand tag */}
+      <div style={{ position: 'absolute', bottom: 20, left: 32, opacity: 0.4, fontSize: '0.8rem' }}>
+        🏛️ ALVer
       </div>
     </div>
   )
 }
 
-function CheckinDisplay({ meeting, attendeeCount }) {
-  const { t } = useTranslation()
+function CheckinDisplay({ meeting, attendeeCount, community, meetingId, dark = true }) {
+  const { t, i18n } = useTranslation()
   const [qrDataUrl, setQrDataUrl] = useState(null)
+
+  // Color tokens — swap based on background
+  const c = dark ? {
+    title:      'white',
+    meta:       'rgba(255,255,255,0.7)',
+    muted:      'rgba(255,255,255,0.35)',
+    faint:      'rgba(255,255,255,0.6)',
+    divider:    'rgba(255,255,255,0.1)',
+    agendaText: 'rgba(255,255,255,0.65)',
+    statMain:   'white',
+    statDim:    'rgba(255,255,255,0.5)',
+    statLabel:  'rgba(255,255,255,0.4)',
+  } : {
+    title:      'var(--color-charcoal)',
+    meta:       'var(--color-charcoal-light)',
+    muted:      'var(--color-charcoal-light)',
+    faint:      'var(--color-charcoal-light)',
+    divider:    'var(--color-sand)',
+    agendaText: 'var(--color-charcoal)',
+    statMain:   'var(--color-charcoal)',
+    statDim:    'var(--color-charcoal-light)',
+    statLabel:  'var(--color-charcoal-light)',
+  }
+
   useEffect(() => {
-    const url = `${window.location.origin}/aanmelden`
-    QRCode.toDataURL(url, { width: 180, margin: 2, color: { dark: '#000000', light: '#ffffff' } })
+    const base = import.meta.env.VITE_PUBLIC_ALVER_BASE_URL || window.location.origin
+    const url = `${base}/meeting/${meetingId}/attend`
+    QRCode.toDataURL(url, { width: 240, margin: 2, color: { dark: '#1A1612', light: '#ffffff' } })
       .then(setQrDataUrl)
       .catch(console.error)
-  }, [])
+  }, [meetingId])
 
-  const names = meeting.checkedIn.slice(-8).map(c => c.name.split(' ')[0])
+  const dateLocale = i18n.language === 'nl' ? 'nl-NL' : 'en-GB'
+  const dateStr = meeting.date
+    ? new Date(meeting.date + 'T12:00').toLocaleDateString(dateLocale, { weekday: 'long', day: 'numeric', month: 'long' })
+    : null
+
+  const expectedCount = (meeting.preRegistrations || []).length
 
   return (
-    <div style={{ textAlign: 'center', width: '100%', maxWidth: 800 }}>
-      {/* QR */}
-      <div style={{ marginBottom: 40 }}>
-        <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={{
-            background: 'white', padding: 16, borderRadius: 12,
-            boxShadow: '0 0 40px rgba(196,98,45,0.3)',
-          }}>
-            {qrDataUrl
-              ? <img src={qrDataUrl} alt="QR check-in" width={144} height={144} style={{ display: 'block' }} />
-              : <div style={{ width: 144, height: 144, background: 'rgba(0,0,0,0.05)', borderRadius: 4 }} />
-            }
+    <div style={{ width: '100%', maxWidth: 1200, display: 'flex', flexDirection: 'column', gap: 40 }}>
+      {/* Logo */}
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        {community?.logo_url
+          ? <img src={community.logo_url} alt="logo" style={{ height: 80, maxWidth: 320, objectFit: 'contain' }} />
+          : <div style={{ fontFamily: 'var(--font-title)', fontWeight: 700, fontSize: '2rem', color: c.title, opacity: 0.8 }}>🏛️ ALVer</div>
+        }
+      </div>
+
+      {/* Two columns */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 60, alignItems: 'start' }}>
+
+        {/* Left: QR + stats */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 36 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+            <div style={{ background: 'white', padding: 20, borderRadius: 16, boxShadow: '0 0 60px rgba(196,98,45,0.25)' }}>
+              {qrDataUrl
+                ? <img src={qrDataUrl} alt="QR check-in" width={200} height={200} style={{ display: 'block' }} />
+                : <div style={{ width: 200, height: 200, background: 'rgba(0,0,0,0.04)', borderRadius: 4 }} />
+              }
+            </div>
+            <p style={{ color: c.faint, fontSize: '1rem', margin: 0, textAlign: 'center' }}>
+              {t('display.scan_checkin')}
+            </p>
+          </div>
+
+          {/* Stats */}
+          <div style={{ display: 'flex', gap: 32, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Stat value={expectedCount} label={t('facilitate.expected')} color={c.statDim} labelColor={c.statLabel} />
+            <div style={{ width: 1, background: c.divider }} />
+            <Stat value={meeting.checkedIn.length} label={t('display.present')} color="var(--color-terracotta)" labelColor={c.statLabel} />
+            <div style={{ width: 1, background: c.divider }} />
+            <Stat value={meeting.confirmedMandates.length} label={t('display.mandates')} color={c.statMain} labelColor={c.statLabel} />
           </div>
         </div>
-        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.1rem', marginTop: 16 }}>
-          {t('display.scan_checkin')}
-        </p>
-      </div>
 
-      {/* Counter */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 48, marginBottom: 40 }}>
-        <div>
-          <div style={{ fontSize: '4rem', fontWeight: 700, color: 'white', lineHeight: 1 }}>{meeting.checkedIn.length}</div>
-          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', marginTop: 6 }}>{t('display.present')}</div>
-        </div>
-        <div style={{ width: 1, background: 'rgba(255,255,255,0.15)' }} />
-        <div>
-          <div style={{ fontSize: '4rem', fontWeight: 700, color: 'var(--color-amber)', lineHeight: 1 }}>{meeting.confirmedMandates.length}</div>
-          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', marginTop: 6 }}>{t('display.mandates')}</div>
+        {/* Right: event info */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+          <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '2.2rem', color: c.title, margin: 0, lineHeight: 1.2 }}>
+            {meeting.name}
+          </h1>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {dateStr && (
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center', color: c.meta, fontSize: '1.05rem' }}>
+                <span>📅</span><span>{dateStr}</span>
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', color: c.meta, fontSize: '1.05rem' }}>
+              <span>🕐</span><span>{meeting.time}</span>
+            </div>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', color: c.meta, fontSize: '1.05rem' }}>
+              <span>📍</span><span>{meeting.location}</span>
+            </div>
+          </div>
+
+          {meeting.agenda && (
+            <div style={{ borderTop: `1px solid ${c.divider}`, paddingTop: 24 }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: c.muted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 14 }}>
+                {t('common.agenda')}
+              </div>
+              <AgendaHtml html={meeting.agenda} style={{ fontSize: '0.95rem', color: c.agendaText, lineHeight: 1.9 }} />
+            </div>
+          )}
         </div>
       </div>
+    </div>
+  )
+}
 
-      {/* Scrolling names */}
-      {names.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 10 }}>
-          {names.map((n, i) => (
-            <span
-              key={n + i}
-              style={{
-                padding: '6px 18px', background: 'rgba(255,255,255,0.1)', borderRadius: 24,
-                fontSize: '1.1rem', color: 'rgba(255,255,255,0.85)',
-              }}
-            >
-              {n}
-            </span>
-          ))}
-        </div>
-      )}
+function Stat({ value, label, color, labelColor }) {
+  return (
+    <div style={{ textAlign: 'center' }}>
+      <div style={{ fontSize: '3.5rem', fontWeight: 700, color, lineHeight: 1 }}>{value}</div>
+      <div style={{ color: labelColor, fontSize: '0.85rem', marginTop: 6 }}>{label}</div>
     </div>
   )
 }
 
 function VotingDisplay({ poll, attendeeCount }) {
   const { t } = useTranslation()
-  const totalVotes = Object.keys(poll.votes).length + poll.manualVotes.length
+  const totalVotes = Object.keys(poll.votes).length + (poll.onBehalfVoters?.size ?? 0)
   const pct = attendeeCount > 0 ? Math.round((totalVotes / attendeeCount) * 100) : 0
 
   return (
@@ -212,7 +275,7 @@ function VotingDisplay({ poll, attendeeCount }) {
         {t('display.voting_open')}
       </div>
       <h1 style={{
-        fontFamily: 'Playfair Display, serif', fontSize: '2.4rem', fontWeight: 600,
+        fontFamily: 'var(--font-title)', fontSize: '2.4rem', fontWeight: 600,
         color: 'white', lineHeight: 1.3, margin: '0 0 48px',
       }}>
         {poll.title}
@@ -265,22 +328,6 @@ function ResultDisplay({ poll }) {
       <p style={{ color: 'rgba(255,255,255,0.5)', margin: '0 0 24px', fontSize: '0.9rem' }}>{poll.title}</p>
 
       <div className="reveal-result" style={{ marginBottom: 40 }}>
-        <div style={{
-          display: 'inline-block',
-          padding: '24px 64px',
-          borderRadius: 16,
-          background: poll.result.aangenomen ? 'rgba(45,122,74,0.2)' : 'rgba(196,45,45,0.2)',
-          border: `2px solid ${poll.result.aangenomen ? 'rgba(45,122,74,0.5)' : 'rgba(196,45,45,0.5)'}`,
-        }}>
-          <div style={{
-            fontSize: '4rem', fontWeight: 700,
-            color: poll.result.aangenomen ? '#4CAF81' : '#EF5350',
-            fontFamily: 'Playfair Display, serif',
-            letterSpacing: '-1px',
-          }}>
-            {poll.result.aangenomen ? t('results.adopted_display') : t('results.rejected_display')}
-          </div>
-        </div>
       </div>
 
       {showBreakdown && (
@@ -304,7 +351,7 @@ function BetweenItems({ meeting, attendeeCount }) {
       <div style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.4)', marginBottom: 24, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
         {meeting.name}
       </div>
-      <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: '3rem', color: 'white', margin: '0 0 40px' }}>
+      <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '3rem', color: 'white', margin: '0 0 40px' }}>
         {t('display.session_ongoing')}
       </h1>
       <div style={{ display: 'flex', justifyContent: 'center', gap: 40 }}>
@@ -322,7 +369,7 @@ function ClosedDisplay({ meeting }) {
   const closedPolls = meeting.polls.filter(p => p.status === 'closed' && p.result)
   return (
     <div style={{ textAlign: 'center', maxWidth: 800, width: '100%' }}>
-      <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: '2.5rem', color: 'white', margin: '0 0 12px' }}>
+      <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '2.5rem', color: 'white', margin: '0 0 12px' }}>
         {t('display.meeting_closed')}
       </h1>
       <p style={{ color: 'rgba(255,255,255,0.4)', margin: '0 0 40px' }}>{meeting.name}</p>
@@ -336,14 +383,6 @@ function ClosedDisplay({ meeting }) {
               border: '1px solid rgba(255,255,255,0.08)',
             }}>
               <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', textAlign: 'left', flex: 1 }}>{poll.title}</span>
-              <span style={{
-                padding: '4px 16px', borderRadius: 6, fontWeight: 700, fontSize: '0.85rem', marginLeft: 20,
-                background: poll.result.aangenomen ? 'rgba(45,122,74,0.2)' : 'rgba(196,45,45,0.2)',
-                color: poll.result.aangenomen ? '#4CAF81' : '#EF5350',
-                whiteSpace: 'nowrap',
-              }}>
-                {poll.result.aangenomen ? t('results.adopted_short') : t('results.rejected_short')}
-              </span>
             </div>
           ))}
         </div>

@@ -10,6 +10,7 @@ import Register from './views/Register'
 import Display from './views/Display'
 import Archive from './views/Archive'
 import Aanmelden from './views/Aanmelden'
+import DeeplinkLogin from './views/DeeplinkLogin'
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
     <MeetingProvider>
       <BrowserRouter>
         <Routes>
+          <Route path="/deeplink-login" element={<DeeplinkLogin />} />
           <Route path="/" element={<Home />} />
           <Route path="/facilitator-login" element={<FacilitatorLogin />} />
           <Route path="/meeting/:id/facilitate" element={<Facilitate />} />

@@ -12,6 +12,7 @@ export default defineConfig({
     port: 5174,
     host: true,
     allowedHosts: extraHosts.length > 0 ? extraHosts : true,
+    historyApiFallback: true,
     proxy: {
       '/api': {
         target: `http://localhost:${process.env.VITE_API_PORT || 3001}`,

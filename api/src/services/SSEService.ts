@@ -19,6 +19,7 @@ class SSEService {
             "Cache-Control": "no-cache",
             Connection: "keep-alive",
             "Access-Control-Allow-Origin": "*",
+            "X-Accel-Buffering": "no",
         });
         // Send a heartbeat immediately so the browser knows the stream is alive
         res.write(": connected\n\n");

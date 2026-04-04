@@ -1,6 +1,6 @@
 import {
     Entity, PrimaryGeneratedColumn, Column,
-    CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn,
+    CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, Unique,
 } from "typeorm";
 import { Meeting } from "./Meeting";
 
@@ -8,6 +8,7 @@ export type AttendeeStatus = "expected" | "checked_in" | "absent";
 export type AttendeeMethod = "app" | "manual";
 
 @Entity("attendees")
+@Unique(["meeting_id", "attendee_name"])
 export class Attendee {
     @PrimaryGeneratedColumn("uuid")
     id!: string;

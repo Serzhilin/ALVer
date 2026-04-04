@@ -19,7 +19,7 @@ export const dataSourceOptions: DataSourceOptions = {
     url: process.env.ALVER_DATABASE_URL,
     synchronize: process.env.NODE_ENV !== "production" || process.env.DB_SYNCHRONIZE === "true",
     entities: [Meeting, Attendee, Mandate, Poll, Vote, Decision, User, Community, Member],
-    logging: process.env.NODE_ENV === "development",
+    logging: false,
     extra: {
         max: 10,
         min: 2,

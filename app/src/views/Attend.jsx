@@ -1,33 +1,46 @@
-import { useState, useEffect } from 'react'
-import { useMeeting, getGreeting } from '../context/MeetingContext'
+import { useState, useEffect, useRef } from 'react'
+import { useMeeting } from '../context/MeetingContext'
 import { useUser } from '../context/UserContext'
 import { useCommunity } from '../context/CommunityContext'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import LoginScreen from '../components/LoginScreen'
 import AppHeader from '../components/AppHeader'
+import AgendaHtml from '../components/AgendaHtml'
 
 export default function Attend() {
   const { id } = useParams()
   const { meeting, activePoll, attendeeCount, sseConnected, checkIn, castVote, setMeetingId } = useMeeting()
   const navigate = useNavigate()
+  const location = useLocation()
   const { t, i18n } = useTranslation()
   const { user, login, logout } = useUser()
   const { community } = useCommunity() || {}
 
-  useEffect(() => { setMeetingId(id) }, [id])
+  useEffect(() => {
+    setMeetingId(id)
+    localStorage.setItem('alver_attend_meeting_id', id)
+  }, [id])
+
+
+  useEffect(() => {
+    if (meeting?.phase === 'archived') {
+      localStorage.removeItem('alver_my_name')
+      localStorage.removeItem('alver_attend_meeting_id')
+    }
+  }, [meeting?.phase])
 
   const [myName, setMyName] = useState(() => localStorage.getItem('alver_my_name') || '')
-  const [nameInput, setNameInput] = useState('')
   const [checkedIn, setCheckedIn] = useState(false)
   const [greeting, setGreeting] = useState('')
   const [showGreeting, setShowGreeting] = useState(false)
   const [votedPolls, setVotedPolls] = useState({})
-  const [showEidLogin, setShowEidLogin] = useState(false)
+  const checkInFired = useRef(false)
 
   // When eID user logs in, auto-check-in with their full name (matches member record)
   useEffect(() => {
-    if (!user || !meeting || checkedIn) return
+    if (!user || !meeting || checkedIn || checkInFired.current) return
+    checkInFired.current = true
     const name = (user.firstName && user.lastName)
       ? `${user.firstName} ${user.lastName}`
       : user.displayName
@@ -38,56 +51,26 @@ export default function Attend() {
       setMyName(name)
       setCheckedIn(true)
     } else {
-      const g = getGreeting(name)
       setMyName(name)
       checkIn(name)
         .then(() => {
           localStorage.setItem('alver_my_name', name)
           setCheckedIn(true)
-          setGreeting(g)
+          setGreeting(t('attend.welcome_flash'))
           setShowGreeting(true)
           setTimeout(() => setShowGreeting(false), 3000)
         })
         .catch(err => console.warn('Auto check-in failed:', err))
     }
-  }, [user, meeting])
-
-  // Check if already checked in (name-based, no eID).
-  // Also pre-fills name from pre-registration and clears stale localStorage.
-  useEffect(() => {
-    if (!meeting || !myName || user) return
-    const found = meeting.checkedIn.find(c => c.name.toLowerCase() === myName.toLowerCase())
-    if (found) {
-      setCheckedIn(true)
-    } else if (meeting.checkedIn.length > 0) {
-      // Meeting has check-ins but this name isn't among them — stale name from a different meeting
-      localStorage.removeItem('alver_my_name')
-      setMyName('')
-    }
-  }, [myName, meeting?.checkedIn])
-
-  // Pre-fill name input from pre-registration record
-  const myPreReg = meeting ? meeting.preRegistrations.find(p => p.name.toLowerCase() === (myName || nameInput).toLowerCase()) : null
-
-  function handleCheckIn() {
-    const name = nameInput.trim()
-    if (!name) return
-    const g = getGreeting(name)
-    setMyName(name)
-    localStorage.setItem('alver_my_name', name)
-    checkIn(name).catch(err => console.warn('Check-in failed:', err))
-    setCheckedIn(true)
-    setGreeting(g)
-    setShowGreeting(true)
-    setTimeout(() => setShowGreeting(false), 3000)
-  }
+  }, [user?.ename, meeting?.id])
 
   function handleVote(pollId, option, isMandate = false) {
-    castVote(pollId, myName, option, isMandate, myMandate?.from)
+    // Set optimistic local state immediately — disables buttons before re-render
     setVotedPolls(prev => ({
       ...prev,
       [pollId]: isMandate ? { ...prev[pollId], mandate: option } : { ...prev[pollId], own: option }
     }))
+    castVote(pollId, myName, option, isMandate, myMandate?.from)
   }
 
   if (!meeting) {
@@ -119,7 +102,7 @@ export default function Attend() {
       zIndex: 200, flexDirection: 'column', padding: '0 32px',
     }} className="greeting-flash">
       <div style={{ fontSize: '3rem', marginBottom: 16 }}>👋</div>
-      <div style={{ color: 'white', fontSize: '1.8rem', fontFamily: 'Playfair Display, serif', fontWeight: 600, textAlign: 'center', lineHeight: 1.3 }}>
+      <div style={{ color: 'white', fontSize: '1.8rem', fontFamily: 'var(--font-title)', fontWeight: 600, textAlign: 'center', lineHeight: 1.3 }}>
         {greeting}
       </div>
     </div>
@@ -134,13 +117,10 @@ export default function Attend() {
     )
   }
 
-  // ── Pre check-in screen ───────────────────────────────────────────────────
-  if (!checkedIn) {
+  // ── Not logged in: show eID login full-screen ─────────────────────────────
+  if (!user) {
     return (
       <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', flexDirection: 'column' }}>
-        {greetingFlash}
-
-        {/* Top area: meeting identity */}
         <div style={{
           background: 'var(--color-primary, var(--color-terracotta))',
           padding: '40px 28px 32px',
@@ -150,7 +130,7 @@ export default function Attend() {
             ? <img src={community.logo_url} alt="logo" style={{ height: 48, maxWidth: 160, objectFit: 'contain', marginBottom: 8 }} />
             : <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>ALVer</div>
           }
-          <h1 style={{ color: 'white', fontSize: '1.6rem', fontFamily: 'Playfair Display, serif', margin: 0, lineHeight: 1.2 }}>
+          <h1 style={{ color: 'white', fontSize: '1.6rem', fontFamily: 'var(--font-title)', margin: 0, lineHeight: 1.2 }}>
             {meeting.name}
           </h1>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginTop: 12 }}>
@@ -168,107 +148,8 @@ export default function Attend() {
           </div>
         </div>
 
-        {/* Bottom area: check-in form */}
         <div style={{ flex: 1, background: 'white', borderRadius: '20px 20px 0 0', marginTop: -16, padding: '32px 24px 40px', display: 'flex', flexDirection: 'column' }}>
-
-          {!showEidLogin ? (
-            <>
-              <h2 style={{ margin: '0 0 20px', fontSize: '1.2rem', fontFamily: 'Inter, sans-serif', fontWeight: 600 }}>
-                {t('attend.check_in_title')}
-              </h2>
-
-              {/* Pre-registered shortcut — one-tap check-in */}
-              {myPreReg && !myName && (
-                <div style={{ marginBottom: 20, padding: '16px 20px', background: 'rgba(45,122,74,0.07)', border: '1.5px solid rgba(45,122,74,0.25)', borderRadius: 12 }}>
-                  <p style={{ margin: '0 0 12px', fontSize: '0.88rem', color: 'var(--color-charcoal-light)' }}>
-                    {t('attend.preregistered_welcome', { name: myPreReg.name })}
-                  </p>
-                  <button
-                    className="btn-primary"
-                    style={{ width: '100%', justifyContent: 'center', fontSize: '1rem', padding: '14px' }}
-                    onClick={() => {
-                      setNameInput(myPreReg.name)
-                      setMyName(myPreReg.name)
-                      localStorage.setItem('alver_my_name', myPreReg.name)
-                      const g = getGreeting(myPreReg.name)
-                      checkIn(myPreReg.name).catch(err => console.warn('Check-in failed:', err))
-                      setCheckedIn(true)
-                      setGreeting(g)
-                      setShowGreeting(true)
-                      setTimeout(() => setShowGreeting(false), 3000)
-                    }}
-                  >
-                    {t('attend.check_in_btn')}
-                  </button>
-                  <button
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-charcoal-light)', fontSize: '0.8rem', marginTop: 10, display: 'block', width: '100%', textAlign: 'center' }}
-                    onClick={() => {}}
-                  >
-                    {t('attend.not_you')}
-                  </button>
-                </div>
-              )}
-
-              {(!myPreReg || myName) && (
-                <>
-                  <p style={{ margin: '0 0 20px', color: 'var(--color-charcoal-light)', fontSize: '0.88rem' }}>
-                    {t('attend.check_in_hint')}
-                  </p>
-                  <label style={{ marginBottom: 6, fontSize: '0.82rem', fontWeight: 600, color: 'var(--color-charcoal)' }}>
-                    {t('attend.your_name')}
-                  </label>
-                  <input
-                    className="input"
-                    autoFocus
-                    style={{ fontSize: '1rem', padding: '14px 16px', marginBottom: 16 }}
-                    value={nameInput}
-                    onChange={e => setNameInput(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && handleCheckIn()}
-                    placeholder={t('common.fullname_placeholder')}
-                  />
-                </>
-              )}
-
-              <button
-                className="btn-primary"
-                style={{ width: '100%', justifyContent: 'center', fontSize: '1rem', padding: '16px', marginBottom: 16, display: myPreReg && !myName ? 'none' : undefined }}
-                disabled={!nameInput.trim()}
-                onClick={handleCheckIn}
-              >
-                {t('attend.check_in_btn')}
-              </button>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
-                <button
-                  className="btn-secondary"
-                  style={{ width: '100%', justifyContent: 'center', fontSize: '0.88rem' }}
-                  onClick={() => setShowEidLogin(true)}
-                >
-                  🪪 {t('auth.login_title')}
-                </button>
-                <button
-                  className="btn-secondary"
-                  style={{ width: '100%', justifyContent: 'center', fontSize: '0.88rem' }}
-                  onClick={() => navigate(`/meeting/${meeting.id}/register`)}
-                >
-                  {t('attend.register_or_mandate')}
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={() => setShowEidLogin(false)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-charcoal-light)', marginBottom: 20, fontSize: '0.85rem', padding: 0, textAlign: 'left' }}
-              >
-                {t('common.back')}
-              </button>
-              <LoginScreen
-                onSuccess={(token, u) => { login(token, u); setShowEidLogin(false) }}
-                nameOption={false}
-              />
-            </>
-          )}
+          <LoginScreen onSuccess={(token, u) => login(token, u)} nameOption={false} returnTo={location.pathname} />
         </div>
       </div>
     )
@@ -285,8 +166,9 @@ export default function Attend() {
       )}
 
       <AppHeader
+        logo={community?.logo_url}
         title={meeting.name}
-        liveIndicator={isInSession}
+        liveIndicator={false}
         user={user ?? (myName ? { displayName: myName } : null)}
         onLogout={logout}
       />
@@ -324,6 +206,7 @@ export default function Attend() {
             poll={activePoll}
             votedPolls={votedPolls}
             myMandate={myMandate}
+            myName={myName}
             onVote={handleVote}
             attendeeCount={attendeeCount}
             t={t}
@@ -372,9 +255,7 @@ export default function Attend() {
             <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-charcoal-light)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 12 }}>
               📋 {t('common.agenda')}
             </div>
-            <pre style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', color: 'var(--color-charcoal)', margin: 0, whiteSpace: 'pre-wrap', lineHeight: 1.8 }}>
-              {meeting.agenda}
-            </pre>
+            <AgendaHtml html={meeting.agenda} />
           </div>
         )}
       </div>
@@ -414,19 +295,24 @@ function WaitingScreen({ meeting, dateStr, attendeeCount, t }) {
           <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-charcoal-light)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 12 }}>
             📋 {t('common.agenda')}
           </div>
-          <pre style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', color: 'var(--color-charcoal)', margin: 0, whiteSpace: 'pre-wrap', lineHeight: 1.8 }}>
-            {meeting.agenda}
-          </pre>
+          <AgendaHtml html={meeting.agenda} />
         </div>
       )}
     </div>
   )
 }
 
-function VoteCard({ poll, votedPolls, myMandate, onVote, attendeeCount, t }) {
-  const myVote = votedPolls[poll.id]?.own
-  const myMandateVote = votedPolls[poll.id]?.mandate
-  const totalVotes = Object.keys(poll.votes).length + poll.manualVotes.length
+function VoteCard({ poll, votedPolls, myMandate, myName, onVote, attendeeCount, t }) {
+  // Resolve own vote: live data takes priority over in-memory state
+  const myVoteOptionId = myName ? poll.votes[myName] ?? poll.votes[Object.keys(poll.votes).find(k => k.toLowerCase() === myName.toLowerCase())] : null
+  const myVoteLabel = myVoteOptionId ? poll.options[poll._optionIds?.indexOf(myVoteOptionId)] ?? votedPolls[poll.id]?.own : votedPolls[poll.id]?.own
+  const myVote = myVoteLabel || null
+
+  // Resolve mandate vote: live data (onBehalfVoters) takes priority
+  const mandateAlreadyVoted = myMandate && poll.onBehalfVoters?.has(myMandate.from)
+  const myMandateVote = mandateAlreadyVoted ? true : votedPolls[poll.id]?.mandate
+
+  const totalVotes = Object.keys(poll.votes).length + (poll.onBehalfVoters?.size ?? 0)
 
   return (
     <div className="animate-slide-in" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -503,7 +389,7 @@ function VoteCard({ poll, votedPolls, myMandate, onVote, attendeeCount, t }) {
         {myVote && myMandate && myMandateVote && (
           <div style={{ padding: '12px 16px', background: 'rgba(45,98,196,0.05)', borderRadius: 10, border: '1px solid rgba(45,98,196,0.2)' }}>
             <span style={{ fontSize: '0.85rem', color: '#2D62C4', fontWeight: 500 }}>
-              {t('attend.vote_on_behalf_done', { name: myMandate.from })} <strong>{myMandateVote}</strong>
+              {t('attend.vote_on_behalf_done', { name: myMandate.from })} {typeof myMandateVote === 'string' && <strong>{myMandateVote}</strong>}
             </span>
           </div>
         )}
@@ -539,14 +425,6 @@ function ClosedPollResult({ poll, votedPolls, t }) {
         <p style={{ margin: '0 0 12px', fontSize: '0.9rem', color: 'var(--color-charcoal)', lineHeight: 1.5 }}>
           {poll.title}
         </p>
-        <span style={{
-          display: 'inline-block', padding: '5px 14px', borderRadius: 6, fontWeight: 700, fontSize: '0.9rem',
-          background: poll.result.aangenomen ? 'rgba(45,122,74,0.12)' : 'rgba(196,45,45,0.12)',
-          color: poll.result.aangenomen ? 'var(--color-green)' : 'var(--color-red)',
-          marginBottom: 10,
-        }} className="reveal-result">
-          {poll.result.aangenomen ? t('results.adopted') : t('results.rejected')}
-        </span>
         <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: '0.8rem' }}>
           {Object.entries(poll.result.tally).map(([option, count]) => (
             <span key={option} style={{ color: 'var(--color-charcoal-light)' }}>
@@ -569,9 +447,11 @@ function ClosedMeetingScreen({ meeting, votedPolls, onArchive, t }) {
         <h2 style={{ margin: '0 0 6px', fontSize: '1.1rem', fontFamily: 'Inter, sans-serif', fontWeight: 600 }}>
           {t('attend.meeting_closed_title')}
         </h2>
-        <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.88rem', margin: 0 }}>
-          {t('attend.meeting_closed_hint')}
-        </p>
+        {closedPolls.length > 0 && (
+          <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.88rem', margin: 0 }}>
+            {t('attend.meeting_closed_hint')}
+          </p>
+        )}
       </div>
       {closedPolls.map(poll => (
         <ClosedPollResult key={poll.id} poll={poll} votedPolls={votedPolls} t={t} />

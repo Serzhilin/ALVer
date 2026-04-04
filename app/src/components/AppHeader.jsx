@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitcher } from './LanguageSwitcher'
 
@@ -22,7 +22,6 @@ import { LanguageSwitcher } from './LanguageSwitcher'
  */
 export default function AppHeader({
   logo,
-  backTo,
   title,
   liveIndicator = false,
   user,
@@ -32,7 +31,6 @@ export default function AppHeader({
   onLogout,
   right,
 }) {
-  const navigate = useNavigate()
   const { i18n, t } = useTranslation()
   const [showMenu, setShowMenu] = useState(false)
   const menuRef = useRef(null)
@@ -67,28 +65,12 @@ export default function AppHeader({
 
         {/* ── Left ── */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
-          {backTo !== undefined && (
-            <>
-              <button
-                onClick={() => navigate(backTo)}
-                style={{
-                  background: 'none', border: 'none',
-                  color: 'var(--color-charcoal-light)',
-                  cursor: 'pointer', fontSize: '0.85rem', padding: 0, flexShrink: 0,
-                }}
-              >
-                {t('common.back')}
-              </button>
-              <span style={{ color: 'var(--color-sand-dark)', flexShrink: 0 }}>|</span>
-            </>
-          )}
-
           {logo && <HeaderLogo src={logo} />}
 
           {title && (
             <span style={{
               display: 'flex', alignItems: 'center', gap: 7,
-              fontFamily: 'Playfair Display, serif', fontWeight: 600, fontSize: '0.95rem',
+              fontFamily: 'var(--font-title)', fontWeight: 600, fontSize: '0.95rem',
               color: 'var(--color-charcoal)',
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>
@@ -178,12 +160,14 @@ function HeaderLogo({ src }) {
   const [failed, setFailed] = useState(false)
   if (failed) return null
   return (
-    <img
-      src={src}
-      alt="logo"
-      style={{ height: 32, maxWidth: 100, objectFit: 'contain', flexShrink: 0 }}
-      onError={() => setFailed(true)}
-    />
+    <Link to="/" style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+      <img
+        src={src}
+        alt="logo"
+        style={{ height: 32, maxWidth: 100, objectFit: 'contain' }}
+        onError={() => setFailed(true)}
+      />
+    </Link>
   )
 }
 

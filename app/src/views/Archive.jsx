@@ -3,6 +3,7 @@ import { useMeeting } from '../context/MeetingContext'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import FacilitatorHeader from '../components/FacilitatorHeader'
+import AgendaHtml from '../components/AgendaHtml'
 
 export default function Archive() {
   const { id } = useParams()
@@ -22,7 +23,6 @@ export default function Archive() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-cream)' }}>
       <FacilitatorHeader
-        backTo="/"
         title={t('archive.header')}
       />
 
@@ -60,9 +60,7 @@ export default function Archive() {
 
           <div>
             <label>{t('common.agenda')}</label>
-            <pre style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.88rem', color: 'var(--color-charcoal)', margin: '8px 0 0', whiteSpace: 'pre-wrap', lineHeight: 1.8 }}>
-              {meeting.agenda}
-            </pre>
+            <AgendaHtml html={meeting.agenda} style={{ marginTop: 8 }} />
           </div>
         </div>
 
@@ -90,18 +88,6 @@ export default function Archive() {
                   {poll.title}
                 </p>
               </div>
-              {poll.result && (
-                <div style={{ flexShrink: 0 }}>
-                  <span style={{
-                    display: 'inline-block',
-                    padding: '5px 16px', borderRadius: 6, fontWeight: 700, fontSize: '0.85rem',
-                    background: poll.result.aangenomen ? 'rgba(45,122,74,0.12)' : 'rgba(196,45,45,0.12)',
-                    color: poll.result.aangenomen ? 'var(--color-green)' : 'var(--color-red)',
-                  }}>
-                    {poll.result.aangenomen ? t('results.adopted_short') : t('results.rejected_short')}
-                  </span>
-                </div>
-              )}
             </div>
 
             {poll.result && (

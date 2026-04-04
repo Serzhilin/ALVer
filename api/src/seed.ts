@@ -131,9 +131,9 @@ async function seed() {
     // Facilitator as community member (hidden flag)
     await memberRepo.save(memberRepo.create({
         community_id: savedComm.id,
-        name: "Facilitator",
-        first_name: "Facilitator",
-        last_name: "",
+        name: "Sergei Zhilin",
+        first_name: "Sergei",
+        last_name: "Zhilin",
         ename: FACILITATOR_ENAME,
         is_facilitator: true,
         is_aspirant: false,
@@ -151,7 +151,7 @@ async function seed() {
         location: "Buurtcentrum GWL Terrein",
         agenda_text: `1. Opening en vaststelling agenda\n2. Notulen vorige ALV\n3. Financieel jaarverslag 2025 — ter informatie\n4. Besluit: verhoging maandelijkse bijdrage\n5. Besluit: aanstelling nieuwe penningmeester\n6. Rondvraag en sluiting`,
         status: "in_session",
-        facilitator_name: "Facilitator",
+        facilitator_name: "Sergei Zhilin",
     });
     const saved = await meetingRepo.save(meeting);
     const mid = saved.id;
@@ -236,7 +236,7 @@ async function seed() {
         location: "Buurtcentrum GWL Terrein",
         agenda_text: `1. Opening\n2. Notulen ALV mei 2025\n3. Jaarplan 2026\n4. Rondvraag en sluiting`,
         status: "archived",
-        facilitator_name: "Facilitator",
+        facilitator_name: "Sergei Zhilin",
     }));
     await meetingRepo.save(meetingRepo.create({
         community_id: savedComm.id,
@@ -246,7 +246,7 @@ async function seed() {
         location: "Buurtcentrum GWL Terrein",
         agenda_text: `1. Opening\n2. Jaarrekening 2024\n3. Besluit: dakisolatie project\n4. Bestuursverkiezing\n5. Rondvraag en sluiting`,
         status: "archived",
-        facilitator_name: "Facilitator",
+        facilitator_name: "Sergei Zhilin",
     }));
 
     // ── Future meetings ───────────────────────────────────────────────────────
@@ -258,7 +258,7 @@ async function seed() {
         location: "Buurtcentrum GWL Terrein",
         agenda_text: `1. Opening\n2. Notulen ALV februari 2026\n3. Zomerprogramma\n4. Rondvraag en sluiting`,
         status: "draft",
-        facilitator_name: "Facilitator",
+        facilitator_name: "Sergei Zhilin",
     }));
     await meetingRepo.save(meetingRepo.create({
         community_id: savedComm.id,
@@ -268,7 +268,7 @@ async function seed() {
         location: "Buurtcentrum GWL Terrein",
         agenda_text: `1. Opening\n2. Notulen ALV mei 2026\n3. Begroting 2027\n4. Rondvraag en sluiting`,
         status: "draft",
-        facilitator_name: "Facilitator",
+        facilitator_name: "Sergei Zhilin",
     }));
     console.log("✅ 4 additional meetings seeded");
 

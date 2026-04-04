@@ -3,6 +3,8 @@
     "loading": "Laden…",
     "back": "← Terug",
     "cancel": "Annuleren",
+    "other": "Andere",
+    "retry": "Opnieuw proberen",
     "save": "Opslaan",
     "add": "Toevoegen",
     "close": "Sluiten",
@@ -44,8 +46,13 @@
     "btn_attend": "Vergadering bijwonen",
     "btn_ill_come": "🙋 Ik kom",
     "btn_mandate": "📜 Ik kom niet, mandaat",
+    "btn_mandate_short": "📜 Mandaat geven",
+    "btn_cant_come": "Ik kom niet",
     "btn_modify": "✏️ Aanmelding wijzigen",
-    "preregistered_status": "Vooraf aangemeld: {{name}}"
+    "preregistered_status": "🙋 Vooraf aangemeld als aanwezig",
+    "mandate_status": "📜 Mandaat gegeven aan {{proxy}}",
+    "decline_status": "Je hebt aangegeven niet aanwezig te zijn",
+    "scan_qr_to_checkin": "📱 Scan de QR-code op de locatie om in te checken"
   },
   "facilitate": {
     "phase_label": "Fase",
@@ -106,7 +113,8 @@
     "aspirant_badge": "Aspirant",
     "member_search_placeholder": "Zoek lid…",
     "remove_attendee": "Aanwezige verwijderen",
-    "revoke_mandate": "Machtiging intrekken"
+    "revoke_mandate": "Machtiging intrekken",
+    "total_votes": "Totaal stemmen in zaal"
   },
   "attend": {
     "check_in_title": "Inchecken",
@@ -115,6 +123,7 @@
     "check_in_btn": "Inchecken ✓",
     "register_or_mandate": "Aanmelden of mandaat geven",
     "checked_in_badge": "✓ Ingecheckt",
+    "welcome_flash": "Welkom bij de vergadering!",
     "eligible_count": "{{count}} stemgerechtigd",
     "has_mandate_prefix": "📜 Je hebt een mandaat van",
     "not_started_title": "Vergadering nog niet gestart",

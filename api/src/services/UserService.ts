@@ -19,10 +19,10 @@ export async function updateUser(id: string, data: Partial<Pick<User, "first_nam
     return repo().save(user);
 }
 
-/** Format display name: "Sara V." or fall back to ename */
+/** Format display name: "Sara Visser" or fall back to ename */
 export function displayName(user: User): string {
     if (user.first_name && user.last_name) {
-        return `${user.first_name} ${user.last_name[0]}.`;
+        return `${user.first_name} ${user.last_name}`;
     }
     if (user.first_name) return user.first_name;
     return user.ename;
@@ -33,7 +33,7 @@ export async function fetchEVaultProfile(
     ename: string
 ): Promise<{ first_name: string; last_name: string } | null> {
     const registryUrl = process.env.PUBLIC_REGISTRY_URL;
-    const platformUrl = process.env.PUBLIC_ALVER_BASE_URL;
+    const platformUrl = process.env.VITE_PUBLIC_ALVER_BASE_URL;
     if (!registryUrl || !platformUrl) return null;
 
     try {

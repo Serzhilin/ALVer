@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import QRCode from 'qrcode'
-import { getAuthOffer, subscribeToAuthSession } from '../api/client'
+import { getAuthOffer, subscribeToAuthSession, pollAuthSessionResult } from '../api/client'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitcher } from './LanguageSwitcher'
 
@@ -15,7 +15,7 @@ const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
  *   nameOption             — if true, shows "continue with name" fallback below
  *   onNameContinue(name)   — called when user chooses name fallback
  */
-export default function LoginScreen({ onSuccess, nameOption = false, onNameContinue }) {
+export default function LoginScreen({ onSuccess, nameOption = false, onNameContinue, returnTo }) {
   const { t } = useTranslation()
   const [offer, setOffer] = useState(null)
   const [qrDataUrl, setQrDataUrl] = useState(null)
@@ -24,23 +24,46 @@ export default function LoginScreen({ onSuccess, nameOption = false, onNameConti
 
   useEffect(() => {
     let unsub = null
-    getAuthOffer()
-      .then(async ({ offer: offerUrl, sessionId }) => {
+    let pollInterval = null
+    let sessionId = null
+    let done = false
+
+    function finish(token, user) {
+      if (done) return
+      done = true
+      clearInterval(pollInterval)
+      if (unsub) unsub()
+      onSuccess(token, user)
+    }
+
+    getAuthOffer(returnTo)
+      .then(async ({ offer: offerUrl, sessionId: sid }) => {
+        sessionId = sid
         setOffer(offerUrl)
         setStatus('waiting')
 
-        if (!isMobile) {
+        if (isMobile) {
+          // Store sessionId so DeeplinkLogin can recover it if the tab is killed
+          localStorage.setItem('alver_auth_session', sid)
+          // SSE dies when browser backgrounds for deep-link — poll instead
+          pollInterval = setInterval(() => {
+            pollAuthSessionResult(sessionId).then(data => {
+              if (data?.token) finish(data.token, data.user)
+            }).catch(() => {})
+          }, 1500)
+        } else {
           const dataUrl = await QRCode.toDataURL(offerUrl, { width: 220, margin: 2 })
           setQrDataUrl(dataUrl)
+          unsub = subscribeToAuthSession(sid, ({ token, user }) => finish(token, user))
         }
-
-        unsub = subscribeToAuthSession(sessionId, ({ token, user }) => {
-          onSuccess(token, user)
-        })
       })
       .catch(() => setStatus('error'))
 
-    return () => { if (unsub) unsub() }
+    return () => {
+      done = true
+      clearInterval(pollInterval)
+      if (unsub) unsub()
+    }
   }, [])
 
   return (

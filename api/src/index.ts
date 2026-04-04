@@ -12,7 +12,7 @@ import { PollController } from "./controllers/PollController";
 import { VoteController } from "./controllers/VoteController";
 import { WebhookController } from "./controllers/WebhookController";
 import { CommunityController } from "./controllers/CommunityController";
-import { getOffer, epassportLogin, sseAuthStream, getMe, devLogin } from "./controllers/AuthController";
+import { getOffer, epassportLogin, sseAuthStream, getSessionResult, getMe, devLogin } from "./controllers/AuthController";
 import { requireAuth, optionalAuth } from "./middleware/auth";
 
 config({ path: path.resolve(__dirname, "../../.env") });
@@ -44,9 +44,11 @@ app.get("/api/auth/offer", authLimiter, getOffer);
 app.post("/api/auth/login", authLimiter, epassportLogin);
 app.post("/api/auth/dev-login", devLogin);
 app.get("/api/auth/sessions/:id", sseAuthStream);
+app.get("/api/auth/sessions/:id/result", getSessionResult);
 app.get("/api/auth/me", requireAuth, getMe);
 
 // ── Community ─────────────────────────────────────────────────────────────────
+app.get("/api/community/branding", community.getBranding);          // public
 app.get("/api/community", requireAuth, community.get);
 app.patch("/api/community", requireAuth, community.update);
 app.get("/api/community/members", requireAuth, community.listMembers);
@@ -107,6 +109,17 @@ if (process.env.NODE_ENV === "production") {
     const clientPath = path.join(__dirname, "../client");
     app.use(express.static(clientPath));
     app.use((_req, res) => res.sendFile(path.join(clientPath, "index.html")));
+} else {
+    // Dev: ngrok tunnels to this API port, so the wallet opens /deeplink-login here.
+    // Relay the browser to the Vite dev server (same path + query string).
+    const devFrontend = process.env.CLIENT_URL || "http://localhost:5174";
+    app.get("/deeplink-login", (req, res) => {
+        const target = new URL("/deeplink-login", devFrontend);
+        for (const [k, v] of Object.entries(req.query)) {
+            if (typeof v === "string") target.searchParams.set(k, v);
+        }
+        res.redirect(302, target.toString());
+    });
 }
 
 // ── DB init → listen ──────────────────────────────────────────────────────────

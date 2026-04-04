@@ -6,8 +6,8 @@
 :root {
   --color-cream: #F5F0E8;
   --color-cream-dark: #EDE6D6;
-  --color-terracotta: #C4622D;
-  --color-amber: #D4884A;
+  --color-terracotta: #64748B;
+  --color-amber: #7A8FA6;
   --color-charcoal: #2C2C2C;
   --color-charcoal-light: #4A4A4A;
   --color-sand: #E8DDD0;
@@ -33,7 +33,7 @@ body {
 
 #root { min-height: 100vh; }
 
-h1, h2, h3 { font-family: var(--font-title); }
+h1, h2, h3 { font-family: var(--font-title); font-weight: 700; }
 
 .card {
   background: white;
@@ -227,6 +227,16 @@ label {
 ::-webkit-scrollbar-track { background: var(--color-sand); }
 ::-webkit-scrollbar-thumb { background: var(--color-sand-dark); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-charcoal-light); }
+
+/* ── Agenda HTML (rendered output — mirrors tiptap prose) ───────────────── */
+.agenda-html { font-size: 0.88rem; color: var(--color-charcoal); line-height: 1.8; }
+.agenda-html p { margin: 0 0 6px; }
+.agenda-html p:last-child { margin-bottom: 0; }
+.agenda-html ul, .agenda-html ol { padding-left: 20px; margin: 4px 0 8px; }
+.agenda-html li { margin-bottom: 3px; }
+.agenda-html blockquote { border-left: 3px solid var(--color-terracotta); margin: 8px 0; padding: 4px 12px; color: var(--color-charcoal-light); font-style: italic; }
+.agenda-html hr { border: none; border-top: 1px solid var(--color-sand); margin: 10px 0; }
+.agenda-html strong { font-weight: 600; }
 
 /* ── Tiptap editor prose styles ─────────────────────────────────────────── */
 .tiptap { outline: none; }
