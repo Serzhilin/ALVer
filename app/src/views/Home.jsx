@@ -468,7 +468,7 @@ export default function Home() {
                 </div>
               : <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
                   {upcomingMeetings.map((m, i) => (
-                    <UpcomingRow key={m.id} meeting={m} last={i === upcomingMeetings.length - 1} formatDate={formatDate} onEdit={() => setEditingMeeting(m)} t={t} />
+                    <UpcomingRow key={m.id} meeting={m} last={i === upcomingMeetings.length - 1} formatDate={formatDate} onEdit={() => setEditingMeeting(m)} isFacilitator={isFacilitator} navigate={navigate} t={t} />
                   ))}
                 </div>
             }
@@ -617,14 +617,23 @@ function CurrentMeetingCard({ meeting: m, navigate, formatDate, onEdit, t, commu
   )
 }
 
-function UpcomingRow({ meeting: m, last, formatDate, onEdit, t }) {
+function UpcomingRow({ meeting: m, last, formatDate, onEdit, isFacilitator, navigate, t }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: last ? 'none' : '1px solid var(--color-sand)' }}>
+    <div className="upcoming-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: last ? 'none' : '1px solid var(--color-sand)' }}>
       <div>
         <div style={{ fontWeight: 500, fontSize: '0.9rem', color: 'var(--color-charcoal)' }}>{m.name}</div>
         <div style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', marginTop: 2 }}>{formatDate(m.date)} · 📍 {m.location}</div>
       </div>
-      <button onClick={onEdit} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.9rem', color: 'var(--color-charcoal-light)', padding: '4px 6px' }}>✏️</button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        {isFacilitator && (
+          <button onClick={() => navigate(`/meeting/${m.id}/facilitate`)} className="upcoming-row-btn">
+            🎙️ {t('facilitate.facilitate')}
+          </button>
+        )}
+        <button onClick={onEdit} className="upcoming-row-btn">
+          ✏️ {t('common.edit')}
+        </button>
+      </div>
     </div>
   )
 }

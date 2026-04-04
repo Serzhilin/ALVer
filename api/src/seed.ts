@@ -12,7 +12,7 @@ import { Poll } from "./database/entities/Poll";
 
 config({ path: path.resolve(__dirname, "../../.env") });
 
-const FACILITATOR_ENAME = process.env.VITE_FACILITATOR_ENAME || "facilitator@dewoonwolk";
+const FACILITATOR_ENAME = process.env.VITE_FACILITATOR_ENAME || "@9dafa031-4118-564c-bfa6-5917ddc8ab88";
 
 const logoPath = path.resolve(__dirname, "test_logo.svg");
 const LOGO_URL = fs.existsSync(logoPath)
