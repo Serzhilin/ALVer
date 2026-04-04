@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import QRCode from 'qrcode'
-import { getAuthOffer, subscribeToAuthSession, pollAuthSessionResult } from '../api/client'
+import { getAuthOffer, subscribeToAuthSession } from '../api/client'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitcher } from './LanguageSwitcher'
 
@@ -24,14 +24,12 @@ export default function LoginScreen({ onSuccess, nameOption = false, onNameConti
 
   useEffect(() => {
     let unsub = null
-    let pollInterval = null
     let sessionId = null
     let done = false
 
     function finish(token, user) {
       if (done) return
       done = true
-      clearInterval(pollInterval)
       if (unsub) unsub()
       onSuccess(token, user)
     }
@@ -43,14 +41,8 @@ export default function LoginScreen({ onSuccess, nameOption = false, onNameConti
         setStatus('waiting')
 
         if (isMobile) {
-          // Store sessionId so DeeplinkLogin can recover it if the tab is killed
-          localStorage.setItem('alver_auth_session', sid)
-          // SSE dies when browser backgrounds for deep-link — poll instead
-          pollInterval = setInterval(() => {
-            pollAuthSessionResult(sessionId).then(data => {
-              if (data?.token) finish(data.token, data.user)
-            }).catch(() => {})
-          }, 1500)
+          // On mobile the wallet opens a new tab (/deeplink-login) which handles the token.
+          // Nothing to do here — Tab 1 just keeps the offer visible.
         } else {
           const dataUrl = await QRCode.toDataURL(offerUrl, { width: 220, margin: 2 })
           setQrDataUrl(dataUrl)
@@ -61,7 +53,6 @@ export default function LoginScreen({ onSuccess, nameOption = false, onNameConti
 
     return () => {
       done = true
-      clearInterval(pollInterval)
       if (unsub) unsub()
     }
   }, [])
