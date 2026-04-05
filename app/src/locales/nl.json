@@ -192,7 +192,7 @@
     "meeting_closed": "Vergadering gesloten"
   },
   "archive": {
-    "header": "📁 Archief",
+    "header": "Archief",
     "not_available_title": "Archief nog niet beschikbaar",
     "not_available_hint": "Het archief is beschikbaar nadat de vergadering is gesloten.",
     "eligible": "stemgerechtigden",

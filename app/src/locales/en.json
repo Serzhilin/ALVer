@@ -192,7 +192,7 @@
     "meeting_closed": "Meeting closed"
   },
   "archive": {
-    "header": "📁 Archive",
+    "header": "Archive",
     "not_available_title": "Archive not yet available",
     "not_available_hint": "The archive is available after the meeting has been closed.",
     "eligible": "eligible voters",

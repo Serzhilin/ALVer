@@ -329,7 +329,7 @@ export default function Facilitate() {
 
           {/* Zone 3 — Polls */}
           <div className="card" style={{ padding: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: meeting.phase !== 'in_session' && meeting.phase !== 'archived' ? 4 : 20 }}>
               <h3 style={{ margin: 0, fontSize: '1rem', fontFamily: 'Inter, sans-serif', fontWeight: 600 }}>
                 {t('facilitate.polls')}
               </h3>
@@ -343,6 +343,11 @@ export default function Facilitate() {
                 </button>
               )}
             </div>
+            {meeting.phase !== 'in_session' && meeting.phase !== 'archived' && (
+              <p style={{ margin: '0 0 16px', fontSize: '0.8rem', color: 'var(--color-charcoal-light)', fontStyle: 'italic' }}>
+                {t('facilitate.available_during_session')}
+              </p>
+            )}
 
             {meeting.polls.length === 0 && (
               <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.9rem' }}>{t('facilitate.no_polls')}</p>
@@ -767,11 +772,6 @@ function PollCard({ poll, idx, activePoll, attendeeCount, canStart, onStart, onC
         {!canStart && poll.status === 'prepared' && !activePoll && phase === 'in_session' && (
           <span style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)', padding: '7px 0' }}>
             {t('facilitate.wait_for_poll')}
-          </span>
-        )}
-        {poll.status === 'prepared' && phase !== 'in_session' && (
-          <span style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)', fontStyle: 'italic' }}>
-            {t('facilitate.available_during_session')}
           </span>
         )}
       </div>

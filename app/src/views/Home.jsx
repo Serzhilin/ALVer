@@ -191,6 +191,18 @@ export default function Home() {
     setMandateNote('')
   }
 
+  // ── Shared derived data (used by both attendee and facilitator views) ────
+  const archiveMeetings = meetings
+    .filter(m => ARCHIVE_STATUSES.includes(m.status))
+    .sort((a, b) => b.date.localeCompare(a.date))
+
+  function formatDate(dateStr) {
+    if (!dateStr) return ''
+    return new Date(dateStr + 'T12:00').toLocaleDateString(dateLocale, {
+      weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+    })
+  }
+
   // ── Attendee screen ───────────────────────────────────────────────────────
   if (!isFacilitator) {
     const loc = currentMeeting
@@ -378,13 +390,17 @@ export default function Home() {
               </div>
             </div>
           ) : (
-            <div style={{ textAlign: 'center', maxWidth: 300 }}>
+            <div style={{ width: '100%', maxWidth: 420, background: 'white', borderRadius: 14, padding: '28px 24px', boxShadow: '0 2px 16px rgba(0,0,0,0.07)', textAlign: 'center' }}>
               <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>🏛️</div>
               <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.95rem', margin: 0, lineHeight: 1.6 }}>
                 {t('dashboard.no_active_meeting')}
               </p>
             </div>
           )}
+
+          <div style={{ width: '100%', maxWidth: 420, marginTop: 32 }}>
+            <ArchiveList meetings={archiveMeetings} formatDate={formatDate} t={t} />
+          </div>
         </div>
       </div>
     )
@@ -394,16 +410,6 @@ export default function Home() {
   const upcomingMeetings = meetings
     .filter(m => UPCOMING_STATUSES.includes(m.status))
     .sort((a, b) => a.date.localeCompare(b.date))
-  const archiveMeetings = meetings
-    .filter(m => ARCHIVE_STATUSES.includes(m.status))
-    .sort((a, b) => b.date.localeCompare(a.date))
-
-  function formatDate(dateStr) {
-    if (!dateStr) return ''
-    return new Date(dateStr + 'T12:00').toLocaleDateString(dateLocale, {
-      weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
-    })
-  }
 
   function handleSaved() {
     setShowCreateModal(false)
@@ -475,29 +481,7 @@ export default function Home() {
           </section>
 
           <section>
-            <SectionHeader label={t('dashboard.archive')} />
-            {archiveMeetings.length === 0
-              ? <div className="card" style={{ padding: '18px 20px' }}>
-                  <p style={{ color: 'var(--color-charcoal-light)', margin: 0, fontSize: '0.88rem' }}>{t('dashboard.no_archive')}</p>
-                </div>
-              : <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                  {archiveMeetings.map((m, i) => (
-                    <div
-                      key={m.id}
-                      onClick={() => navigate(`/meeting/${m.id}/archive`)}
-                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 20px', borderBottom: i < archiveMeetings.length - 1 ? '1px solid var(--color-sand)' : 'none', cursor: 'pointer' }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'var(--color-cream)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'white'}
-                    >
-                      <span>📁</span>
-                      <div>
-                        <div style={{ fontWeight: 500, fontSize: '0.9rem', color: 'var(--color-charcoal)' }}>{m.name}</div>
-                        <div style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', marginTop: 2 }}>{formatDate(m.date)} · {m.location}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-            }
+            <ArchiveList meetings={archiveMeetings} formatDate={formatDate} t={t} />
           </section>
         </div>
       </div>
@@ -634,6 +618,47 @@ function UpcomingRow({ meeting: m, last, formatDate, onEdit, isFacilitator, navi
           ✏️ {t('common.edit')}
         </button>
       </div>
+    </div>
+  )
+}
+
+function ArchiveList({ meetings, formatDate, t }) {
+  const navigate = useNavigate()
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
+        <button
+          onClick={() => setOpen(o => !o)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--color-charcoal-light)', fontFamily: 'inherit' }}
+        >
+          {t('dashboard.archive')}
+          <span style={{ fontSize: '0.7rem' }}>{open ? '▼' : '▶'}</span>
+        </button>
+      </div>
+      {open && (meetings.length === 0
+        ? <div className="card" style={{ padding: '18px 20px' }}>
+            <p style={{ color: 'var(--color-charcoal-light)', margin: 0, fontSize: '0.88rem' }}>{t('dashboard.no_archive')}</p>
+          </div>
+        : <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            {meetings.map((m, i) => (
+              <div
+                key={m.id}
+                onClick={() => navigate(`/meeting/${m.id}/archive`)}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 20px', borderBottom: i < meetings.length - 1 ? '1px solid var(--color-sand)' : 'none', cursor: 'pointer' }}
+                onMouseEnter={e => e.currentTarget.style.background = 'var(--color-cream)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'white'}
+              >
+                <span>📁</span>
+                <div>
+                  <div style={{ fontWeight: 500, fontSize: '0.9rem', color: 'var(--color-charcoal)' }}>{m.name}</div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', marginTop: 2 }}>{formatDate(m.date)} · {m.location}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+      )}
     </div>
   )
 }

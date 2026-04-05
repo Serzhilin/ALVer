@@ -102,12 +102,42 @@ export const hasVoted = (pollId, voterName, onBehalfOf) => {
 }
 
 // ── SSE ───────────────────────────────────────────────────────────────────────
+// Safari on iOS kills EventSource when the tab is backgrounded or screen locks.
+// We reconnect automatically: on error (with 3s delay) and on visibilitychange.
 export function subscribeToMeeting(meetingId, onEvent, { onDisconnect, onReconnect } = {}) {
-  const es = new EventSource(`${SSE_BASE}/meetings/${meetingId}/stream`)
-  es.onopen = () => { onReconnect?.() }
-  es.onmessage = (e) => {
-    try { onEvent(JSON.parse(e.data)) } catch {}
+  let es = null
+  let retryTimer = null
+  let destroyed = false
+
+  function connect() {
+    if (destroyed) return
+    es = new EventSource(`${SSE_BASE}/meetings/${meetingId}/stream`)
+    es.onopen = () => { onReconnect?.() }
+    es.onmessage = (e) => {
+      try { onEvent(JSON.parse(e.data)) } catch {}
+    }
+    es.onerror = () => {
+      onDisconnect?.()
+      es.close()
+      if (!destroyed) retryTimer = setTimeout(connect, 3000)
+    }
   }
-  es.onerror = () => { onDisconnect?.() }
-  return () => es.close()
+
+  function onVisible() {
+    if (document.visibilityState === 'visible') {
+      clearTimeout(retryTimer)
+      if (es) es.close()
+      connect()
+    }
+  }
+
+  document.addEventListener('visibilitychange', onVisible)
+  connect()
+
+  return () => {
+    destroyed = true
+    clearTimeout(retryTimer)
+    document.removeEventListener('visibilitychange', onVisible)
+    if (es) es.close()
+  }
 }

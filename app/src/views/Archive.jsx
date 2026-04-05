@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useMeeting } from '../context/MeetingContext'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -10,6 +10,9 @@ export default function Archive() {
   const { meeting, attendeeCount, setMeetingId } = useMeeting()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
+
+  const [attendeesOpen, setAttendeesOpen] = useState(false)
+  const [mandatesOpen, setMandatesOpen] = useState(false)
 
   useEffect(() => { setMeetingId(id) }, [id])
   if (!meeting) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--color-charcoal-light)' }}>{t('common.loading')}</div>
@@ -120,47 +123,63 @@ export default function Archive() {
           </div>
         ))}
 
-        {/* Attendees */}
-        <h2 style={{ fontSize: '1.1rem', margin: '24px 0 16px', color: 'var(--color-charcoal)' }}>
-          {t('archive.attendees_count', { count: meeting.checkedIn.length })}
-        </h2>
-        <div className="card" style={{ padding: 20, marginBottom: 16 }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            {meeting.checkedIn.map(c => (
-              <span
-                key={c.id}
-                style={{
-                  padding: '4px 14px', borderRadius: 20,
-                  background: 'var(--color-sand)', fontSize: '0.85rem',
-                  color: 'var(--color-charcoal)',
-                  display: 'inline-flex', alignItems: 'center', gap: 4,
-                }}
-              >
-                {c.name} {c.manual && <span title={t('facilitate.manually_added')} style={{ fontSize: '0.75rem' }}>📝</span>}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Mandates */}
-        {meeting.confirmedMandates.length > 0 && (
-          <>
-            <h2 style={{ fontSize: '1.1rem', margin: '24px 0 16px', color: 'var(--color-charcoal)' }}>
-              {t('archive.mandates_count', { count: meeting.confirmedMandates.length })}
-            </h2>
-            <div className="card" style={{ padding: 20 }}>
-              {meeting.confirmedMandates.map(m => (
-                <div key={m.id} style={{ padding: '8px 0', borderBottom: '1px solid var(--color-sand)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div>
-                    <span style={{ fontSize: '0.9rem', color: 'var(--color-charcoal)' }}>
-                      <strong>{m.from}</strong> → <strong>{m.to}</strong>
-                    </span>
-                    {m.note && <div style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', marginTop: 2 }}>{m.note}</div>}
-                  </div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)' }}>{m.confirmedAt}</span>
-                </div>
+        {/* Attendees — collapsed by default */}
+        <button
+          onClick={() => setAttendeesOpen(o => !o)}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0, margin: '24px 0 12px' }}
+        >
+          <h2 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--color-charcoal)' }}>
+            {t('archive.attendees_count', { count: meeting.checkedIn.length })}
+          </h2>
+          <span style={{ fontSize: '0.85rem', color: 'var(--color-charcoal-light)' }}>{attendeesOpen ? '▼' : '▶'}</span>
+        </button>
+        {attendeesOpen && (
+          <div className="card" style={{ padding: 20, marginBottom: 16 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {meeting.checkedIn.map(c => (
+                <span
+                  key={c.id}
+                  style={{
+                    padding: '4px 14px', borderRadius: 20,
+                    background: 'var(--color-sand)', fontSize: '0.85rem',
+                    color: 'var(--color-charcoal)',
+                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                  }}
+                >
+                  {c.name} {c.manual && <span title={t('facilitate.manually_added')} style={{ fontSize: '0.75rem' }}>📝</span>}
+                </span>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Mandates — collapsed by default */}
+        {meeting.confirmedMandates.length > 0 && (
+          <>
+            <button
+              onClick={() => setMandatesOpen(o => !o)}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0, margin: '16px 0 12px' }}
+            >
+              <h2 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--color-charcoal)' }}>
+                {t('archive.mandates_count', { count: meeting.confirmedMandates.length })}
+              </h2>
+              <span style={{ fontSize: '0.85rem', color: 'var(--color-charcoal-light)' }}>{mandatesOpen ? '▼' : '▶'}</span>
+            </button>
+            {mandatesOpen && (
+              <div className="card" style={{ padding: 20 }}>
+                {meeting.confirmedMandates.map(m => (
+                  <div key={m.id} style={{ padding: '8px 0', borderBottom: '1px solid var(--color-sand)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <span style={{ fontSize: '0.9rem', color: 'var(--color-charcoal)' }}>
+                        <strong>{m.from}</strong> → <strong>{m.to}</strong>
+                      </span>
+                      {m.note && <div style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', marginTop: 2 }}>{m.note}</div>}
+                    </div>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)' }}>{m.confirmedAt}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         )}
       </div>
