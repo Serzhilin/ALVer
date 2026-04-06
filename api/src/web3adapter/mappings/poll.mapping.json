@@ -1,0 +1,13 @@
+{
+  "tableName": "polls",
+  "schemaId": "abe892b9-09bf-4443-b692-cdb381e9bc1c",
+  "ownerEnamePath": "groups(meeting.community.ename)",
+  "localToUniversalMap": {
+    "motion_text": "motionText",
+    "vote_options": "voteOptions",
+    "status": "status",
+    "meeting_id": "meetingId",
+    "opened_at": "openedAt",
+    "closed_at": "closedAt"
+  }
+}

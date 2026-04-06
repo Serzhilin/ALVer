@@ -1,0 +1,14 @@
+{
+  "tableName": "meetings",
+  "schemaId": "48584d08-5b6f-40b2-8159-34198221a858",
+  "ownerEnamePath": "groups(community.ename)",
+  "localToUniversalMap": {
+    "name": "name",
+    "date": "date",
+    "time": "time",
+    "location": "location",
+    "agenda_text": "agendaText",
+    "status": "status",
+    "community_id": "communityId"
+  }
+}

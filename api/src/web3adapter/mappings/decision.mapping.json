@@ -1,0 +1,14 @@
+{
+  "tableName": "decisions",
+  "schemaId": "2eadae79-afd4-4d52-817a-88d0a03b947f",
+  "ownerEnamePath": "groups(meeting.community.ename)",
+  "localToUniversalMap": {
+    "motion_text": "motionText",
+    "result": "result",
+    "breakdown": "breakdown",
+    "total_votes": "totalVotes",
+    "closed_at": "closedAt",
+    "facilitator_signature": "facilitatorSignature",
+    "poll_id": "pollId"
+  }
+}

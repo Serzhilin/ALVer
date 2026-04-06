@@ -1,0 +1,16 @@
+{
+  "tableName": "votes",
+  "schemaId": "51cb0bfe-1eaf-479b-b5ee-27254cfd038b",
+  "ownerEnamePath": "groups(poll.meeting.community.ename)",
+  "localToUniversalMap": {
+    "voter_ename": "voterEname",
+    "voter_name": "voterName",
+    "poll_id": "pollId",
+    "option_id": "optionId",
+    "cast_at": "castAt",
+    "method": "method",
+    "on_behalf_of_ename": "onBehalfOfEname",
+    "on_behalf_of_name": "onBehalfOfName",
+    "signature": "signature"
+  }
+}

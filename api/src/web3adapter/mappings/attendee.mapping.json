@@ -1,0 +1,13 @@
+{
+  "tableName": "attendees",
+  "schemaId": "fb106227-2316-4881-9691-bb6869cf9131",
+  "ownerEnamePath": "groups(meeting.community.ename)",
+  "localToUniversalMap": {
+    "attendee_name": "memberName",
+    "attendee_ename": "memberEname",
+    "meeting_id": "meetingId",
+    "checked_in_at": "checkedInAt",
+    "method": "checkInMethod",
+    "status": "status"
+  }
+}
