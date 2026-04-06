@@ -10,7 +10,7 @@ import dotenv from "dotenv";
 import { AppDataSource } from "../database/data-source";
 import { Meeting } from "../database/entities/Meeting";
 
-dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
+dotenv.config({ path: path.resolve(__dirname, "../../../.env"), override: true });
 
 export const adapter = new Web3Adapter({
     schemasPath: path.resolve(__dirname, "./mappings/"),
