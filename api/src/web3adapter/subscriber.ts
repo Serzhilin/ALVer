@@ -30,11 +30,11 @@ export class AlverSubscriber implements EntitySubscriberInterface {
 
         setTimeout(async () => {
             try {
-                const enriched = await this.loadAndEnrich(entityId, tableName, entityTarget);
-                if (!enriched) return;
-
                 const globalId = await adapter.mappingDb.getGlobalId(entityId) ?? "";
                 if (adapter.lockedIds.includes(globalId) || adapter.lockedIds.includes(entityId)) return;
+
+                const enriched = await this.loadAndEnrich(entityId, tableName, entityTarget);
+                if (!enriched) return;
 
                 await adapter.handleChange({ data: enriched, tableName });
             } catch (err) {
@@ -51,11 +51,11 @@ export class AlverSubscriber implements EntitySubscriberInterface {
 
         setTimeout(async () => {
             try {
-                const enriched = await this.loadAndEnrich(entityId, tableName, entityTarget);
-                if (!enriched) return;
-
                 const globalId = await adapter.mappingDb.getGlobalId(entityId) ?? "";
                 if (adapter.lockedIds.includes(globalId) || adapter.lockedIds.includes(entityId)) return;
+
+                const enriched = await this.loadAndEnrich(entityId, tableName, entityTarget);
+                if (!enriched) return;
 
                 await adapter.handleChange({ data: enriched, tableName });
             } catch (err) {
