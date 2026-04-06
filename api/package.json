@@ -24,7 +24,7 @@
     "reflect-metadata": "^0.2.1",
     "typeorm": "^0.3.24",
     "uuid": "^9.0.1",
-    "web3-adapter": "file:../../metastate/prototype/infrastructure/web3-adapter"
+    "web3-adapter": "file:./vendor/web3-adapter"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

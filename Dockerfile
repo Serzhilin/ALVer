@@ -31,6 +31,7 @@ FROM node:20-alpine AS api-build
 WORKDIR /build/api
 
 COPY api/package*.json ./
+COPY api/vendor/ ./vendor/
 RUN npm ci
 
 COPY api/tsconfig.json ./
