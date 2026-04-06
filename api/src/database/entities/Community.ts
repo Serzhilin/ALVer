@@ -31,6 +31,12 @@ export class Community {
     @Column({ type: "jsonb", default: [] })
     locations!: object[];
 
+    @Column({ nullable: true })
+    ename!: string;
+
+    @Column({ nullable: true })
+    evault_uri!: string;
+
     @OneToMany(() => Member, (m) => m.community)
     members!: Member[];
 
