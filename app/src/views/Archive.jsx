@@ -53,9 +53,19 @@ export default function Archive() {
                 <div style={{ fontSize: '0.88rem', color: 'var(--color-charcoal-light)' }}>📍 {meeting.location}</div>
               </div>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-charcoal)' }}>{attendeeCount}</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)' }}>{t('archive.eligible')}</div>
+            <div style={{ textAlign: 'right', display: 'flex', gap: 20 }}>
+              <div>
+                <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-charcoal)' }}>
+                  {meeting.checkedIn.filter(c => !c.isAspirant).length}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)' }}>{t('archive.voters_present')}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-charcoal)' }}>
+                  {meeting.confirmedMandates.length}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)' }}>{t('archive.mandates')}</div>
+              </div>
             </div>
           </div>
 

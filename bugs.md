@@ -2,24 +2,23 @@
 
 General:
 
-idea: add slides and notulen, as links, hten ppl have them as well
--
+Main screen of facilitator and  for attendee as well: title Archive (expandable) - not bold
 
 Attendee flow:
 
-Check how voting for other people works
-
----
 Facilitator flow:
 
-things update on the go now? eg when a person voted facilitator immediately cannot vote for them
-
----
-Display screen
 
 
----
+Display screen:
 
-Archive screen:
-- check everything
-- give it to attendees as well!
+if a meeting is not announced - ?
+
+if voting in progress - more fun?
+
+Later:
+
+idea: add slides and notulen, as links, hten ppl have them as well in archive. but can be overbodig maybe? or not? or later with nextcloud
+
+ideally not google maps but other maps...
+

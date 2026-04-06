@@ -342,7 +342,8 @@ export async function verifySignature(
         
         if (keyBindingCertificates.length === 0) {
             return {
-                valid: true,
+                valid: false,
+                error: "No key binding certificates found for this eID",
             };
         }
 

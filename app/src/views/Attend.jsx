@@ -50,6 +50,10 @@ export default function Attend() {
     if (found) {
       setMyName(name)
       setCheckedIn(true)
+    } else if (meeting.phase === 'in_session') {
+      // Meeting already live — do not auto-check-in. Facilitator must add them manually.
+      setMyName(name)
+      // checkedIn stays false → "meeting in progress" screen is shown
     } else {
       setMyName(name)
       checkIn(name)
@@ -108,8 +112,25 @@ export default function Attend() {
     </div>
   )
 
-  // ── Auto-checkin spinner (eID user logged in, effect not yet fired) ────────
+  // ── Auto-checkin spinner / blocked screen ────────────────────────────────
   if (!checkedIn && user) {
+    // If meeting is live and this user isn't in checkedIn list — block them
+    if (meeting.phase === 'in_session') {
+      return (
+        <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>🔒</div>
+          <h2 style={{ margin: '0 0 10px', fontSize: '1.1rem', fontFamily: 'Inter, sans-serif', fontWeight: 600, color: 'var(--color-charcoal)' }}>
+            {meeting.name}
+          </h2>
+          <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.9rem', margin: '0 0 8px', lineHeight: 1.5 }}>
+            {t('attend.session_locked_hint')}
+          </p>
+          <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.82rem', margin: 0 }}>
+            {t('attend.session_locked_sub')}
+          </p>
+        </div>
+      )
+    }
     return (
       <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <span style={{ color: 'var(--color-charcoal-light)', fontSize: '0.9rem' }}>{t('common.loading')}</span>
@@ -226,8 +247,8 @@ export default function Attend() {
           </div>
         )}
 
-        {/* In session: waiting for poll */}
-        {isInSession && !activePoll && (
+        {/* In session: waiting for poll (only if more polls are queued) */}
+        {isInSession && !activePoll && meeting.polls.some(p => p.status === 'queued') && (
           <div style={{ background: 'white', borderRadius: 14, padding: '40px 24px', textAlign: 'center' }}>
             <div style={{ fontSize: '2rem', marginBottom: 14 }}>💬</div>
             <p style={{ color: 'var(--color-charcoal)', fontSize: '1rem', margin: '0 0 6px', fontWeight: 500 }}>
@@ -246,7 +267,7 @@ export default function Attend() {
 
         {/* Meeting closed */}
         {isClosed && (
-          <ClosedMeetingScreen meeting={meeting} votedPolls={votedPolls} onArchive={() => navigate(`/meeting/${meeting.id}/archive`)} t={t} />
+          <ClosedMeetingScreen meeting={meeting} votedPolls={votedPolls} onArchive={() => navigate(`/${community?.slug}/meeting/${meeting.id}/archive`)} t={t} />
         )}
 
         {/* Agenda (in session, no active poll) */}

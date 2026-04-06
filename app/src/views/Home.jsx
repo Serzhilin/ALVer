@@ -59,6 +59,11 @@ export default function Home() {
 
   useEffect(() => { loadMeetings() }, [user])
 
+  // Re-fetch meeting list when meeting phase changes via SSE (e.g. open → in_session)
+  useEffect(() => {
+    if (ctxMeeting?.phase) loadMeetings()
+  }, [ctxMeeting?.phase])
+
   const currentMeeting = meetings.find(m => CURRENT_STATUSES.includes(m.status))
 
   // Init MeetingContext for attendee actions (preRegister, addMandate, etc.)
@@ -105,7 +110,7 @@ export default function Home() {
       )
     }
     if (redirectMeetingId) {
-      return <Navigate to={`/meeting/${redirectMeetingId}/attend`} replace />
+      return <Navigate to={`/${community?.slug}/meeting/${redirectMeetingId}/attend`} replace />
     }
   }
 
@@ -453,6 +458,7 @@ export default function Home() {
                     onEdit={() => setEditingMeeting(currentMeeting)}
                     t={t}
                     communityLocations={community?.locations}
+                    communitySlug={community?.slug}
                   />
                 : <AnnounceCard
                     upcomingMeetings={upcomingMeetings}
@@ -474,7 +480,7 @@ export default function Home() {
                 </div>
               : <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
                   {upcomingMeetings.map((m, i) => (
-                    <UpcomingRow key={m.id} meeting={m} last={i === upcomingMeetings.length - 1} formatDate={formatDate} onEdit={() => setEditingMeeting(m)} isFacilitator={isFacilitator} navigate={navigate} t={t} />
+                    <UpcomingRow key={m.id} meeting={m} last={i === upcomingMeetings.length - 1} formatDate={formatDate} onEdit={() => setEditingMeeting(m)} isFacilitator={isFacilitator} navigate={navigate} t={t} communitySlug={community?.slug} />
                   ))}
                 </div>
             }
@@ -522,7 +528,7 @@ function AnnounceCard({ upcomingMeetings, onAnnounce, t }) {
   }
 
   return (
-    <div className="card" style={{ padding: 28, borderLeft: '4px solid var(--color-sand-dark)', display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 16 }}>
       <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-charcoal-light)' }}>{t('dashboard.no_announced_hint')}</p>
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <select className="input" value={selected} onChange={e => setSelected(e.target.value)} style={{ flex: 1, minWidth: 180 }}>
@@ -558,7 +564,7 @@ function SectionHeader({ label, children }) {
   )
 }
 
-function CurrentMeetingCard({ meeting: m, navigate, formatDate, onEdit, t, communityLocations }) {
+function CurrentMeetingCard({ meeting: m, navigate, formatDate, onEdit, t, communityLocations, communitySlug }) {
   const isInSession = m.status === 'in_session'
   const accentColor = isInSession ? 'var(--color-green)' : 'var(--color-terracotta)'
   const loc = lookupLocation(m.location, communityLocations)
@@ -588,11 +594,11 @@ function CurrentMeetingCard({ meeting: m, navigate, formatDate, onEdit, t, commu
         )}
       </div>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-        <button className="btn-primary" onClick={() => navigate(`/meeting/${m.id}/facilitate`)}>
+        <button className="btn-primary" onClick={() => navigate(`/${communitySlug}/meeting/${m.id}/facilitate`)}>
           🎙️ {t('home.nav_facilitator')}
         </button>
         {isInSession && (
-          <button className="btn-secondary" onClick={() => window.open(`/meeting/${m.id}/display`, '_blank')}>
+          <button className="btn-secondary" onClick={() => window.open(`/${communitySlug}/meeting/${m.id}/display`, '_blank')}>
             📺 {t('home.nav_display')}
           </button>
         )}
@@ -601,7 +607,7 @@ function CurrentMeetingCard({ meeting: m, navigate, formatDate, onEdit, t, commu
   )
 }
 
-function UpcomingRow({ meeting: m, last, formatDate, onEdit, isFacilitator, navigate, t }) {
+function UpcomingRow({ meeting: m, last, formatDate, onEdit, isFacilitator, navigate, t, communitySlug }) {
   return (
     <div className="upcoming-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: last ? 'none' : '1px solid var(--color-sand)' }}>
       <div>
@@ -610,7 +616,7 @@ function UpcomingRow({ meeting: m, last, formatDate, onEdit, isFacilitator, navi
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         {isFacilitator && (
-          <button onClick={() => navigate(`/meeting/${m.id}/facilitate`)} className="upcoming-row-btn">
+          <button onClick={() => navigate(`/${communitySlug}/meeting/${m.id}/facilitate`)} className="upcoming-row-btn">
             🎙️ {t('facilitate.facilitate')}
           </button>
         )}
@@ -624,6 +630,7 @@ function UpcomingRow({ meeting: m, last, formatDate, onEdit, isFacilitator, navi
 
 function ArchiveList({ meetings, formatDate, t }) {
   const navigate = useNavigate()
+  const { community } = useCommunity() || {}
   const [open, setOpen] = useState(false)
 
   return (
@@ -645,7 +652,7 @@ function ArchiveList({ meetings, formatDate, t }) {
             {meetings.map((m, i) => (
               <div
                 key={m.id}
-                onClick={() => navigate(`/meeting/${m.id}/archive`)}
+                onClick={() => navigate(`/${community?.slug}/meeting/${m.id}/archive`)}
                 style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 20px', borderBottom: i < meetings.length - 1 ? '1px solid var(--color-sand)' : 'none', cursor: 'pointer' }}
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--color-cream)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'white'}

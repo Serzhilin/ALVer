@@ -9,7 +9,9 @@ const commSvc = new CommunityService();
 export class MeetingController {
     create = async (req: Request, res: Response) => {
         try {
-            const meeting = await svc.create(req.body);
+            const community = await commSvc.findByFacilitatorEname(req.user!.ename);
+            if (!community) return res.status(403).json({ error: "Forbidden" });
+            const meeting = await svc.create({ ...req.body, community_id: community.id });
             res.status(201).json(meeting);
         } catch (e: any) {
             res.status(400).json({ error: e.message });

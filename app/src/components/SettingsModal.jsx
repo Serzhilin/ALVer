@@ -2,7 +2,11 @@ import { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCommunity, TITLE_FONTS } from '../context/CommunityContext'
 
-const EMPTY_LOC = { name: '', address: '', maps_url: '' }
+const EMPTY_LOC = { name: '', address: '' }
+
+function mapsUrl(address) {
+  return address.trim() ? `https://maps.google.com/?q=${encodeURIComponent(address.trim())}` : ''
+}
 
 const PRESET_COLORS = [
   '#C4622D', // terracotta (default)
@@ -112,13 +116,13 @@ export default function SettingsModal({ onClose }) {
         id: crypto.randomUUID(),
         name: locForm.name.trim(),
         address: locForm.address.trim(),
-        maps_url: locForm.maps_url.trim(),
+        maps_url: mapsUrl(locForm.address),
         isDefault: locations.length === 0,
       }
       updated = [...locations, newLoc]
     } else {
       updated = locations.map(l => l.id === editingLoc
-        ? { ...l, name: locForm.name.trim(), address: locForm.address.trim(), maps_url: locForm.maps_url.trim() }
+        ? { ...l, name: locForm.name.trim(), address: locForm.address.trim(), maps_url: mapsUrl(locForm.address) }
         : l)
     }
     try {
@@ -207,7 +211,7 @@ export default function SettingsModal({ onClose }) {
               <div key={loc.id}>
                 {editingLoc === loc.id
                   ? <LocationForm form={locForm} setF={setLF} onSave={saveLocation} onCancel={() => setEditingLoc(null)} t={t} />
-                  : <LocationCard loc={loc} onEdit={() => { setLocForm({ name: loc.name, address: loc.address || '', maps_url: loc.maps_url || '' }); setEditingLoc(loc.id) }} onDelete={() => removeLocation(loc.id)} onSetDefault={() => setDefaultLocation(loc.id)} t={t} />
+                  : <LocationCard loc={loc} onEdit={() => { setLocForm({ name: loc.name, address: loc.address || '' }); setEditingLoc(loc.id) }} onDelete={() => removeLocation(loc.id)} onSetDefault={() => setDefaultLocation(loc.id)} t={t} />
                 }
               </div>
             ))}
@@ -216,8 +220,6 @@ export default function SettingsModal({ onClose }) {
             )}
           </div>
         </div>
-
-        <div style={{ borderTop: '1px solid var(--color-sand)', marginBottom: 28 }} />
 
         <div style={{ borderTop: '1px solid var(--color-sand)', marginBottom: 28 }} />
 
@@ -364,7 +366,6 @@ function LocationForm({ form, setF, onSave, onCancel, t }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
         <input className="input" autoFocus value={form.name} onChange={e => setF('name', e.target.value)} placeholder={t('settings.location_name_placeholder')} />
         <input className="input" value={form.address} onChange={e => setF('address', e.target.value)} placeholder={t('settings.location_address_placeholder')} />
-        <input className="input" value={form.maps_url} onChange={e => setF('maps_url', e.target.value)} placeholder={t('settings.location_maps_placeholder')} />
       </div>
       <div style={{ display: 'flex', gap: 8 }}>
         <button className="btn-primary" style={{ fontSize: '0.85rem', padding: '6px 14px' }} onClick={onSave} disabled={!form.name.trim()}>{t('common.save')}</button>

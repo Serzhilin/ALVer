@@ -47,14 +47,21 @@ async function seed() {
         facilitator_ename: FACILITATOR_ENAME,
         logo_url: LOGO_URL,
         primary_color: "#2D7A4A",
-        title_font: "Playfair Display",
+        title_font: "Nunito",
         locations: [
             {
                 id: "loc-1",
-                name: "Buurtcentrum GWL Terrein",
-                address: "Kostverlorenkade 7, Amsterdam",
-                maps_url: "https://maps.google.com/?q=Kostverlorenkade+7+Amsterdam",
+                name: "Vrijeschool Amsterdam West",
+                address: "Eerste Nassaustraat 5, 1052 BD Amsterdam",
+                maps_url: "https://maps.google.com/?q=Eerste Nassaustraat 5, 1052 BD Amsterdam",
                 isDefault: true,
+            },
+            {
+                id: "loc-2",
+                name: "Thonik",
+                address: "Grensstraat 47, 1091 SW Amsterdam",
+                maps_url: "https://maps.google.com/?q=Grensstraat%2047%2C%201091%20SW%20Amsterdam",
+                isDefault: false,
             },
         ],
     });
@@ -62,73 +69,80 @@ async function seed() {
     console.log(`✅ Community created: ${savedComm.id}`);
 
     // ── Members ───────────────────────────────────────────────────────────────
-    const regularMembers = [
-        // pre-registered in this meeting
-        { first_name: "Sara",    last_name: "Bakker" },
-        { first_name: "Mehmet",  last_name: "Yilmaz" },
-        { first_name: "Lies",    last_name: "de Boer" },
-        { first_name: "Joost",   last_name: "van den Berg" },
-        { first_name: "Roel",    last_name: "Vermeer" },
-        { first_name: "Nadia",   last_name: "El Amrani" },
-        { first_name: "Thomas",  last_name: "Kuiper" },
-        { first_name: "Pim",     last_name: "Visser" },
-        // mandate granters
-        { first_name: "Robin",   last_name: "Smit" },
-        { first_name: "Karin",   last_name: "Dijkstra" },
-        // 10 additional members
-        { first_name: "Fatima",  last_name: "El Mansouri" },
-        { first_name: "Pieter",  last_name: "Janssen" },
-        { first_name: "Anna",    last_name: "van Dijk" },
-        { first_name: "Kevin",   last_name: "Brouwer" },
-        { first_name: "Inge",    last_name: "Meijer" },
-        { first_name: "Marco",   last_name: "Hendriks" },
-        { first_name: "Yasmine", last_name: "Okafor" },
-        { first_name: "Hans",    last_name: "de Graaf" },
-        { first_name: "Sofie",   last_name: "Peeters" },
-        { first_name: "David",   last_name: "Cohen" },
-    ];
-    const aspirantMembers = [
-        { first_name: "Lisa",  last_name: "Verwey" },
-        { first_name: "Omar",  last_name: "Hassan" },
-        { first_name: "Emma",  last_name: "van Loon" },
+    const regularMembers: { first_name: string; last_name: string }[] = [
+        { first_name: "Anna",      last_name: "Kenbeek" },
+        { first_name: "Anne",      last_name: "Gelderland" },
+        { first_name: "Aysegul",   last_name: "Celik" },
+        { first_name: "Bethany",   last_name: "Copsey" },
+        { first_name: "Christina", last_name: "Drotenko" },
+        { first_name: "Ella",      last_name: "Sikken" },
+        { first_name: "Gereon",    last_name: "Wahle" },
+        { first_name: "Hannah",    last_name: "van Gelderen" },
+        { first_name: "Irene",     last_name: "Brok" },
+        { first_name: "Irma",      last_name: "van Geffen" },
+        { first_name: "Isabelle",  last_name: "van Eijk" },
+        { first_name: "Isidore",   last_name: "van Westing" },
+        { first_name: "Isis",      last_name: "van der Knaap" },
+        { first_name: "Jan",       last_name: "van den Oord" },
+        { first_name: "Jaro",      last_name: "Pichel" },
+        { first_name: "Josien",    last_name: "Verwoerd" },
+        { first_name: "Konrad",    last_name: "Rybka" },
+        { first_name: "Laura",     last_name: "van den Brink" },
+        { first_name: "Loulou",    last_name: "Kokkedee" },
+        { first_name: "Maria",     last_name: "Luttikhuis" },
+        { first_name: "Marvin",    last_name: "Oppong" },
+        { first_name: "Mories",    last_name: "Römkens" },
+        { first_name: "Myrte",     last_name: "Blanken" },
+        { first_name: "Nikki",     last_name: "Spee" },
+        { first_name: "Nils",      last_name: "Hollestelle" },
+        { first_name: "Nina",      last_name: "van Rossem" },
+        { first_name: "Pim",       last_name: "Boer" },
+        { first_name: "Sanci",     last_name: "Koper" },
+        { first_name: "Selma",     last_name: "Beltifa" },
+        { first_name: "Sjoerd",    last_name: "Eltink" },
+        { first_name: "Suzanne",   last_name: "Bollen" },
+        { first_name: "Truus",     last_name: "Weesjes" },
+        { first_name: "Yara",      last_name: "Fransen" },
+        { first_name: "Yentl",     last_name: "Kuin" },
+        { first_name: "Yoshi",     last_name: "Reinders" },
+        { first_name: "Yse",       last_name: "Tuynman" },
+        { first_name: "Yvo",       last_name: "Snoeker" },
+        { first_name: "Robin",     last_name: "Ramael" },
     ];
 
-    const memberMap: Record<string, Member> = {};
+    const aspirantMembers: { first_name: string; last_name: string }[] = [
+        { first_name: "Fietje",       last_name: "Engelhard" },
+        { first_name: "Freya & Luca", last_name: "" },
+        { first_name: "Janna",        last_name: "Hoogerwerf" },
+        { first_name: "Lilian",       last_name: "Kingma" },
+        { first_name: "Sam & Koen",   last_name: "" },
+        { first_name: "Tim",          last_name: "Strasser" },
+    ];
 
     for (const { first_name, last_name } of regularMembers) {
-        const name = `${first_name} ${last_name}`;
-        const m = await memberRepo.save(memberRepo.create({
+        const name = last_name ? `${first_name} ${last_name}` : first_name;
+        await memberRepo.save(memberRepo.create({
             community_id: savedComm.id,
             name,
             first_name,
             last_name,
             is_aspirant: false,
+            is_facilitator: false,
         }));
-        memberMap[first_name] = m;
     }
     for (const { first_name, last_name } of aspirantMembers) {
-        const name = `${first_name} ${last_name}`;
-        const m = await memberRepo.save(memberRepo.create({
+        const name = last_name ? `${first_name} ${last_name}` : first_name;
+        await memberRepo.save(memberRepo.create({
             community_id: savedComm.id,
             name,
             first_name,
             last_name,
             is_aspirant: true,
+            is_facilitator: false,
         }));
-        memberMap[first_name] = m;
     }
 
-    // Dev tester member — used with /api/auth/dev-login
-    await memberRepo.save(memberRepo.create({
-        community_id: savedComm.id,
-        name: "Tester van Vergaderen",
-        first_name: "Tester",
-        last_name: "van Vergaderen",
-        ename: "tester@dewoonwolk",
-        is_aspirant: false,
-    }));
-
-    // Facilitator as community member (hidden flag)
+    // Facilitator as community member
     await memberRepo.save(memberRepo.create({
         community_id: savedComm.id,
         name: "Sergei Zhilin",
@@ -139,144 +153,122 @@ async function seed() {
         is_aspirant: false,
     }));
 
-    console.log(`✅ ${regularMembers.length} members + ${aspirantMembers.length} aspirants + 1 facilitator seeded`);
-
-    // ── Active meeting ────────────────────────────────────────────────────────
-    const TODAY = new Date().toISOString().slice(0, 10);
-    const meeting = meetingRepo.create({
+    // Dev tester member — used with /api/auth/dev-login
+    await memberRepo.save(memberRepo.create({
         community_id: savedComm.id,
-        name: `ALV ${TODAY}`,
-        date: TODAY,
+        name: "Tester van Vergaderen",
+        first_name: "Tester",
+        last_name: "van Vergaderen",
+        ename: "tester@dewoonwolk",
+        is_aspirant: false,
+        is_facilitator: false,
+    }));
+
+    console.log(`✅ ${regularMembers.length} members + ${aspirantMembers.length} aspirants + 1 facilitator + 1 dev tester seeded`);
+
+    // ── Archived meeting: ALV 2026-03-23 ─────────────────────────────────────
+    const archivedMeeting = await meetingRepo.save(meetingRepo.create({
+        community_id: savedComm.id,
+        name: "ALV 2026-03-23",
+        date: "2026-03-23",
         time: "19:30",
-        location: "Buurtcentrum GWL Terrein",
+        location: "Vrijeschool Amsterdam West",
         agenda_text: `1. Opening en vaststelling agenda\n2. Notulen vorige ALV\n3. Financieel jaarverslag 2025 — ter informatie\n4. Besluit: verhoging maandelijkse bijdrage\n5. Besluit: aanstelling nieuwe penningmeester\n6. Rondvraag en sluiting`,
-        status: "in_session",
+        status: "archived",
         facilitator_name: "Sergei Zhilin",
-    });
-    const saved = await meetingRepo.save(meeting);
-    const mid = saved.id;
-    console.log(`✅ Meeting created: ${mid}`);
+    }));
 
-    // ── Attendees ─────────────────────────────────────────────────────────────
-    const preRegistered = ["Sara", "Mehmet", "Lies", "Joost", "Roel", "Nadia", "Thomas", "Pim"];
-    const checkedIn     = ["Sara", "Mehmet", "Lies", "Joost", "Roel", "Nadia"];
-    const checkInTimes: Record<string, string> = {
-        Sara: "19:28", Mehmet: "19:31", Lies: "19:33",
-        Joost: "19:35", Roel: "19:36", Nadia: "19:37",
-    };
-
-    for (const firstName of preRegistered) {
-        const isIn = checkedIn.includes(firstName);
-        const timeStr = checkInTimes[firstName];
-        const checkedInAt = isIn && timeStr
-            ? new Date(`2026-02-14T${timeStr}:00+01:00`)
-            : null;
-        const member = memberMap[firstName];
-
+    const archivedAttendees = [
+        { name: "Joost van den Berg",    status: "checked_in" as const },
+        { name: "Lies de Boer",          status: "checked_in" as const },
+        { name: "Mehmet Yilmaz",         status: "checked_in" as const },
+        { name: "Nadia El Amrani",       status: "checked_in" as const },
+        { name: "Pim Visser",            status: "expected" as const },
+        { name: "Roel Vermeer",          status: "checked_in" as const },
+        { name: "Sara Bakker",           status: "checked_in" as const },
+        { name: "Tester van Vergaderen", status: "checked_in" as const },
+        { name: "Thomas Kuiper",         status: "expected" as const },
+    ];
+    for (const { name, status } of archivedAttendees) {
         await attendeeRepo.save(attendeeRepo.create({
-            meeting_id: mid,
-            member_id: member?.id,
-            attendee_name: member?.name ?? firstName,
-            is_aspirant: member?.is_aspirant ?? false,
-            status: isIn ? "checked_in" : "expected",
-            pre_registered_at: new Date("2026-02-10T10:00:00Z"),
-            checked_in_at: checkedInAt,
+            meeting_id: archivedMeeting.id,
+            attendee_name: name,
+            is_aspirant: false,
+            status,
+            checked_in_at: status === "checked_in" ? new Date("2026-03-23T19:35:00+01:00") : null,
             method: "app",
         }));
     }
-    console.log(`✅ ${preRegistered.length} attendees seeded (${checkedIn.length} checked in)`);
 
-    // ── Mandates ──────────────────────────────────────────────────────────────
     await mandateRepo.save(mandateRepo.create({
-        meeting_id: mid,
-        granter_name: "Robin",
-        proxy_name: "Lies",
-        scope_note: "voor alle agendapunten",
-        status: "active",
-        granted_at: new Date("2026-02-13T18:00:00Z"),
-    }));
-    await mandateRepo.save(mandateRepo.create({
-        meeting_id: mid,
+        meeting_id: archivedMeeting.id,
         granter_name: "Karin",
         proxy_name: "Mehmet",
         scope_note: "alleen besluitpunten",
         status: "active",
-        granted_at: new Date("2026-02-14T09:00:00Z"),
+        granted_at: new Date("2026-03-23T18:00:00Z"),
     }));
-    console.log("✅ 2 mandates seeded");
+    await mandateRepo.save(mandateRepo.create({
+        meeting_id: archivedMeeting.id,
+        granter_name: "Robin",
+        proxy_name: "Lies",
+        scope_note: "voor alle agendapunten",
+        status: "active",
+        granted_at: new Date("2026-03-23T09:00:00Z"),
+    }));
 
-    // ── Polls ─────────────────────────────────────────────────────────────────
     await pollRepo.save(pollRepo.create({
-        meeting_id: mid,
+        meeting_id: archivedMeeting.id,
         motion_text: "De maandelijkse bijdrage wordt per 1 januari 2026 verhoogd van €50 naar €65.",
         vote_options: [
-            { id: "voor", label: "Voor" },
-            { id: "tegen", label: "Tegen" },
+            { id: "voor",       label: "Voor" },
+            { id: "tegen",      label: "Tegen" },
             { id: "onthouding", label: "Onthouding" },
         ],
         status: "prepared",
     }));
     await pollRepo.save(pollRepo.create({
-        meeting_id: mid,
+        meeting_id: archivedMeeting.id,
         motion_text: "Fatima El Mansouri wordt benoemd als penningmeester voor de periode 2026–2028.",
         vote_options: [
-            { id: "ja", label: "Ja" },
+            { id: "ja",  label: "Ja" },
             { id: "nee", label: "Nee" },
         ],
         status: "prepared",
     }));
-    console.log("✅ 2 polls seeded");
+    console.log(`✅ Archived meeting seeded: ${archivedMeeting.id}`);
 
-    // ── Archived meetings ─────────────────────────────────────────────────────
+    // ── Upcoming meetings ─────────────────────────────────────────────────────
     await meetingRepo.save(meetingRepo.create({
         community_id: savedComm.id,
-        name: "ALV 20-11-2025",
-        date: "2025-11-20",
-        time: "19:30",
-        location: "Buurtcentrum GWL Terrein",
-        agenda_text: `1. Opening\n2. Notulen ALV mei 2025\n3. Jaarplan 2026\n4. Rondvraag en sluiting`,
-        status: "archived",
-        facilitator_name: "Sergei Zhilin",
-    }));
-    await meetingRepo.save(meetingRepo.create({
-        community_id: savedComm.id,
-        name: "ALV 08-05-2025",
-        date: "2025-05-08",
-        time: "19:30",
-        location: "Buurtcentrum GWL Terrein",
-        agenda_text: `1. Opening\n2. Jaarrekening 2024\n3. Besluit: dakisolatie project\n4. Bestuursverkiezing\n5. Rondvraag en sluiting`,
-        status: "archived",
-        facilitator_name: "Sergei Zhilin",
-    }));
-
-    // ── Future meetings ───────────────────────────────────────────────────────
-    await meetingRepo.save(meetingRepo.create({
-        community_id: savedComm.id,
-        name: "ALV 14-05-2026",
-        date: "2026-05-14",
-        time: "19:30",
-        location: "Buurtcentrum GWL Terrein",
-        agenda_text: `1. Opening\n2. Notulen ALV februari 2026\n3. Zomerprogramma\n4. Rondvraag en sluiting`,
+        name: "ALV 11-04-2026",
+        date: "2026-04-11",
+        time: "11:11",
+        location: "Thonik",
+        agenda_text: "",
         status: "draft",
         facilitator_name: "Sergei Zhilin",
     }));
-    await meetingRepo.save(meetingRepo.create({
+
+    // ── Active meeting for dev/testing ────────────────────────────────────────
+    const TODAY = new Date().toISOString().slice(0, 10);
+    const activeMeeting = await meetingRepo.save(meetingRepo.create({
         community_id: savedComm.id,
-        name: "ALV 10-09-2026",
-        date: "2026-09-10",
+        name: `ALV ${TODAY}`,
+        date: TODAY,
         time: "19:30",
-        location: "Buurtcentrum GWL Terrein",
-        agenda_text: `1. Opening\n2. Notulen ALV mei 2026\n3. Begroting 2027\n4. Rondvraag en sluiting`,
-        status: "draft",
+        location: "Vrijeschool Amsterdam West",
+        agenda_text: `1. Opening en vaststelling agenda\n2. Notulen vorige ALV\n3. Financieel jaarverslag 2025 — ter informatie\n4. Besluit: verhoging maandelijkse bijdrage\n5. Besluit: aanstelling nieuwe penningmeester\n6. Rondvraag en sluiting`,
+        status: "open",
         facilitator_name: "Sergei Zhilin",
     }));
-    console.log("✅ 4 additional meetings seeded");
+    console.log(`✅ Active meeting created: ${activeMeeting.id}`);
 
     console.log(`\n🎉 Seed complete!`);
     console.log(`   Community: De Woonwolk (${savedComm.id})`);
-    console.log(`   Meeting ID: ${mid}`);
-    console.log(`   Members: ${regularMembers.length} regular + ${aspirantMembers.length} aspirants + 1 facilitator`);
-    console.log(`   Open in browser: http://localhost:5174/meeting/${mid}/facilitate`);
+    console.log(`   Members: ${regularMembers.length} regular + ${aspirantMembers.length} aspirants + 1 facilitator + 1 tester`);
+    console.log(`   Active meeting: ${activeMeeting.id}`);
+    console.log(`   Open in browser: http://localhost:5174/dewoonwolk/meeting/${activeMeeting.id}/facilitate`);
 
     await AppDataSource.destroy();
 }

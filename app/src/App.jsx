@@ -11,6 +11,8 @@ import Display from './views/Display'
 import Archive from './views/Archive'
 import Aanmelden from './views/Aanmelden'
 import DeeplinkLogin from './views/DeeplinkLogin'
+import AdminLogin from './views/AdminLogin'
+import AdminDashboard from './views/AdminDashboard'
 
 export default function App() {
   return (
@@ -20,13 +22,15 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/deeplink-login" element={<DeeplinkLogin />} />
+          <Route path="/admin" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/" element={<Home />} />
           <Route path="/facilitator-login" element={<FacilitatorLogin />} />
-          <Route path="/meeting/:id/facilitate" element={<Facilitate />} />
-          <Route path="/meeting/:id/attend" element={<Attend />} />
-          <Route path="/meeting/:id/register" element={<Register />} />
-          <Route path="/meeting/:id/display" element={<Display />} />
-          <Route path="/meeting/:id/archive" element={<Archive />} />
+          <Route path="/:communitySlug/meeting/:id/facilitate" element={<Facilitate />} />
+          <Route path="/:communitySlug/meeting/:id/attend" element={<Attend />} />
+          <Route path="/:communitySlug/meeting/:id/register" element={<Register />} />
+          <Route path="/:communitySlug/meeting/:id/display" element={<Display />} />
+          <Route path="/:communitySlug/meeting/:id/archive" element={<Archive />} />
           <Route path="/aanmelden" element={<Aanmelden />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

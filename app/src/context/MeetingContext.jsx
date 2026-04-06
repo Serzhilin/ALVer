@@ -167,8 +167,15 @@ export function MeetingProvider({ children }) {
   }
 
   const updatePollAction = async (pollId, updates) => {
-    if (updates.title) updates.motion_text = updates.title
-    await api.updatePoll(meetingId.current, pollId, updates)
+    const payload = {}
+    if (updates.title) payload.motion_text = updates.title
+    if (updates.options) {
+      payload.vote_options = updates.options.map(label => ({
+        id: label.toLowerCase().replace(/\s+/g, '_'),
+        label,
+      }))
+    }
+    await api.updatePoll(meetingId.current, pollId, payload)
     await load(meetingId.current)
   }
 

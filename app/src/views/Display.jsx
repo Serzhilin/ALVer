@@ -99,7 +99,7 @@ export default function Display() {
 
       {/* Check-in phase */}
       {isCheckin && !showGreeting && (
-        <CheckinDisplay meeting={meeting} attendeeCount={attendeeCount} community={community} meetingId={id} dark={false} />
+        <CheckinDisplay meeting={meeting} attendeeCount={attendeeCount} community={community} meetingId={id} communitySlug={community?.slug} dark={false} />
       )}
 
       {/* Active vote */}
@@ -142,7 +142,7 @@ export default function Display() {
   )
 }
 
-function CheckinDisplay({ meeting, attendeeCount, community, meetingId, dark = true }) {
+function CheckinDisplay({ meeting, attendeeCount, community, meetingId, communitySlug, dark = true }) {
   const { t, i18n } = useTranslation()
   const [qrDataUrl, setQrDataUrl] = useState(null)
 
@@ -171,11 +171,11 @@ function CheckinDisplay({ meeting, attendeeCount, community, meetingId, dark = t
 
   useEffect(() => {
     const base = import.meta.env.VITE_PUBLIC_ALVER_BASE_URL || window.location.origin
-    const url = `${base}/meeting/${meetingId}/attend`
+    const url = `${base}/${communitySlug}/meeting/${meetingId}/attend`
     QRCode.toDataURL(url, { width: 240, margin: 2, color: { dark: '#1A1612', light: '#ffffff' } })
       .then(setQrDataUrl)
       .catch(console.error)
-  }, [meetingId])
+  }, [meetingId, communitySlug])
 
   const dateLocale = i18n.language === 'nl' ? 'nl-NL' : 'en-GB'
   const dateStr = meeting.date

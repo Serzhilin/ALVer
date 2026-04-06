@@ -142,6 +142,8 @@
     "view_archive": "📁 View archive",
     "save_placeholder": "💾 Save (coming soon)",
     "your_vote_history": "Your vote:",
+    "session_locked_hint": "The meeting is already in progress.",
+    "session_locked_sub": "You were not checked in before the session started. Ask the facilitator to add you manually.",
     "aspirant_notice": "You are an aspirant member — you can attend but not vote.",
     "aspirant_no_vote": "As an aspirant member you cannot vote in this poll.",
     "preregistered_welcome": "Welcome {{name}}! You pre-registered for this meeting.",
@@ -196,6 +198,7 @@
     "not_available_title": "Archive not yet available",
     "not_available_hint": "The archive is available after the meeting has been closed.",
     "eligible": "eligible voters",
+    "voters_present": "voters present",
     "decisions": "Decisions",
     "no_decisions": "No completed polls.",
     "decision_number": "Decision {{number}}",
@@ -315,5 +318,23 @@
     "register_hint": "Verify your identity via the eID app",
     "logged_in_as": "Signed in as",
     "verified_identity": "Verified identity"
+  },
+  "admin": {
+    "title": "ALVer Admin",
+    "login_hint": "Sign in with your eID to continue",
+    "logout": "Sign out",
+    "new_community": "New community",
+    "communities": "Communities",
+    "no_communities": "No communities yet.",
+    "loading": "Loading…",
+    "create": "+ Create",
+    "creating": "Creating…",
+    "delete": "Delete",
+    "confirm_delete": "Sure?",
+    "field_name": "Name",
+    "field_slug": "Slug",
+    "field_facilitator_ename": "Facilitator eName",
+    "field_color": "Color",
+    "field_font": "Font"
   }
 }

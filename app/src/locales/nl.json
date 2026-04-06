@@ -142,6 +142,8 @@
     "view_archive": "📁 Bekijk archief",
     "save_placeholder": "💾 Sla op (binnenkort)",
     "your_vote_history": "Jouw stem:",
+    "session_locked_hint": "De vergadering is al bezig.",
+    "session_locked_sub": "Je was niet ingecheckt voordat de sessie begon. Vraag de facilitator om je handmatig toe te voegen.",
     "aspirant_notice": "Je bent aspirant-lid — je kunt de vergadering bijwonen maar niet stemmen.",
     "aspirant_no_vote": "Als aspirant-lid kun je niet deelnemen aan deze stemming.",
     "preregistered_welcome": "Welkom {{name}}! Je hebt je vooraf aangemeld voor deze vergadering.",
@@ -196,6 +198,7 @@
     "not_available_title": "Archief nog niet beschikbaar",
     "not_available_hint": "Het archief is beschikbaar nadat de vergadering is gesloten.",
     "eligible": "stemgerechtigden",
+    "voters_present": "aanwezige stemmers",
     "decisions": "Besluiten",
     "no_decisions": "Geen afgeronde stemmingen.",
     "decision_number": "Besluit {{number}}",
@@ -315,5 +318,23 @@
     "register_hint": "Verifieer je identiteit via de eID-app",
     "logged_in_as": "Ingelogd als",
     "verified_identity": "Geverifieerde identiteit"
+  },
+  "admin": {
+    "title": "ALVer Admin",
+    "login_hint": "Log in met je eID om door te gaan",
+    "logout": "Uitloggen",
+    "new_community": "Nieuwe community",
+    "communities": "Communities",
+    "no_communities": "Nog geen communities.",
+    "loading": "Laden…",
+    "create": "+ Aanmaken",
+    "creating": "Aanmaken…",
+    "delete": "Verwijder",
+    "confirm_delete": "Zeker?",
+    "field_name": "Naam",
+    "field_slug": "Slug",
+    "field_facilitator_ename": "Facilitator eName",
+    "field_color": "Kleur",
+    "field_font": "Font"
   }
 }

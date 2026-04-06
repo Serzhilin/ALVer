@@ -13,7 +13,10 @@ import { VoteController } from "./controllers/VoteController";
 import { WebhookController } from "./controllers/WebhookController";
 import { CommunityController } from "./controllers/CommunityController";
 import { getOffer, epassportLogin, sseAuthStream, getSessionResult, getMe, devLogin } from "./controllers/AuthController";
+import { listCommunities, createCommunity, deleteCommunity } from "./controllers/AdminController";
 import { requireAuth, optionalAuth } from "./middleware/auth";
+import { requireFacilitatorOfMeeting } from "./middleware/requireFacilitatorOfMeeting";
+import { requireAdmin } from "./middleware/adminAuth";
 
 config({ path: path.resolve(__dirname, "../../.env") });
 
@@ -60,21 +63,21 @@ app.delete("/api/community/members/:memberId", requireAuth, community.deleteMemb
 app.get("/api/meetings", optionalAuth, meeting.getAll);
 app.post("/api/meetings", requireAuth, meeting.create);
 app.get("/api/meetings/:id", meeting.getById);
-app.patch("/api/meetings/:id", requireAuth, meeting.update);
-app.delete("/api/meetings/:id", requireAuth, meeting.delete);
+app.patch("/api/meetings/:id", requireAuth, requireFacilitatorOfMeeting, meeting.update);
+app.delete("/api/meetings/:id", requireAuth, requireFacilitatorOfMeeting, meeting.delete);
 app.get("/api/meetings/:id/stream", meeting.stream);              // SSE
 
 // ── Facilitator actions — require eID auth ────────────────────────────────────
-app.patch("/api/meetings/:id/status", requireAuth, meeting.transitionStatus);
-app.post("/api/meetings/:id/reopen", requireAuth, meeting.reopen);
-app.post("/api/meetings/:id/attendees/manual", requireAuth, attendee.manualAdd);
-app.post("/api/meetings/:id/mandates", requireAuth, mandate.create);
-app.patch("/api/meetings/:id/mandates/:mandateId/revoke", requireAuth, mandate.revoke);
-app.post("/api/meetings/:id/polls", requireAuth, poll.create);
-app.patch("/api/meetings/:id/polls/:pollId", requireAuth, poll.update);
-app.delete("/api/meetings/:id/polls/:pollId", requireAuth, poll.delete);
-app.patch("/api/meetings/:id/polls/:pollId/open", requireAuth, poll.open);
-app.patch("/api/meetings/:id/polls/:pollId/close", requireAuth, poll.close);
+app.patch("/api/meetings/:id/status", requireAuth, requireFacilitatorOfMeeting, meeting.transitionStatus);
+app.post("/api/meetings/:id/reopen", requireAuth, requireFacilitatorOfMeeting, meeting.reopen);
+app.post("/api/meetings/:id/attendees/manual", requireAuth, requireFacilitatorOfMeeting, attendee.manualAdd);
+app.post("/api/meetings/:id/mandates", requireAuth, requireFacilitatorOfMeeting, mandate.create);
+app.patch("/api/meetings/:id/mandates/:mandateId/revoke", requireAuth, requireFacilitatorOfMeeting, mandate.revoke);
+app.post("/api/meetings/:id/polls", requireAuth, requireFacilitatorOfMeeting, poll.create);
+app.patch("/api/meetings/:id/polls/:pollId", requireAuth, requireFacilitatorOfMeeting, poll.update);
+app.delete("/api/meetings/:id/polls/:pollId", requireAuth, requireFacilitatorOfMeeting, poll.delete);
+app.patch("/api/meetings/:id/polls/:pollId/open", requireAuth, requireFacilitatorOfMeeting, poll.open);
+app.patch("/api/meetings/:id/polls/:pollId/close", requireAuth, requireFacilitatorOfMeeting, poll.close);
 
 // ── Meeting members (public — mandate dropdown) ───────────────────────────────
 app.get("/api/meetings/:id/members", meeting.getMembers);
@@ -84,7 +87,7 @@ app.get("/api/meetings/:id/attendees", attendee.list);
 app.post("/api/meetings/:id/attendees", attendee.preRegister);
 app.post("/api/meetings/:id/attendees/checkin", attendee.checkIn);
 app.patch("/api/meetings/:id/attendees/:attendeeId", attendee.update);
-app.delete("/api/meetings/:id/attendees/:attendeeId", requireAuth, attendee.delete);
+app.delete("/api/meetings/:id/attendees/:attendeeId", requireAuth, requireFacilitatorOfMeeting, attendee.delete);
 
 // ── Mandates (public reads) ───────────────────────────────────────────────────
 app.get("/api/meetings/:id/mandates", mandate.list);
@@ -99,6 +102,11 @@ app.post("/api/polls/:pollId/votes/manual", requireAuth, vote.manualVote);
 app.get("/api/polls/:pollId/votes/count", vote.count);
 app.get("/api/polls/:pollId/votes/has-voted", vote.hasVoted);
 app.get("/api/polls/:pollId/results", vote.results);
+
+// ── Admin ─────────────────────────────────────────────────────────────────────
+app.get("/api/admin/communities", requireAuth, requireAdmin, listCommunities);
+app.post("/api/admin/communities", requireAuth, requireAdmin, createCommunity);
+app.delete("/api/admin/communities/:id", requireAuth, requireAdmin, deleteCommunity);
 
 // ── W3DS Webhook ─────────────────────────────────────────────────────────────
 app.post("/api/webhook", webhook.handleWebhook);

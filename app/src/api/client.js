@@ -141,3 +141,8 @@ export function subscribeToMeeting(meetingId, onEvent, { onDisconnect, onReconne
     if (es) es.close()
   }
 }
+
+// ── Admin API (uses same token as facilitator login) ──────────────────────────
+export const adminListCommunities = () => req('GET', '/admin/communities')
+export const adminCreateCommunity = (data) => req('POST', '/admin/communities', data)
+export const adminDeleteCommunity = (id) => req('DELETE', `/admin/communities/${id}`)

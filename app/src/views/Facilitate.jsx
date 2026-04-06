@@ -19,7 +19,7 @@ export default function Facilitate() {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { isFacilitator, loading: authLoading } = useUser()
-  const { members } = useCommunity()
+  const { members, community } = useCommunity()
 
   const [showCheckInModal, setShowCheckInModal] = useState(false)
   const [showManualVoteModal, setShowManualVoteModal] = useState(false)
@@ -164,7 +164,7 @@ export default function Facilitate() {
               </button>
             )}
             <a
-              href={`/meeting/${mid}/display`}
+              href={`/${community?.slug}/meeting/${mid}/display`}
               target="_blank"
               rel="noreferrer"
               style={{ background: 'transparent', border: '1px solid var(--color-green)', color: 'var(--color-green)', borderRadius: 8, padding: '9px 20px', fontSize: '0.9rem', fontWeight: 500, textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
