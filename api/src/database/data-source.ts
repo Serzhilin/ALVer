@@ -11,6 +11,7 @@ import { Decision } from "./entities/Decision";
 import { User } from "./entities/User";
 import { Community } from "./entities/Community";
 import { Member } from "./entities/Member";
+import { AlverSubscriber } from "../web3adapter/subscriber";
 
 config({ path: path.resolve(__dirname, "../../../.env") });
 
@@ -19,6 +20,7 @@ export const dataSourceOptions: DataSourceOptions = {
     url: process.env.ALVER_DATABASE_URL,
     synchronize: process.env.NODE_ENV !== "production" || process.env.DB_SYNCHRONIZE === "true",
     entities: [Meeting, Attendee, Mandate, Poll, Vote, Decision, User, Community, Member],
+    subscribers: [AlverSubscriber],
     logging: false,
     extra: {
         max: 10,
