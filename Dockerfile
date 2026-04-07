@@ -47,6 +47,7 @@ COPY --from=api-build /build/api/package*.json ./
 COPY --from=api-build /build/api/node_modules  ./node_modules
 COPY --from=api-build /build/api/vendor        ./vendor
 COPY --from=api-build /build/api/dist          ./dist
+COPY api/mappings/                             ./mappings
 
 # Built React app — Express serves this as static files in production
 COPY --from=frontend-build /build/app/dist ./client

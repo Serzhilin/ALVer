@@ -13,7 +13,7 @@ import { Meeting } from "../database/entities/Meeting";
 dotenv.config({ path: path.resolve(__dirname, "../../../.env"), override: true });
 
 export const adapter = new Web3Adapter({
-    schemasPath: path.resolve(__dirname, "./mappings/"),
+    schemasPath: path.resolve(__dirname, "../../mappings/"),
     dbPath: path.resolve(process.env.ALVER_MAPPING_DB_PATH as string),
     registryUrl: process.env.PUBLIC_REGISTRY_URL as string,
     platform: process.env.VITE_PUBLIC_ALVER_BASE_URL as string,
