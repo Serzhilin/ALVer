@@ -124,14 +124,16 @@ export function MeetingProvider({ children }) {
 
     // Tear down previous SSE
     if (unsubRef.current) { unsubRef.current(); unsubRef.current = null }
+    setDisplayMode('numbers')  // reset for the new meeting
 
     setLoading(true)
     load(id)
 
+    const VALID_MODES = ['numbers', 'bars', 'pie', 'bubbles']
     // Subscribe to SSE stream
     unsubRef.current = api.subscribeToMeeting(id, (event) => {
       if (event.event === 'display_mode') {
-        setDisplayMode(event.mode)
+        if (VALID_MODES.includes(event.mode)) setDisplayMode(event.mode)
         return  // no need to reload the full meeting for a mode change
       }
       load(id)
