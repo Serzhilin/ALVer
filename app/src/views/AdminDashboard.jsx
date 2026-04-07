@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { adminListCommunities, adminCreateCommunity, adminDeleteCommunity } from '../api/client'
@@ -33,7 +33,6 @@ export default function AdminDashboard() {
   const [formError, setFormError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(null)
-  const logoInputRef = useRef(null)
 
   async function load() {
     setLoading(true)
@@ -234,7 +233,7 @@ export default function AdminDashboard() {
                 <div style={{ display: 'flex', gap: 8 }}>
                   <label className="btn-secondary" style={{ fontSize: '0.82rem', padding: '6px 12px', cursor: 'pointer' }}>
                     {t(form.logo_url ? 'settings.logo_replace' : 'settings.logo_upload')}
-                    <input ref={logoInputRef} type="file" accept="image/svg+xml,image/png,image/jpeg" onChange={handleLogoUpload} style={{ display: 'none' }} />
+                    <input type="file" accept="image/svg+xml,image/png,image/jpeg" onChange={handleLogoUpload} style={{ display: 'none' }} />
                   </label>
                   {form.logo_url && (
                     <button type="button" className="btn-secondary" style={{ fontSize: '0.82rem', padding: '6px 12px', color: 'var(--color-red)' }} onClick={() => setField('logo_url', null)}>
@@ -326,5 +325,4 @@ const spinnerStyle = {
   borderRadius: '50%',
   animation: 'spin 0.7s linear infinite',
   marginRight: 6,
-  verticalAlign: 'middle',
 }
