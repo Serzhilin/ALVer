@@ -6,10 +6,13 @@ import { useTranslation } from 'react-i18next'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
 import { useCommunity } from '../context/CommunityContext'
 import AgendaHtml from '../components/AgendaHtml'
+import VoteBar     from '../components/charts/VoteBar'
+import VotePie     from '../components/charts/VotePie'
+import VoteBubbles from '../components/charts/VoteBubbles'
 
 export default function Display() {
   const { id } = useParams()
-  const { meeting, activePoll, attendeeCount, sseConnected, setMeetingId } = useMeeting()
+  const { meeting, activePoll, attendeeCount, sseConnected, setMeetingId, displayMode } = useMeeting()
   const { community } = useCommunity() || {}
   const { t } = useTranslation()
 
@@ -104,7 +107,7 @@ export default function Display() {
 
       {/* Active vote */}
       {isSession && activePoll && !showGreeting && (
-        <VotingDisplay poll={activePoll} attendeeCount={attendeeCount} />
+        <VotingDisplay poll={activePoll} attendeeCount={attendeeCount} displayMode={displayMode} />
       )}
 
       {/* Result reveal */}
@@ -264,7 +267,7 @@ function Stat({ value, label, color, labelColor }) {
   )
 }
 
-function VotingDisplay({ poll, attendeeCount }) {
+function VotingDisplay({ poll, attendeeCount, displayMode }) {
   const { t } = useTranslation()
   const totalVotes = Object.keys(poll.votes).length + (poll.onBehalfVoters?.size ?? 0)
   const pct = attendeeCount > 0 ? Math.round((totalVotes / attendeeCount) * 100) : 0
@@ -276,39 +279,44 @@ function VotingDisplay({ poll, attendeeCount }) {
       </div>
       <h1 style={{
         fontFamily: 'var(--font-title)', fontSize: '2.4rem', fontWeight: 600,
-        color: 'white', lineHeight: 1.3, margin: '0 0 48px',
+        color: 'white', lineHeight: 1.3, margin: '0 0 40px',
       }}>
         {poll.title}
       </h1>
 
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 40, alignItems: 'center', marginBottom: 40 }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '5rem', fontWeight: 700, color: 'var(--color-amber)', lineHeight: 1 }}>{totalVotes}</div>
-          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '1rem', marginTop: 8 }}>{t('display.of_total', { total: attendeeCount })}</div>
-          <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>{t('display.voted')}</div>
+      {/* Progress indicator — shown in all modes */}
+      <div style={{ marginBottom: 40 }}>
+        <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-amber)', lineHeight: 1 }}>
+          {totalVotes} <span style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.4)', fontWeight: 400 }}>{t('display.of_total', { total: attendeeCount })}</span>
+        </div>
+        <div style={{ maxWidth: 400, margin: '12px auto 0' }}>
+          <div style={{ height: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 3, overflow: 'hidden' }}>
+            <div style={{
+              height: '100%', borderRadius: 3,
+              background: 'linear-gradient(90deg, var(--color-terracotta), var(--color-amber))',
+              width: `${pct}%`, transition: 'width 0.5s ease',
+            }} />
+          </div>
+          <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem', marginTop: 6 }}>{pct}%</div>
         </div>
       </div>
 
-      {/* Progress */}
-      <div style={{ maxWidth: 500, margin: '0 auto' }}>
-        <div style={{ height: 8, background: 'rgba(255,255,255,0.1)', borderRadius: 4, overflow: 'hidden' }}>
-          <div style={{
-            height: '100%', borderRadius: 4,
-            background: 'linear-gradient(90deg, var(--color-terracotta), var(--color-amber))',
-            width: `${pct}%`, transition: 'width 0.5s ease',
-          }} />
-        </div>
-        <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem', marginTop: 8 }}>{pct}%</div>
-      </div>
-
-      <div style={{ marginTop: 32, display: 'flex', justifyContent: 'center', gap: 16 }}>
-        {poll.options.map(opt => (
-          <span key={opt} style={{
-            padding: '8px 24px', borderRadius: 8,
-            background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
-            fontSize: '1.1rem', color: 'rgba(255,255,255,0.6)',
-          }}>{opt}</span>
-        ))}
+      {/* Chart area — switches by displayMode */}
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        {displayMode === 'bars'    && <VoteBar     poll={poll} attendeeCount={attendeeCount} />}
+        {displayMode === 'pie'     && <VotePie     poll={poll} attendeeCount={attendeeCount} />}
+        {displayMode === 'bubbles' && <VoteBubbles poll={poll} attendeeCount={attendeeCount} />}
+        {(displayMode === 'numbers' || !displayMode) && (
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+            {poll.options.map(opt => (
+              <span key={opt} style={{
+                padding: '8px 24px', borderRadius: 8,
+                background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
+                fontSize: '1.1rem', color: 'rgba(255,255,255,0.6)',
+              }}>{opt}</span>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
