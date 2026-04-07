@@ -45,6 +45,7 @@ WORKDIR /app
 # API runtime files
 COPY --from=api-build /build/api/package*.json ./
 COPY --from=api-build /build/api/node_modules  ./node_modules
+COPY --from=api-build /build/api/vendor        ./vendor
 COPY --from=api-build /build/api/dist          ./dist
 
 # Built React app — Express serves this as static files in production
