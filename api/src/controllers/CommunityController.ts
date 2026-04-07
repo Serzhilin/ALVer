@@ -45,6 +45,9 @@ export class CommunityController {
                 ? await svc.findById(communityId)
                 : await svc.findAsFacilitator(ename);
             if (!community) return res.status(404).json({ error: "Community not found" });
+            if (communityId && !await svc.isFacilitatorOf(ename, community.id)) {
+                return res.status(403).json({ error: "Forbidden" });
+            }
             const { name, logo_url, locations, primary_color, title_font } = req.body;
             const data: Partial<Pick<Community, "name" | "logo_url" | "locations" | "primary_color" | "title_font">> = {};
             if (name !== undefined) data.name = name;
@@ -84,6 +87,9 @@ export class CommunityController {
                 ? await svc.findById(communityId)
                 : await svc.findAsFacilitator(ename);
             if (!community) return res.status(404).json({ error: "Community not found" });
+            if (communityId && !await svc.isFacilitatorOf(ename, community.id)) {
+                return res.status(403).json({ error: "Forbidden" });
+            }
             const member = await svc.createMember(community.id, req.body);
             res.status(201).json(member);
         } catch (e: any) {
@@ -100,6 +106,9 @@ export class CommunityController {
                 ? await svc.findById(communityId)
                 : await svc.findAsFacilitator(ename);
             if (!community) return res.status(403).json({ error: "Forbidden" });
+            if (communityId && !await svc.isFacilitatorOf(ename, community.id)) {
+                return res.status(403).json({ error: "Forbidden" });
+            }
 
             const existing = await svc.getMemberById(req.params.memberId);
             if (!existing || existing.community_id !== community.id) {
@@ -128,6 +137,9 @@ export class CommunityController {
                 ? await svc.findById(communityId)
                 : await svc.findAsFacilitator(ename);
             if (!community) return res.status(403).json({ error: "Forbidden" });
+            if (communityId && !await svc.isFacilitatorOf(ename, community.id)) {
+                return res.status(403).json({ error: "Forbidden" });
+            }
 
             const existing = await svc.getMemberById(req.params.memberId);
             if (!existing || existing.community_id !== community.id) {
