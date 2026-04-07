@@ -45,6 +45,15 @@ export class CommunityService {
         });
     }
 
+    /** Returns true if the ename is the bootstrap facilitator or has is_facilitator=true in that community */
+    async isFacilitatorOf(ename: string, communityId: string): Promise<boolean> {
+        const community = await this.repo.findOne({ where: { id: communityId }, select: ["id", "facilitator_ename"] });
+        if (!community) return false;
+        if (community.facilitator_ename === ename) return true;
+        const member = await this.memberRepo.findOne({ where: { community_id: communityId, ename, is_facilitator: true } });
+        return !!member;
+    }
+
     async findById(id: string): Promise<Community | null> {
         return this.repo.findOne({
             where: { id },

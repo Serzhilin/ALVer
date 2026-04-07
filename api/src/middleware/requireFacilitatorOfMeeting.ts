@@ -13,17 +13,15 @@ const meetingSvc = new MeetingService();
  */
 export async function requireFacilitatorOfMeeting(req: Request, res: Response, next: NextFunction) {
     try {
-        const community = await commSvc.findByFacilitatorEname(req.user!.ename);
-        if (!community) {
-            res.status(403).json({ error: "Forbidden" });
-            return;
-        }
+        const ename = req.user!.ename;
         const meeting = await meetingSvc.findById(req.params.id);
         if (!meeting) {
             res.status(404).json({ error: "Meeting not found" });
             return;
         }
-        if (meeting.community_id !== community.id) {
+        // Check facilitator access against the meeting's own community
+        const isFacilitator = await commSvc.isFacilitatorOf(ename, meeting.community_id);
+        if (!isFacilitator) {
             res.status(403).json({ error: "Forbidden" });
             return;
         }
