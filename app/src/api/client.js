@@ -34,7 +34,8 @@ async function req(method, path, body) {
 export const getAuthOffer = (returnTo) => req('GET', `/auth/offer${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`)
 export const loginWithWallet = (data) => req('POST', '/auth/login', data)
 export const devLogin = () => req('POST', '/auth/dev-login')
-export const getMe = () => req('GET', '/auth/me')
+export const getMe = (communityId) => req('GET', `/auth/me${communityId ? `?communityId=${encodeURIComponent(communityId)}` : ''}`)
+export const getCommunities = () => req('GET', '/auth/communities')
 
 export function subscribeToAuthSession(sessionId, onLogin) {
   const es = new EventSource(`${SSE_BASE}/auth/sessions/${sessionId}`)
@@ -53,7 +54,7 @@ export const pollAuthSessionResult = (sessionId) =>
 
 // ── Community ─────────────────────────────────────────────────────────────────
 export const getCommunityBranding = () => req('GET', '/community/branding')
-export const getCommunity = () => req('GET', '/community')
+export const getCommunity = (communityId) => req('GET', `/community${communityId ? `?communityId=${encodeURIComponent(communityId)}` : ''}`)
 export const updateCommunity = (data) => req('PATCH', '/community', data)
 export const getCommunityMembers = () => req('GET', '/community/members')
 export const createCommunityMember = (data) => req('POST', '/community/members', data)
@@ -63,7 +64,7 @@ export const deleteCommunityMember = (id) => req('DELETE', `/community/members/$
 // ── Meetings ──────────────────────────────────────────────────────────────────
 export const getMeetingMembers = (id) => req('GET', `/meetings/${id}/members`)
 export const getMeeting = (id) => req('GET', `/meetings/${id}`)
-export const getAllMeetings = () => req('GET', '/meetings')
+export const getAllMeetings = (communityId) => req('GET', `/meetings${communityId ? `?communityId=${encodeURIComponent(communityId)}` : ''}`)
 export const createMeeting = (data) => req('POST', '/meetings', data)
 export const updateMeeting = (id, data) => req('PATCH', `/meetings/${id}`, data)
 export const deleteMeeting = (id) => req('DELETE', `/meetings/${id}`)
