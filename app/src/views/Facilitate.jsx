@@ -6,7 +6,7 @@ import { useNavigate, useParams, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import FacilitatorHeader from '../components/FacilitatorHeader'
 import AgendaHtml from '../components/AgendaHtml'
-import { reopenMeeting, setDisplayMode } from '../api/client'
+import { reopenMeeting, setDisplayMode as apiSetDisplayMode } from '../api/client'
 
 export default function Facilitate() {
   const { id } = useParams()
@@ -338,17 +338,17 @@ export default function Facilitate() {
                 borderRadius: 10, padding: 6, marginBottom: 16,
               }}>
                 <span style={{ fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-charcoal-light)', padding: '0 4px', flexShrink: 0 }}>
-                  Screen
+                  {t('facilitate.viz_screen_label')}
                 </span>
                 {[
-                  { key: 'numbers', label: 'Numbers', icon: '🔢' },
-                  { key: 'bars',    label: 'Bars',    icon: '📊' },
-                  { key: 'pie',     label: 'Pie',     icon: '🥧' },
-                  { key: 'bubbles', label: 'Bubbles', icon: '🫧' },
+                  { key: 'numbers', label: t('facilitate.viz_mode_numbers'), icon: '🔢' },
+                  { key: 'bars',    label: t('facilitate.viz_mode_bars'),    icon: '📊' },
+                  { key: 'pie',     label: t('facilitate.viz_mode_pie'),     icon: '🥧' },
+                  { key: 'bubbles', label: t('facilitate.viz_mode_bubbles'), icon: '🫧' },
                 ].map(m => (
                   <button
                     key={m.key}
-                    onClick={() => setDisplayMode(meeting.id, m.key)}
+                    onClick={() => apiSetDisplayMode(meeting.id, m.key).catch(console.error)}
                     style={{
                       flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
                       gap: 5, padding: '7px 8px', borderRadius: 7,

@@ -115,7 +115,12 @@
     "member_search_placeholder": "Zoek lid…",
     "remove_attendee": "Aanwezige verwijderen",
     "revoke_mandate": "Machtiging intrekken",
-    "total_votes": "Totaal stemmen in zaal"
+    "total_votes": "Totaal stemmen in zaal",
+    "viz_screen_label": "Scherm",
+    "viz_mode_numbers": "Nummers",
+    "viz_mode_bars": "Balken",
+    "viz_mode_pie": "Taart",
+    "viz_mode_bubbles": "Bellen"
   },
   "attend": {
     "check_in_title": "Inchecken",
