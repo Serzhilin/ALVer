@@ -76,11 +76,11 @@ export function UserProvider({ children }) {
   // User picks a community from the picker
   const selectCommunity = useCallback((id) => {
     localStorage.setItem('alver_community_id', id)
-    setCommunityId(id)
     const facilitatorMode = localStorage.getItem('alver_facilitator_mode') === 'true'
     getMe(id).then(me => {
       setUser(me)
       setIsFacilitator(facilitatorMode ? (me.isFacilitator ?? false) : false)
+      setCommunityId(id)  // set last so picker stays until all state is ready
     }).catch(console.error)
   }, [])
 
