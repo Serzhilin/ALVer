@@ -20,10 +20,14 @@ export class MeetingController {
 
     getAll = async (req: Request, res: Response) => {
         try {
-            // If authenticated facilitator, scope to their community
+            // Scope to the explicitly selected community, or find it from ename
             let communityId: string | undefined;
-            if (req.user?.ename) {
-                const community = await commSvc.findByFacilitatorEname(req.user.ename);
+            if (typeof req.query.communityId === 'string') {
+                communityId = req.query.communityId;
+            } else if (req.user!.ename) {
+                const community =
+                    (await commSvc.findByFacilitatorEname(req.user!.ename)) ??
+                    (await commSvc.findByMemberEname(req.user!.ename));
                 communityId = community?.id;
             }
             const meetings = await svc.findAll(communityId);

@@ -16,13 +16,19 @@ export class CommunityController {
         }
     };
 
-    /** GET /api/community — returns the user's community (facilitator or member) */
+    /** GET /api/community — returns the selected community (by ?communityId) or first match */
     get = async (req: Request, res: Response) => {
         try {
             const ename = req.user!.ename;
-            const community =
-                (await svc.findByFacilitatorEname(ename)) ??
-                (await svc.findByMemberEname(ename));
+            const communityId = typeof req.query.communityId === 'string' ? req.query.communityId : null;
+            let community = null;
+            if (communityId) {
+                community = await svc.findById(communityId);
+            } else {
+                community =
+                    (await svc.findByFacilitatorEname(ename)) ??
+                    (await svc.findByMemberEname(ename));
+            }
             if (!community) return res.status(404).json({ error: "No community found" });
             res.json(community);
         } catch (e: any) {
