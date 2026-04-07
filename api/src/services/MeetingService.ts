@@ -10,7 +10,12 @@ export class MeetingService {
         this.displayModes.set(meetingId, mode)
     }
 
-    /** Returns the current display mode. Used to seed reconnecting Display clients in future. */
+    /**
+     * Returns the current display mode for a meeting.
+     * TODO: Used to seed reconnecting Display clients once a GET endpoint is added.
+     * NOTE: MeetingService is instantiated per-controller; if a second controller
+     * ever needs to read this, move displayModes to a module-level singleton.
+     */
     getDisplayMode(meetingId: string): string {
         return this.displayModes.get(meetingId) ?? 'numbers'
     }

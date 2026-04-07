@@ -27,7 +27,10 @@ export default function VotePie({ poll }) {
   const entries = Object.entries(tally)
   const total = Object.values(tally).reduce((a, b) => a + b, 0)
   const segments = buildSegments(entries, total)
-  const leadingPct = total > 0 ? Math.round((Math.max(...Object.values(tally)) / total) * 100) : 0
+  const maxCount = Math.max(...Object.values(tally))
+  const winners = Object.values(tally).filter(c => c === maxCount)
+  const isTie = total > 0 && winners.length > 1
+  const leadingPct = total > 0 && !isTie ? Math.round((maxCount / total) * 100) : null
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
@@ -52,7 +55,7 @@ export default function VotePie({ poll }) {
           fontWeight="700"
           style={{ transform: `rotate(90deg)`, transformOrigin: `${CX}px ${CY}px` }}
         >
-          {leadingPct}%
+          {leadingPct !== null ? `${leadingPct}%` : '='}
         </text>
       </svg>
 
