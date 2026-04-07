@@ -303,9 +303,9 @@ function VotingDisplay({ poll, attendeeCount, displayMode }) {
 
       {/* Chart area — switches by displayMode */}
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        {displayMode === 'bars'    && <VoteBar     poll={poll} attendeeCount={attendeeCount} />}
-        {displayMode === 'pie'     && <VotePie     poll={poll} attendeeCount={attendeeCount} />}
-        {displayMode === 'bubbles' && <VoteBubbles poll={poll} attendeeCount={attendeeCount} />}
+        {displayMode === 'bars'    && <VoteBar     poll={poll} />}
+        {displayMode === 'pie'     && <VotePie     poll={poll} />}
+        {displayMode === 'bubbles' && <VoteBubbles poll={poll} />}
         {(displayMode === 'numbers' || !displayMode) && (
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
             {poll.options.map(opt => (
