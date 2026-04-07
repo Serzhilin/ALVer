@@ -47,9 +47,9 @@ export default function Facilitate() {
 
   useEffect(() => { setMeetingId(id) }, [id])
 
-  // Auth gate — must be logged in as facilitator via /facilitator-login
+  // Auth gate — must be logged in as facilitator via /facilitator
   if (authLoading) return <LoadingScreen />
-  if (!isFacilitator) return <Navigate to="/facilitator-login" replace />
+  if (!isFacilitator) return <Navigate to="/facilitator" replace />
 
   if (!meeting) return <LoadingScreen />
 

@@ -120,10 +120,6 @@ export default function AppHeader({
                     </div>
                   </div>
 
-                  <MenuItem onClick={() => { i18n.changeLanguage(i18n.language === 'nl' ? 'en' : 'nl'); setShowMenu(false) }}>
-                    {i18n.language === 'nl' ? '🇬🇧 EN' : '🇳🇱 NL'}
-                  </MenuItem>
-
                   {onSwitchCommunity && (
                     <MenuItem onClick={() => { onSwitchCommunity(); setShowMenu(false) }}>
                       🔀 {t('community_picker.switch_btn')}
@@ -141,6 +137,10 @@ export default function AppHeader({
                       ⚙️ {t('settings.title')}
                     </MenuItem>
                   )}
+
+                  <MenuItem onClick={() => { i18n.changeLanguage(i18n.language === 'nl' ? 'en' : 'nl'); setShowMenu(false) }}>
+                    {i18n.language === 'nl' ? '🇬🇧 EN' : '🇳🇱 NL'}
+                  </MenuItem>
 
                   {onLogout && (
                     <div style={{ borderTop: '1px solid var(--color-sand)' }}>

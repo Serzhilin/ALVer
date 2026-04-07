@@ -37,7 +37,7 @@ export default function App() {
             <Route path="/admin" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/" element={<Home />} />
-            <Route path="/facilitator-login" element={<FacilitatorLogin />} />
+            <Route path="/facilitator" element={<FacilitatorLogin />} />
             <Route path="/:communitySlug/meeting/:id/facilitate" element={<Facilitate />} />
             <Route path="/:communitySlug/meeting/:id/attend" element={<Attend />} />
             <Route path="/:communitySlug/meeting/:id/register" element={<Register />} />

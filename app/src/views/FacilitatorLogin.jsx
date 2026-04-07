@@ -35,12 +35,12 @@ export default function FacilitatorLogin() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <div style={{ maxWidth: 420, width: '100%' }}>
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ fontSize: '2rem', marginBottom: 8 }}>🎙️</div>
-          <h1 style={{ fontSize: '1.3rem', margin: '0 0 6px', fontFamily: 'var(--font-title)' }}>Facilitator</h1>
-          <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.85rem', margin: 0 }}>
-            {t('auth.facilitator_hint')}
-          </p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 32 }}>
+          <img src="/logo.png" alt="ALVer" style={{ height: 40, objectFit: 'contain' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
+            <h1 style={{ fontSize: '1.3rem', margin: 0, fontFamily: 'var(--font-title)', lineHeight: 1 }}>ALVer: Facilitator</h1>
+            <p style={{ color: 'var(--color-charcoal-light)', margin: 0, fontSize: '0.9rem', lineHeight: 1 }}>{t('home.subtitle')}</p>
+          </div>
         </div>
 
         {authError ? (
@@ -58,6 +58,12 @@ export default function FacilitatorLogin() {
             <LoginScreen onSuccess={handleLogin} nameOption={false} />
           </div>
         )}
+
+        <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center', gap: 24, fontSize: '0.82rem' }}>
+          <a href="/" style={{ color: 'var(--color-terracotta)', textDecoration: 'none', fontWeight: 500 }}>
+            {t('home.nav_attendee')} login →
+          </a>
+        </div>
 
       </div>
     </div>

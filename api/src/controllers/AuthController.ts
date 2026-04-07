@@ -199,11 +199,17 @@ export async function getMe(req: Request, res: Response) {
         if (!community) { res.status(404).json({ error: "Community not found" }); return; }
         member = ename ? await cs.findMemberByEname(community.id, ename) : null;
     } else {
-        community = ename ? await cs.findByFacilitatorEname(ename) : null;
+        community = ename ? await cs.findAsFacilitator(ename) : null;
         if (!community && ename) community = await cs.findByMemberEname(ename);
         member = (community && ename) ? await cs.findMemberByEname(community.id, ename) : null;
     }
     const isFacilitator = member?.is_facilitator ?? (community != null && community.facilitator_ename === ename);
+
+    // Ensure facilitator always has a member row — create one on first visit if missing
+    if (isFacilitator && !member && community && ename) {
+        member = await cs.upsertFacilitatorMember(community.id, ename, displayName(user));
+    }
+
     res.json({ ...serializeUser(user), community, member, isFacilitator });
 }
 

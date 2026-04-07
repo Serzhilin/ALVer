@@ -230,8 +230,8 @@ export default function AdminDashboard() {
                     : <span style={{ fontSize: '1.5rem' }}>🏛️</span>
                   }
                 </div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <label className="btn-secondary" style={{ fontSize: '0.82rem', padding: '6px 12px', cursor: 'pointer' }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <label className="btn-secondary" style={{ fontSize: '0.82rem', padding: '6px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                     {t(form.logo_url ? 'settings.logo_replace' : 'settings.logo_upload')}
                     <input type="file" accept="image/svg+xml,image/png,image/jpeg" onChange={handleLogoUpload} style={{ display: 'none' }} />
                   </label>
@@ -283,7 +283,7 @@ export default function AdminDashboard() {
                       </span>
                       {c.ename
                         ? <span style={{ fontSize: '0.7rem', color: 'var(--color-charcoal-light)', fontFamily: 'monospace', background: 'var(--color-sand)', padding: '1px 6px', borderRadius: 4 }}>
-                            w3id: {c.ename.slice(0, 8)}…
+                            w3id: {c.ename}
                           </span>
                         : <span style={{ fontSize: '0.7rem', color: '#b45309', background: '#fef3c7', padding: '1px 6px', borderRadius: 4 }}>
                             ⚠ No eVault

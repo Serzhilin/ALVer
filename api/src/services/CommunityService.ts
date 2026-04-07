@@ -20,6 +20,31 @@ export class CommunityService {
         });
     }
 
+    /**
+     * Find the community this user can facilitate.
+     * Checks the original bootstrap field first, then falls back to an
+     * is_facilitator member row — so assigned facilitators work even after
+     * the original facilitator_ename no longer points to them.
+     */
+    async findAsFacilitator(ename: string): Promise<Community | null> {
+        // 1. Bootstrap path: community was created with this ename
+        const byField = await this.repo.findOne({
+            where: { facilitator_ename: ename },
+            relations: ["members"],
+        });
+        if (byField) return byField;
+
+        // 2. Member-row path: granted facilitator access via the members table
+        const facilitatorMember = await this.memberRepo.findOne({
+            where: { ename, is_facilitator: true },
+        });
+        if (!facilitatorMember) return null;
+        return this.repo.findOne({
+            where: { id: facilitatorMember.community_id },
+            relations: ["members"],
+        });
+    }
+
     async findById(id: string): Promise<Community | null> {
         return this.repo.findOne({
             where: { id },
@@ -95,6 +120,31 @@ export class CommunityService {
         }
 
         return results;
+    }
+
+    /** Ensures the facilitator has a member row with is_facilitator=true. Idempotent. */
+    async upsertFacilitatorMember(communityId: string, ename: string, fullName: string): Promise<Member> {
+        let member = await this.memberRepo.findOne({ where: { community_id: communityId, ename } });
+        if (member) {
+            if (!member.is_facilitator) {
+                member.is_facilitator = true;
+                member = await this.memberRepo.save(member);
+            }
+            return member;
+        }
+        const parts = fullName.trim().split(/\s+/);
+        const last_name = parts.length > 1 ? parts.pop()! : '';
+        const first_name = parts.join(' ');
+        const newMember = this.memberRepo.create({
+            community_id: communityId,
+            ename,
+            name: fullName.trim(),
+            first_name,
+            last_name,
+            is_facilitator: true,
+            is_aspirant: false,
+        });
+        return this.memberRepo.save(newMember);
     }
 
     async createMember(communityId: string, data: {

@@ -120,7 +120,7 @@ export default function Home() {
       <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <div style={{ maxWidth: 420, width: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 32 }}>
-            <span style={{ fontSize: '2.2rem', lineHeight: 1 }}>🏛️</span>
+            <img src="/logo.png" alt="ALVer" style={{ height: 40, objectFit: 'contain' }} />
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
               <h1 style={{ fontSize: '1.3rem', margin: 0, fontFamily: 'var(--font-title)', lineHeight: 1 }}>ALVer</h1>
               <p style={{ color: 'var(--color-charcoal-light)', margin: 0, fontSize: '0.9rem', lineHeight: 1 }}>{t('home.subtitle')}</p>
@@ -131,7 +131,7 @@ export default function Home() {
           </div>
           <p style={{ textAlign: 'center', marginTop: 20, fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>
             {t('home.facilitator_hint')}{' '}
-            <a href="/facilitator-login" style={{ color: 'var(--color-terracotta)', textDecoration: 'none', fontWeight: 500 }}>
+            <a href="/facilitator" style={{ color: 'var(--color-terracotta)', textDecoration: 'none', fontWeight: 500 }}>
               {t('home.facilitator_link')}
             </a>
           </p>
@@ -560,7 +560,7 @@ function HeaderLogo({ communityLogo, onFail, size = 'small' }) {
   if (communityLogo && !failed) {
     return <img src={communityLogo} alt="logo" style={{ height: h, maxWidth: maxW, objectFit: 'contain' }} onError={() => { setFailed(true); onFail?.() }} />
   }
-  return <img src="/Logo.png" alt="logo" style={{ height: h, maxWidth: maxW, objectFit: 'contain' }} onError={e => { e.currentTarget.style.display = 'none' }} />
+  return <img src="/logo.png" alt="logo" style={{ height: h, maxWidth: maxW, objectFit: 'contain' }} onError={e => { e.currentTarget.style.display = 'none' }} />
 }
 
 function SectionHeader({ label, children }) {

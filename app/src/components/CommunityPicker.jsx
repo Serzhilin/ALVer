@@ -78,7 +78,7 @@ export default function CommunityPicker({ communities, onSelect }) {
               justifyContent: 'center',
             }}>
               {c.logo_url
-                ? <img src={c.logo_url} alt={c.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ? <img src={c.logo_url} alt={c.name} style={{ width: '80%', height: '80%', objectFit: 'contain' }} />
                 : <span style={{ color: 'white', fontWeight: 700, fontSize: '1.1rem' }}>
                     {c.name?.[0]?.toUpperCase() ?? '?'}
                   </span>

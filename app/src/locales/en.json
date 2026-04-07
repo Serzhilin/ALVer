@@ -30,7 +30,7 @@
   "home": {
     "title": "Meetings",
     "title_facilitator": "Dashboard",
-    "subtitle": "Manage general assembly meetings",
+    "subtitle": "General assembly meetings made easy",
     "subtitle_facilitator": "Manage and facilitate meetings",
     "logout": "Sign out",
     "error_api": "Cannot connect to the API",

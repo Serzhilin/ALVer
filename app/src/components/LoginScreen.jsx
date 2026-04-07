@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import QRCode from 'qrcode'
 import { getAuthOffer, subscribeToAuthSession } from '../api/client'
 import { useTranslation } from 'react-i18next'
-import { LanguageSwitcher } from './LanguageSwitcher'
 
 
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
@@ -59,13 +58,6 @@ export default function LoginScreen({ onSuccess, nameOption = false, onNameConti
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, width: '100%' }}>
-
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: 4 }}>
-        <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, fontFamily: 'Inter, sans-serif', color: 'var(--color-charcoal)' }}>
-          {t('auth.welcome_title')}
-        </h2>
-        <LanguageSwitcher />
-      </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, color: 'var(--color-charcoal-light)', textAlign: 'center', width: '100%' }}>
 
@@ -169,10 +161,17 @@ export default function LoginScreen({ onSuccess, nameOption = false, onNameConti
         </>
       )}
 
-      {/* W3DS footer logo */}
-      <a href="https://metastate.foundation" target="_blank" rel="noopener noreferrer">
-        <img src="/W3DS.svg" alt="W3DS" style={{ maxHeight: 28, opacity: 0.7 }} />
-      </a>
+      {/* Footer: Project of eCommons + Metastate */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, width: '100%', paddingTop: 4 }}>
+        <span style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', whiteSpace: 'nowrap' }}>Project of</span>
+        <a href="https://ecommons.space" target="_blank" rel="noopener noreferrer">
+          <img src="/eCommons.svg" alt="eCommons" style={{ height: 28, opacity: 0.75 }} />
+        </a>
+        <span style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)' }}>and</span>
+        <a href="https://metastate.foundation" target="_blank" rel="noopener noreferrer">
+          <img src="/metastate.png" alt="Metastate" style={{ height: 28, opacity: 0.85 }} />
+        </a>
+      </div>
 
     </div>
   )
