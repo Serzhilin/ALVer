@@ -103,6 +103,10 @@ export class MeetingController {
             if (!valid.includes(mode)) {
                 return res.status(400).json({ error: 'Invalid mode. Must be one of: numbers, bars, pie, bubbles' })
             }
+            const meeting = await svc.findById(req.params.id)
+            if (!meeting || meeting.status !== 'in_session') {
+                return res.status(400).json({ error: 'Display mode can only be changed during an active session' })
+            }
             svc.setDisplayMode(req.params.id, mode)
             sseService.emit(req.params.id, 'display_mode', { mode })
             res.json({ mode })

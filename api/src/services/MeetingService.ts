@@ -10,6 +10,7 @@ export class MeetingService {
         this.displayModes.set(meetingId, mode)
     }
 
+    /** Returns the current display mode. Used to seed reconnecting Display clients in future. */
     getDisplayMode(meetingId: string): string {
         return this.displayModes.get(meetingId) ?? 'numbers'
     }
