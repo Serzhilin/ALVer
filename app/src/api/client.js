@@ -70,6 +70,7 @@ export const updateMeeting = (id, data) => req('PATCH', `/meetings/${id}`, data)
 export const deleteMeeting = (id) => req('DELETE', `/meetings/${id}`)
 export const transitionStatus = (id, status) => req('PATCH', `/meetings/${id}/status`, { status })
 export const reopenMeeting = (id) => req('POST', `/meetings/${id}/reopen`)
+export const setDisplayMode = (id, mode) => req('PATCH', `/meetings/${id}/display-mode`, { mode })
 export const getDecisions = (id) => req('GET', `/meetings/${id}/decisions`)
 
 // ── Attendees ─────────────────────────────────────────────────────────────────

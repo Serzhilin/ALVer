@@ -87,6 +87,7 @@ export function MeetingProvider({ children }) {
   const [error, setError] = useState(null)
   const [sseConnected, setSseConnected] = useState(true)
   const meetingId = useRef(null)
+  const [displayMode, setDisplayMode] = useState('numbers')
   const unsubRef = useRef(null)
 
   // Compute derived shape
@@ -129,7 +130,10 @@ export function MeetingProvider({ children }) {
 
     // Subscribe to SSE stream
     unsubRef.current = api.subscribeToMeeting(id, (event) => {
-      // Refresh full meeting state on any event
+      if (event.event === 'display_mode') {
+        setDisplayMode(event.mode)
+        return  // no need to reload the full meeting for a mode change
+      }
       load(id)
     }, {
       onDisconnect: () => setSseConnected(false),
@@ -277,6 +281,7 @@ export function MeetingProvider({ children }) {
       addMandate,
       revokeMandate,
       removeAttendee,
+      displayMode,
     }}>
       {children}
     </MeetingContext.Provider>
