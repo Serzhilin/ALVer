@@ -53,6 +53,10 @@ COPY --from=frontend-build /build/app/dist ./client
 
 ENV NODE_ENV=production
 ENV PORT=3001
+ENV ALVER_MAPPING_DB_PATH=/app/data/mapping.db
+
+RUN mkdir -p /app/data
+
 EXPOSE 3001
 
 CMD ["node", "dist/index.js"]
