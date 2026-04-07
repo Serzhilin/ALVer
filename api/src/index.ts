@@ -71,6 +71,7 @@ app.get("/api/meetings/:id/stream", meeting.stream);              // SSE
 // ── Facilitator actions — require eID auth ────────────────────────────────────
 app.patch("/api/meetings/:id/status", requireAuth, requireFacilitatorOfMeeting, meeting.transitionStatus);
 app.post("/api/meetings/:id/reopen", requireAuth, requireFacilitatorOfMeeting, meeting.reopen);
+app.patch("/api/meetings/:id/display-mode", requireAuth, requireFacilitatorOfMeeting, meeting.setDisplayMode);
 app.post("/api/meetings/:id/attendees/manual", requireAuth, requireFacilitatorOfMeeting, attendee.manualAdd);
 app.post("/api/meetings/:id/mandates", requireAuth, requireFacilitatorOfMeeting, mandate.create);
 app.patch("/api/meetings/:id/mandates/:mandateId/revoke", requireAuth, requireFacilitatorOfMeeting, mandate.revoke);

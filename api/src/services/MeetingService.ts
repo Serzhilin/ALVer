@@ -4,6 +4,15 @@ import { sseService } from "./SSEService";
 
 export class MeetingService {
     private repo = AppDataSource.getRepository(Meeting);
+    private displayModes = new Map<string, string>()
+
+    setDisplayMode(meetingId: string, mode: string): void {
+        this.displayModes.set(meetingId, mode)
+    }
+
+    getDisplayMode(meetingId: string): string {
+        return this.displayModes.get(meetingId) ?? 'numbers'
+    }
 
     async create(data: {
         name: string;
@@ -83,6 +92,7 @@ export class MeetingService {
         if (!updated) throw new Error("Meeting not found after update");
 
         sseService.emit(id, "meeting_status_changed", { meetingId: id, status });
+        if (status === 'archived') this.displayModes.delete(id)
 
         // W3DS SYNC HOOK — to be implemented
         // await web3Adapter.sync('meeting', id, updated);
@@ -100,6 +110,7 @@ export class MeetingService {
         const updated = await this.findById(id);
         if (!updated) throw new Error("Meeting not found after update");
         sseService.emit(id, "meeting_status_changed", { meetingId: id, status: "in_session" });
+        this.displayModes.delete(id)
         return updated;
     }
 

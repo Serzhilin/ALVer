@@ -95,4 +95,19 @@ export class MeetingController {
     stream = (req: Request, res: Response) => {
         sseService.subscribe(req.params.id, res);
     };
+
+    setDisplayMode = async (req: Request, res: Response) => {
+        try {
+            const { mode } = req.body
+            const valid = ['numbers', 'bars', 'pie', 'bubbles']
+            if (!valid.includes(mode)) {
+                return res.status(400).json({ error: 'Invalid mode. Must be one of: numbers, bars, pie, bubbles' })
+            }
+            svc.setDisplayMode(req.params.id, mode)
+            sseService.emit(req.params.id, 'display_mode', { mode })
+            res.json({ mode })
+        } catch (e: any) {
+            res.status(500).json({ error: e.message })
+        }
+    }
 }
