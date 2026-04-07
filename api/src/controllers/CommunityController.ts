@@ -60,7 +60,10 @@ export class CommunityController {
     listMembers = async (req: Request, res: Response) => {
         try {
             const ename = req.user!.ename;
-            const community = await svc.findAsFacilitator(ename);
+            const communityId = typeof req.query.communityId === 'string' ? req.query.communityId : null;
+            const community = communityId
+                ? await svc.findById(communityId)
+                : await svc.findAsFacilitator(ename);
             if (!community) return res.status(404).json({ error: "Community not found" });
             const members = await svc.getMembers(community.id);
             res.json(members);
@@ -73,7 +76,10 @@ export class CommunityController {
     createMember = async (req: Request, res: Response) => {
         try {
             const ename = req.user!.ename;
-            const community = await svc.findAsFacilitator(ename);
+            const communityId = typeof req.query.communityId === 'string' ? req.query.communityId : null;
+            const community = communityId
+                ? await svc.findById(communityId)
+                : await svc.findAsFacilitator(ename);
             if (!community) return res.status(404).json({ error: "Community not found" });
             const member = await svc.createMember(community.id, req.body);
             res.status(201).json(member);
@@ -86,7 +92,10 @@ export class CommunityController {
     updateMember = async (req: Request, res: Response) => {
         try {
             const ename = req.user!.ename;
-            const community = await svc.findAsFacilitator(ename);
+            const communityId = typeof req.query.communityId === 'string' ? req.query.communityId : null;
+            const community = communityId
+                ? await svc.findById(communityId)
+                : await svc.findAsFacilitator(ename);
             if (!community) return res.status(403).json({ error: "Forbidden" });
 
             const existing = await svc.getMemberById(req.params.memberId);
@@ -111,7 +120,10 @@ export class CommunityController {
     deleteMember = async (req: Request, res: Response) => {
         try {
             const ename = req.user!.ename;
-            const community = await svc.findAsFacilitator(ename);
+            const communityId = typeof req.query.communityId === 'string' ? req.query.communityId : null;
+            const community = communityId
+                ? await svc.findById(communityId)
+                : await svc.findAsFacilitator(ename);
             if (!community) return res.status(403).json({ error: "Forbidden" });
 
             const existing = await svc.getMemberById(req.params.memberId);

@@ -11,8 +11,9 @@ export function UserProvider({ children }) {
   const [communityId, setCommunityId] = useState(null)
   const [communities, setCommunities] = useState([])
 
-  // After a valid token exists, resolve which community to use
-  const resolveSession = useCallback(async () => {
+  // After a valid token exists, resolve which community to use.
+  // forceAttendee=true: always set isFacilitator=false (attendee login path)
+  const resolveSession = useCallback(async (forceAttendee = false) => {
     try {
       const allCommunities = await getCommunities()
       setCommunities(allCommunities)
@@ -32,7 +33,7 @@ export function UserProvider({ children }) {
       setCommunityId(selectedId)
       const me = await getMe(selectedId)
       setUser(me)
-      setIsFacilitator(me.isFacilitator ?? false)
+      setIsFacilitator(forceAttendee ? false : (me.isFacilitator ?? false))
     } catch {
       localStorage.removeItem('alver_token')
       localStorage.removeItem('alver_community_id')
@@ -51,30 +52,35 @@ export function UserProvider({ children }) {
     const stored = localStorage.getItem('alver_token')
     if (!stored) { setLoading(false); return }
     setToken(stored)
-    resolveSession()
+    // Restore facilitator mode only if it was explicitly saved
+    const facilitatorMode = localStorage.getItem('alver_facilitator_mode') === 'true'
+    resolveSession(!facilitatorMode)
   }, [resolveSession])
 
-  // Regular login (attendee or eID)
+  // Attendee login — always non-facilitator regardless of community role
   const login = useCallback((newToken) => {
     localStorage.setItem('alver_token', newToken)
+    localStorage.removeItem('alver_facilitator_mode')
     setToken(newToken)
-    resolveSession()
+    resolveSession(true)
   }, [resolveSession])
 
-  // Facilitator login — same flow, resolveSession sets isFacilitator from getMe
+  // Facilitator login — sets facilitator mode explicitly
   const loginAsFacilitator = useCallback((newToken) => {
     localStorage.setItem('alver_token', newToken)
+    localStorage.setItem('alver_facilitator_mode', 'true')
     setToken(newToken)
-    resolveSession()
+    resolveSession(false)
   }, [resolveSession])
 
   // User picks a community from the picker
   const selectCommunity = useCallback((id) => {
     localStorage.setItem('alver_community_id', id)
     setCommunityId(id)
+    const facilitatorMode = localStorage.getItem('alver_facilitator_mode') === 'true'
     getMe(id).then(me => {
       setUser(me)
-      setIsFacilitator(me.isFacilitator ?? false)
+      setIsFacilitator(facilitatorMode ? (me.isFacilitator ?? false) : false)
     }).catch(console.error)
   }, [])
 

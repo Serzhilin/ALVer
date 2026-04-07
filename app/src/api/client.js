@@ -56,10 +56,10 @@ export const pollAuthSessionResult = (sessionId) =>
 export const getCommunityBranding = () => req('GET', '/community/branding')
 export const getCommunity = (communityId) => req('GET', `/community${communityId ? `?communityId=${encodeURIComponent(communityId)}` : ''}`)
 export const updateCommunity = (data) => req('PATCH', '/community', data)
-export const getCommunityMembers = () => req('GET', '/community/members')
-export const createCommunityMember = (data) => req('POST', '/community/members', data)
-export const updateCommunityMember = (id, data) => req('PATCH', `/community/members/${id}`, data)
-export const deleteCommunityMember = (id) => req('DELETE', `/community/members/${id}`)
+export const getCommunityMembers = (communityId) => req('GET', `/community/members${communityId ? `?communityId=${encodeURIComponent(communityId)}` : ''}`)
+export const createCommunityMember = (data, communityId) => req('POST', `/community/members${communityId ? `?communityId=${encodeURIComponent(communityId)}` : ''}`, data)
+export const updateCommunityMember = (id, data, communityId) => req('PATCH', `/community/members/${id}${communityId ? `?communityId=${encodeURIComponent(communityId)}` : ''}`, data)
+export const deleteCommunityMember = (id, communityId) => req('DELETE', `/community/members/${id}${communityId ? `?communityId=${encodeURIComponent(communityId)}` : ''}`)
 
 // ── Meetings ──────────────────────────────────────────────────────────────────
 export const getMeetingMembers = (id) => req('GET', `/meetings/${id}/members`)

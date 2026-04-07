@@ -76,19 +76,19 @@ export function CommunityProvider({ children }) {
   }
 
   async function createMember(data) {
-    const member = await api.createCommunityMember(data)
+    const member = await api.createCommunityMember(data, communityId)
     setMembers(prev => [...prev, member].sort((a, b) => a.name.localeCompare(b.name)))
     return member
   }
 
   async function updateMember(id, data) {
-    const member = await api.updateCommunityMember(id, data)
+    const member = await api.updateCommunityMember(id, data, communityId)
     setMembers(prev => prev.map(m => m.id === id ? member : m))
     return member
   }
 
   async function deleteMember(id) {
-    await api.deleteCommunityMember(id)
+    await api.deleteCommunityMember(id, communityId)
     setMembers(prev => prev.filter(m => m.id !== id))
   }
 

@@ -2,7 +2,6 @@
 
 General:
 
-Main screen of facilitator and  for attendee as well: title Archive (expandable) - not bold
 
 Attendee flow:
 
