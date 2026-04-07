@@ -40,7 +40,10 @@ export class CommunityController {
     update = async (req: Request, res: Response) => {
         try {
             const ename = req.user!.ename;
-            const community = await svc.findAsFacilitator(ename);
+            const communityId = typeof req.query.communityId === 'string' ? req.query.communityId : null;
+            const community = communityId
+                ? await svc.findById(communityId)
+                : await svc.findAsFacilitator(ename);
             if (!community) return res.status(404).json({ error: "Community not found" });
             const { name, logo_url, locations, primary_color, title_font } = req.body;
             const data: Partial<Pick<Community, "name" | "logo_url" | "locations" | "primary_color" | "title_font">> = {};

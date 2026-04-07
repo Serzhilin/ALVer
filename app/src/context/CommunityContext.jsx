@@ -69,7 +69,7 @@ export function CommunityProvider({ children }) {
   useEffect(() => { load() }, [load])
 
   async function updateCommunity(data) {
-    const updated = await api.updateCommunity(data)
+    const updated = await api.updateCommunity(data, communityId)
     setCommunity(updated)
     applyTheme(updated)
     return updated

@@ -9,7 +9,11 @@ const commSvc = new CommunityService();
 export class MeetingController {
     create = async (req: Request, res: Response) => {
         try {
-            const community = await commSvc.findByFacilitatorEname(req.user!.ename);
+            const ename = req.user!.ename;
+            const communityId = req.body.community_id ?? (typeof req.query.communityId === 'string' ? req.query.communityId : null);
+            const community = communityId
+                ? await commSvc.findById(communityId)
+                : await commSvc.findAsFacilitator(ename);
             if (!community) return res.status(403).json({ error: "Forbidden" });
             const meeting = await svc.create({ ...req.body, community_id: community.id });
             res.status(201).json(meeting);
@@ -20,16 +24,7 @@ export class MeetingController {
 
     getAll = async (req: Request, res: Response) => {
         try {
-            // Scope to the explicitly selected community, or find it from ename
-            let communityId: string | undefined;
-            if (typeof req.query.communityId === 'string') {
-                communityId = req.query.communityId;
-            } else if (req.user!.ename) {
-                const community =
-                    (await commSvc.findByFacilitatorEname(req.user!.ename)) ??
-                    (await commSvc.findByMemberEname(req.user!.ename));
-                communityId = community?.id;
-            }
+            const communityId = typeof req.query.communityId === 'string' ? req.query.communityId : undefined;
             const meetings = await svc.findAll(communityId);
             res.json(meetings);
         } catch (e: any) {

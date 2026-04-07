@@ -55,7 +55,7 @@ export const pollAuthSessionResult = (sessionId) =>
 // ── Community ─────────────────────────────────────────────────────────────────
 export const getCommunityBranding = () => req('GET', '/community/branding')
 export const getCommunity = (communityId) => req('GET', `/community${communityId ? `?communityId=${encodeURIComponent(communityId)}` : ''}`)
-export const updateCommunity = (data) => req('PATCH', '/community', data)
+export const updateCommunity = (data, communityId) => req('PATCH', `/community${communityId ? `?communityId=${encodeURIComponent(communityId)}` : ''}`, data)
 export const getCommunityMembers = (communityId) => req('GET', `/community/members${communityId ? `?communityId=${encodeURIComponent(communityId)}` : ''}`)
 export const createCommunityMember = (data, communityId) => req('POST', `/community/members${communityId ? `?communityId=${encodeURIComponent(communityId)}` : ''}`, data)
 export const updateCommunityMember = (id, data, communityId) => req('PATCH', `/community/members/${id}${communityId ? `?communityId=${encodeURIComponent(communityId)}` : ''}`, data)
