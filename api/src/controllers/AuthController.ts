@@ -181,17 +181,53 @@ export async function devLogin(req: Request, res: Response) {
 }
 
 /** GET /api/auth/me
- *  Returns current user + community from JWT. Used by frontend on app load.
+ *  Returns current user + community from JWT.
+ *  Accepts optional ?communityId=uuid to scope to a specific community.
  */
 export async function getMe(req: Request, res: Response) {
     const { userId, ename } = req.user!;
+    const communityId = typeof req.query.communityId === 'string' ? req.query.communityId : null;
     const { findById } = await import("../services/UserService");
     const { CommunityService } = await import("../services/CommunityService");
     const user = await findById(userId);
     if (!user) { res.status(404).json({ error: "User not found" }); return; }
     const cs = new CommunityService();
-    let community = ename ? await cs.findByFacilitatorEname(ename) : null;
-    if (!community && ename) community = await cs.findByMemberEname(ename);
-    const member = (community && ename) ? await cs.findMemberByEname(community.id, ename) : null;
-    res.json({ ...serializeUser(user), community, member, isFacilitator: member?.is_facilitator ?? false });
+    let community = null;
+    let member = null;
+    if (communityId) {
+        community = await cs.findById(communityId);
+        if (!community) { res.status(404).json({ error: "Community not found" }); return; }
+        member = ename ? await cs.findMemberByEname(community.id, ename) : null;
+    } else {
+        community = ename ? await cs.findByFacilitatorEname(ename) : null;
+        if (!community && ename) community = await cs.findByMemberEname(ename);
+        member = (community && ename) ? await cs.findMemberByEname(community.id, ename) : null;
+    }
+    const isFacilitator = member?.is_facilitator ?? (community != null && community.facilitator_ename === ename);
+    res.json({ ...serializeUser(user), community, member, isFacilitator });
+}
+
+/** GET /api/auth/communities
+ *  Returns all communities the authenticated user belongs to.
+ */
+export async function getMyCommunities(req: Request, res: Response) {
+    try {
+        const { ename } = req.user!;
+        if (!ename) { res.json([]); return; }
+        const { CommunityService } = await import("../services/CommunityService");
+        const cs = new CommunityService();
+        const results = await cs.findAllByEname(ename);
+        res.json(results.map(({ community: c, isFacilitator }) => ({
+            id: c.id,
+            name: c.name,
+            slug: c.slug,
+            logo_url: c.logo_url,
+            primary_color: c.primary_color,
+            title_font: c.title_font,
+            isFacilitator,
+        })));
+    } catch (err) {
+        console.error("[Auth] getMyCommunities error:", err);
+        res.status(500).json({ error: "Internal server error" });
+    }
 }

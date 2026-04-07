@@ -1,3 +1,4 @@
+import { In } from "typeorm";
 import { AppDataSource } from "../database/data-source";
 import { Community } from "../database/entities/Community";
 import { Member } from "../database/entities/Member";
@@ -61,6 +62,39 @@ export class CommunityService {
         const member = await this.memberRepo.findOne({ where: { ename } });
         if (!member) return null;
         return this.repo.findOne({ where: { id: member.community_id }, relations: ["members"] });
+    }
+
+    /** Returns all communities a user belongs to (as facilitator or member), deduped */
+    async findAllByEname(ename: string): Promise<{ community: Community; isFacilitator: boolean }[]> {
+        const results: { community: Community; isFacilitator: boolean }[] = [];
+        const seen = new Set<string>();
+
+        // Communities where user is the designated facilitator
+        const facilitatorCommunities = await this.repo.find({ where: { facilitator_ename: ename } });
+        for (const c of facilitatorCommunities) {
+            results.push({ community: c, isFacilitator: true });
+            seen.add(c.id);
+        }
+
+        // Communities where user has a member row — batch fetch to avoid N+1
+        const members = await this.memberRepo.find({ where: { ename } });
+        const unseenMemberIds = members.map(m => m.community_id).filter(id => !seen.has(id));
+        if (unseenMemberIds.length > 0) {
+            const memberCommunities = await this.repo.find({ where: { id: In(unseenMemberIds) } });
+            const communityMap = new Map(memberCommunities.map(c => [c.id, c]));
+            for (const m of members) {
+                if (!seen.has(m.community_id)) {
+                    const community = communityMap.get(m.community_id);
+                    if (community) {
+                        const isFacilitator = m.is_facilitator || community.facilitator_ename === ename;
+                        results.push({ community, isFacilitator });
+                        seen.add(m.community_id);
+                    }
+                }
+            }
+        }
+
+        return results;
     }
 
     async createMember(communityId: string, data: {

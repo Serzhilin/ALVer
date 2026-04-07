@@ -12,7 +12,7 @@ import { PollController } from "./controllers/PollController";
 import { VoteController } from "./controllers/VoteController";
 import { WebhookController } from "./controllers/WebhookController";
 import { CommunityController } from "./controllers/CommunityController";
-import { getOffer, epassportLogin, sseAuthStream, getSessionResult, getMe, devLogin } from "./controllers/AuthController";
+import { getOffer, epassportLogin, sseAuthStream, getSessionResult, getMe, getMyCommunities, devLogin } from "./controllers/AuthController";
 import { listCommunities, createCommunity, deleteCommunity } from "./controllers/AdminController";
 import { requireAuth, optionalAuth } from "./middleware/auth";
 import { requireFacilitatorOfMeeting } from "./middleware/requireFacilitatorOfMeeting";
@@ -49,6 +49,7 @@ app.post("/api/auth/dev-login", devLogin);
 app.get("/api/auth/sessions/:id", sseAuthStream);
 app.get("/api/auth/sessions/:id/result", getSessionResult);
 app.get("/api/auth/me", requireAuth, getMe);
+app.get("/api/auth/communities", requireAuth, getMyCommunities);
 
 // ── Community ─────────────────────────────────────────────────────────────────
 app.get("/api/community/branding", community.getBranding);          // public
