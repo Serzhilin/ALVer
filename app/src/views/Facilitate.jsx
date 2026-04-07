@@ -6,12 +6,13 @@ import { useNavigate, useParams, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import FacilitatorHeader from '../components/FacilitatorHeader'
 import AgendaHtml from '../components/AgendaHtml'
-import { reopenMeeting } from '../api/client'
+import { reopenMeeting, setDisplayMode } from '../api/client'
 
 export default function Facilitate() {
   const { id } = useParams()
   const { setMeetingId,
     meeting, activePoll, attendeeCount,
+    displayMode,
     updatePhase, addPoll, updatePoll, deletePoll,
     startPoll, closePoll, addManualVote, checkIn,
     addMandate, revokeMandate, removeAttendee,
@@ -329,6 +330,41 @@ export default function Facilitate() {
 
           {/* Zone 3 — Polls */}
           <div className="card" style={{ padding: 20 }}>
+            {meeting.phase === 'in_session' && (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                background: 'var(--color-cream, #faf8f5)',
+                border: '1px solid var(--color-sand, #e8e0d5)',
+                borderRadius: 10, padding: 6, marginBottom: 16,
+              }}>
+                <span style={{ fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-charcoal-light)', padding: '0 4px', flexShrink: 0 }}>
+                  Screen
+                </span>
+                {[
+                  { key: 'numbers', label: 'Numbers', icon: '🔢' },
+                  { key: 'bars',    label: 'Bars',    icon: '📊' },
+                  { key: 'pie',     label: 'Pie',     icon: '🥧' },
+                  { key: 'bubbles', label: 'Bubbles', icon: '🫧' },
+                ].map(m => (
+                  <button
+                    key={m.key}
+                    onClick={() => setDisplayMode(meeting.id, m.key)}
+                    style={{
+                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      gap: 5, padding: '7px 8px', borderRadius: 7,
+                      fontSize: '0.8rem', fontWeight: displayMode === m.key ? 700 : 500,
+                      color: displayMode === m.key ? 'var(--color-terracotta)' : 'var(--color-charcoal-light)',
+                      background: displayMode === m.key ? 'white' : 'transparent',
+                      border: 'none', cursor: 'pointer',
+                      boxShadow: displayMode === m.key ? '0 1px 4px rgba(0,0,0,0.10)' : 'none',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    <span>{m.icon}</span> {m.label}
+                  </button>
+                ))}
+              </div>
+            )}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: meeting.phase !== 'in_session' && meeting.phase !== 'archived' ? 4 : 20 }}>
               <h3 style={{ margin: 0, fontSize: '1rem', fontFamily: 'Inter, sans-serif', fontWeight: 600 }}>
                 {t('facilitate.polls')}
