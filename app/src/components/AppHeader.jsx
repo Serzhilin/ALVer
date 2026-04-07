@@ -29,6 +29,7 @@ export default function AppHeader({
   onSettings,
   onMembers,
   onLogout,
+  onSwitchCommunity,
   right,
 }) {
   const { i18n, t } = useTranslation()
@@ -122,6 +123,12 @@ export default function AppHeader({
                   <MenuItem onClick={() => { i18n.changeLanguage(i18n.language === 'nl' ? 'en' : 'nl'); setShowMenu(false) }}>
                     {i18n.language === 'nl' ? '🇬🇧 EN' : '🇳🇱 NL'}
                   </MenuItem>
+
+                  {onSwitchCommunity && (
+                    <MenuItem onClick={() => { onSwitchCommunity(); setShowMenu(false) }}>
+                      🔀 {t('community_picker.switch_btn')}
+                    </MenuItem>
+                  )}
 
                   {isFacilitator && onMembers && (
                     <MenuItem onClick={() => { onMembers(); setShowMenu(false) }}>

@@ -30,7 +30,7 @@
   "home": {
     "title": "Vergaderingen",
     "title_facilitator": "Dashboard",
-    "subtitle": "Beheer ALV-vergaderingen voor coöperatieve gemeenschappen.",
+    "subtitle": "Beheer ALV-vergaderingen",
     "subtitle_facilitator": "Beheer en faciliteer vergaderingen",
     "logout": "Uitloggen",
     "error_api": "Kan geen verbinding maken met de API",
@@ -41,7 +41,7 @@
     "nav_register": "Aanmelden",
     "nav_display": "Scherm (TV)",
     "nav_archive": "Archief",
-    "facilitator_hint": "Ben jij de facilitator?",
+    "facilitator_hint": "Ben jij een facilitator?",
     "facilitator_link": "Facilitator login →",
     "btn_attend": "Vergadering bijwonen",
     "btn_ill_come": "🙋 Ik kom",
@@ -305,7 +305,7 @@
     "loading_qr": "QR-code laden…",
     "code_validity": "De code is slechts 60 seconden geldig",
     "code_expired_hint": "Ververs de pagina als de code verlopen is",
-    "w3ds_info": "Je betreedt ALVer — een ALV-platform gebouwd op de Web 3.0 Data Space (W3DS)-architectuur. Dit systeem is ontworpen rond het principe van data-platformscheiding, waarbij al je persoonlijke gegevens worden opgeslagen in je eigen soevereine eVault, niet op gecentraliseerde servers.",
+    "w3ds_info": "Je betreedt een app gebouwd op de Web 3.0 Data Space (W3DS)-architectuur. Dit systeem is ontworpen rond het principe van data-platformscheiding, waarbij al je persoonlijke gegevens worden opgeslagen in je eigen soevereine eVault, niet op gecentraliseerde servers.",
     "scan_qr": "Scan met de eID-app op je telefoon",
     "open_wallet": "Open de eID-app om in te loggen",
     "open_wallet_btn": "Inloggen met eID Wallet",
@@ -318,6 +318,13 @@
     "register_hint": "Verifieer je identiteit via de eID-app",
     "logged_in_as": "Ingelogd als",
     "verified_identity": "Geverifieerde identiteit"
+  },
+  "community_picker": {
+    "title": "Kies een gemeenschap",
+    "subtitle": "Je bent lid van meerdere gemeenschappen. Welke wil je betreden?",
+    "role_facilitator": "Facilitator",
+    "role_member": "Lid",
+    "switch_btn": "Wissel van gemeenschap"
   },
   "admin": {
     "title": "ALVer Admin",

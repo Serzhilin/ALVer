@@ -17,7 +17,7 @@ import { useUser } from '../context/UserContext'
  */
 export default function FacilitatorHeader({ backTo, title, liveIndicator, right }) {
   const { community } = useCommunity()
-  const { user, logout } = useUser()
+  const { user, logout, communities, switchCommunity } = useUser()
   const [showSettings, setShowSettings] = useState(false)
   const [showMembers, setShowMembers] = useState(false)
 
@@ -37,6 +37,7 @@ export default function FacilitatorHeader({ backTo, title, liveIndicator, right 
         onMembers={() => setShowMembers(true)}
         onSettings={() => setShowSettings(true)}
         onLogout={logout}
+        onSwitchCommunity={communities.length > 1 ? switchCommunity : undefined}
         right={right}
       />
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}

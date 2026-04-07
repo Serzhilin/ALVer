@@ -30,7 +30,7 @@
   "home": {
     "title": "Meetings",
     "title_facilitator": "Dashboard",
-    "subtitle": "Manage general assembly meetings for cooperative communities.",
+    "subtitle": "Manage general assembly meetings",
     "subtitle_facilitator": "Manage and facilitate meetings",
     "logout": "Sign out",
     "error_api": "Cannot connect to the API",
@@ -41,7 +41,7 @@
     "nav_register": "Register",
     "nav_display": "Screen (TV)",
     "nav_archive": "Archive",
-    "facilitator_hint": "Are you the facilitator?",
+    "facilitator_hint": "Are you a facilitator?",
     "facilitator_link": "Facilitator login →",
     "btn_attend": "Enter meeting",
     "btn_ill_come": "🙋 I'll come",
@@ -305,7 +305,7 @@
     "loading_qr": "Loading QR Code…",
     "code_validity": "The code is only valid for 60 seconds",
     "code_expired_hint": "Please refresh the page if it expires",
-    "w3ds_info": "You are entering ALVer — a general assembly platform built on the Web 3.0 Data Space (W3DS) architecture. This system is designed around the principle of data-platform separation, where all your personal content is stored in your own sovereign eVault, not on centralised servers.",
+    "w3ds_info": "You are entering an app built on the Web 3.0 Data Space (W3DS) architecture. This system is designed around the principle of data-platform separation, where all your personal content is stored in your own sovereign eVault, not on centralised servers.",
     "scan_qr": "Scan with the eID app on your phone",
     "open_wallet": "Open the eID app to sign in",
     "open_wallet_btn": "Login with eID Wallet",
@@ -318,6 +318,13 @@
     "register_hint": "Verify your identity via the eID app",
     "logged_in_as": "Signed in as",
     "verified_identity": "Verified identity"
+  },
+  "community_picker": {
+    "title": "Choose a community",
+    "subtitle": "You are a member of multiple communities. Which one would you like to enter?",
+    "role_facilitator": "Facilitator",
+    "role_member": "Member",
+    "switch_btn": "Switch community"
   },
   "admin": {
     "title": "ALVer Admin",

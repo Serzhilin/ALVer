@@ -27,7 +27,7 @@ function lookupLocation(name, communityLocations) {
 export default function Home() {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
-  const { user, isFacilitator, loading: authLoading, login, logout } = useUser()
+  const { user, isFacilitator, loading: authLoading, login, logout, communityId, communities, switchCommunity } = useUser()
   const { community, members } = useCommunity() || {}
   const { meeting: ctxMeeting, setMeetingId, preRegister, addMandate, removeAttendee, revokeMandate } = useMeeting()
   const facilitatorMembers = (members || []).filter(m => m.is_facilitator)
@@ -51,13 +51,13 @@ export default function Home() {
 
   function loadMeetings() {
     setMeetingsLoading(true)
-    getAllMeetings()
+    getAllMeetings(communityId)
       .then(setMeetings)
       .catch(e => setError(e.message))
       .finally(() => setMeetingsLoading(false))
   }
 
-  useEffect(() => { loadMeetings() }, [user])
+  useEffect(() => { loadMeetings() }, [user, communityId])
 
   // Re-fetch meeting list when meeting phase changes via SSE (e.g. open → in_session)
   useEffect(() => {
@@ -119,10 +119,12 @@ export default function Home() {
     return (
       <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <div style={{ maxWidth: 420, width: '100%' }}>
-          <div style={{ textAlign: 'center', marginBottom: 32 }}>
-            <div style={{ fontSize: '2.8rem', marginBottom: 12 }}>🏛️</div>
-            <h1 style={{ fontSize: '1.6rem', margin: '0 0 8px', fontFamily: 'var(--font-title)' }}>ALVer</h1>
-            <p style={{ color: 'var(--color-charcoal-light)', margin: 0, fontSize: '0.9rem' }}>{t('home.subtitle')}</p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 32 }}>
+            <span style={{ fontSize: '2.2rem', lineHeight: 1 }}>🏛️</span>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
+              <h1 style={{ fontSize: '1.3rem', margin: 0, fontFamily: 'var(--font-title)', lineHeight: 1 }}>ALVer</h1>
+              <p style={{ color: 'var(--color-charcoal-light)', margin: 0, fontSize: '0.9rem', lineHeight: 1 }}>{t('home.subtitle')}</p>
+            </div>
           </div>
           <div className="card" style={{ padding: 28 }}>
             <LoginScreen onSuccess={login} nameOption={false} />
@@ -221,7 +223,13 @@ export default function Home() {
 
     return (
       <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', flexDirection: 'column' }}>
-        <AppHeader logo={community?.logo_url} user={user} onLogout={logout} />
+        <AppHeader
+          logo={community?.logo_url}
+          user={user}
+          isFacilitator={isFacilitator}
+          onLogout={logout}
+          onSwitchCommunity={communities.length > 1 ? switchCommunity : undefined}
+        />
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 20px' }}>
           <div style={{ marginBottom: 28, textAlign: 'center' }}>
@@ -558,7 +566,7 @@ function HeaderLogo({ communityLogo, onFail, size = 'small' }) {
 function SectionHeader({ label, children }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-      <h2 style={{ margin: 0, fontSize: '0.78rem', fontWeight: 700, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.09em' }}>{label}</h2>
+      <h2 style={{ margin: 0, fontSize: '0.78rem', fontWeight: 700, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.09em', fontFamily: 'inherit' }}>{label}</h2>
       {children}
     </div>
   )

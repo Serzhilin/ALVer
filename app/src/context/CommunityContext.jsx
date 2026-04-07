@@ -39,7 +39,7 @@ export { TITLE_FONTS }
 const CommunityContext = createContext(null)
 
 export function CommunityProvider({ children }) {
-  const { user } = useUser()
+  const { user, communityId } = useUser()
   const [community, setCommunity] = useState(null)
   const [members, setMembers] = useState([])
   const [loading, setLoading] = useState(false)
@@ -49,7 +49,7 @@ export function CommunityProvider({ children }) {
     try {
       if (user) {
         // Authenticated: load full community data (members, settings, etc.)
-        const c = await api.getCommunity()
+        const c = await api.getCommunity(communityId)
         setCommunity(c)
         setMembers(c.members || [])
         applyTheme(c)
@@ -64,7 +64,7 @@ export function CommunityProvider({ children }) {
     } finally {
       setLoading(false)
     }
-  }, [user])
+  }, [user, communityId])
 
   useEffect(() => { load() }, [load])
 
