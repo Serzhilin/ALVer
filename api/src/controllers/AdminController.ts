@@ -26,7 +26,14 @@ export async function createCommunity(req: Request, res: Response) {
         return;
     }
 
-    const existing = await repo().findOne({ where: { slug } });
+    let existing: Community | null;
+    try {
+        existing = await repo().findOne({ where: { slug } });
+    } catch (err: unknown) {
+        console.error("[Admin] DB lookup failed:", err);
+        res.status(500).json({ error: "Database error during slug check" });
+        return;
+    }
     if (existing) {
         res.status(409).json({ error: "Slug already taken" });
         return;
@@ -41,9 +48,10 @@ export async function createCommunity(req: Request, res: Response) {
             admins: [],
             owner: facilitator_ename,
         });
-    } catch (err: any) {
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
         console.error("[Admin] eVault provisioning failed:", err);
-        res.status(502).json({ error: `eVault provisioning failed: ${err?.message ?? String(err)}` });
+        res.status(502).json({ error: `eVault provisioning failed: ${message}` });
         return;
     }
 
@@ -58,7 +66,14 @@ export async function createCommunity(req: Request, res: Response) {
         evault_uri: evaultResult.uri,
         locations: [],
     });
-    const saved = await repo().save(community);
+    let saved: Community;
+    try {
+        saved = await repo().save(community);
+    } catch (err: unknown) {
+        console.error("[Admin] DB save failed:", err);
+        res.status(500).json({ error: "Failed to save community" });
+        return;
+    }
     res.status(201).json(saved);
 }
 
