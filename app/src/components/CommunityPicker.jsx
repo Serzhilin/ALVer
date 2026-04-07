@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next'
  *   communities — array of { id, name, slug, logo_url, primary_color, isFacilitator }
  *   onSelect    — called with community id when user picks one
  */
-export default function CommunityPicker({ communities, onSelect }) {
+export default function CommunityPicker({ communities, onSelect, isFacilitatorSession = false }) {
   const { t } = useTranslation()
 
   return (
@@ -96,11 +96,11 @@ export default function CommunityPicker({ communities, onSelect }) {
               }}>
                 {c.name}
               </div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--color-muted, #888)', marginTop: 2 }}>
-                {c.isFacilitator
-                  ? t('community_picker.role_facilitator')
-                  : t('community_picker.role_member')}
-              </div>
+              {isFacilitatorSession && c.isFacilitator && (
+                <div style={{ fontSize: '0.8rem', color: 'var(--color-muted, #888)', marginTop: 2 }}>
+                  {t('community_picker.role_facilitator')}
+                </div>
+              )}
             </div>
 
             <span style={{ color: 'var(--color-muted, #888)', fontSize: '1.1rem' }}>›</span>

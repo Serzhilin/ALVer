@@ -322,7 +322,7 @@
   "community_picker": {
     "title": "Choose a community",
     "subtitle": "You are a member of multiple communities. Which one would you like to enter?",
-    "role_facilitator": "Facilitator",
+    "role_facilitator": "You are a facilitator of this community",
     "role_member": "Member",
     "switch_btn": "Switch community"
   },

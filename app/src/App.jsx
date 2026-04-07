@@ -20,7 +20,8 @@ function CommunityPickerGate({ children }) {
   const { token, loading, communityId, communities, selectCommunity } = useUser()
   if (loading) return null
   if (token && communities.length > 1 && !communityId) {
-    return <CommunityPicker communities={communities} onSelect={selectCommunity} />
+    const isFacilitatorSession = localStorage.getItem('alver_facilitator_mode') === 'true'
+    return <CommunityPicker communities={communities} onSelect={selectCommunity} isFacilitatorSession={isFacilitatorSession} />
   }
   return children
 }

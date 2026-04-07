@@ -322,7 +322,7 @@
   "community_picker": {
     "title": "Kies een gemeenschap",
     "subtitle": "Je bent lid van meerdere gemeenschappen. Welke wil je betreden?",
-    "role_facilitator": "Facilitator",
+    "role_facilitator": "U bent facilitator van deze gemeenschap",
     "role_member": "Lid",
     "switch_btn": "Wissel van gemeenschap"
   },
