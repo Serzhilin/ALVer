@@ -52,7 +52,7 @@
     "preregistered_status": "🙋 Pre-registered to attend",
     "mandate_status": "📜 Mandate given to {{proxy}}",
     "decline_status": "You indicated you won't attend",
-    "scan_qr_to_checkin": "📱 Scan the QR code at the venue to check in"
+    "scan_qr_to_checkin": "📱 Scan the QR code at the venue with your camera (not the eID app) to check in"
   },
   "facilitate": {
     "phase_label": "Phase",

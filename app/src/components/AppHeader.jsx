@@ -21,7 +21,9 @@ import { LanguageSwitcher } from './LanguageSwitcher'
  *                   (use for phase badge, display link, etc.)
  */
 export default function AppHeader({
+  appLogo,
   logo,
+  centerLogo = false,
   title,
   liveIndicator = false,
   user,
@@ -62,11 +64,20 @@ export default function AppHeader({
         alignItems: 'center',
         justifyContent: 'space-between',
         height: 56,
+        position: 'relative',
       }}>
+
+        {/* ── Center — community logo (facilitator only) ── */}
+        {logo && centerLogo && (
+          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
+            <HeaderLogo src={logo} />
+          </div>
+        )}
 
         {/* ── Left ── */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
-          {logo && <HeaderLogo src={logo} />}
+          {appLogo && <HeaderLogo src={appLogo} />}
+          {logo && !centerLogo && <HeaderLogo src={logo} />}
 
           {title && (
             <span style={{

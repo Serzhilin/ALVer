@@ -224,7 +224,7 @@ export default function Home() {
     return (
       <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', flexDirection: 'column' }}>
         <AppHeader
-          logo={community?.logo_url}
+          appLogo="/logo.png"
           user={user}
           isFacilitator={isFacilitator}
           onLogout={logout}

@@ -119,6 +119,7 @@ export default function Attend() {
     return (
       <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', flexDirection: 'column' }}>
         <AppHeader
+          appLogo="/logo.png"
           logo={community?.logo_url}
           title={meeting.name}
           liveIndicator={false}

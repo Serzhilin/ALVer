@@ -52,7 +52,7 @@
     "preregistered_status": "🙋 Vooraf aangemeld als aanwezig",
     "mandate_status": "📜 Mandaat gegeven aan {{proxy}}",
     "decline_status": "Je hebt aangegeven niet aanwezig te zijn",
-    "scan_qr_to_checkin": "📱 Scan de QR-code op de locatie om in te checken"
+    "scan_qr_to_checkin": "📱 Scan de QR-code op de locatie met je camera (niet de eID-app) om in te checken"
   },
   "facilitate": {
     "phase_label": "Fase",
