@@ -331,18 +331,33 @@ function VotingDisplay({ poll, attendeeCount, displayMode, community, chartColor
         {displayMode === 'bars'    && <VoteBar     poll={poll} colors={chartColors} />}
         {displayMode === 'pie'     && <VotePie     poll={poll} colors={chartColors} />}
         {displayMode === 'bubbles' && <VoteBubbles poll={poll} colors={chartColors} />}
-        {(displayMode === 'numbers' || !displayMode) && (
-          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', justifyContent: 'center' }}>
-            {poll.options.map((opt) => (
-              <span key={opt} style={{
-                padding: '12px 32px', borderRadius: 10,
-                background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(44,42,39,0.07)',
-                border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(44,42,39,0.12)'}`,
-                fontSize: '1.2rem', color: isDark ? 'rgba(255,255,255,0.7)' : 'var(--color-charcoal-light)',
-              }}>{opt}</span>
-            ))}
-          </div>
-        )}
+        {(displayMode === 'numbers' || !displayMode) && (() => {
+          const tally = Object.fromEntries(poll.options.map(o => [o, 0]))
+          for (const optionId of Object.values(poll.votes ?? {})) {
+            const idx = poll._optionIds?.indexOf(optionId)
+            if (idx != null && idx !== -1) tally[poll.options[idx]]++
+          }
+          return (
+            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', justifyContent: 'center' }}>
+              {poll.options.map((opt) => (
+                <div key={opt} style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
+                  padding: '28px 48px', borderRadius: 16,
+                  background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(44,42,39,0.07)',
+                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(44,42,39,0.12)'}`,
+                  minWidth: 140,
+                }}>
+                  <span style={{ fontSize: '4rem', fontWeight: 700, color: isDark ? 'white' : 'var(--color-charcoal)', lineHeight: 1 }}>
+                    {tally[opt]}
+                  </span>
+                  <span style={{ fontSize: '1.1rem', color: isDark ? 'rgba(255,255,255,0.55)' : 'var(--color-charcoal-light)' }}>
+                    {opt}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )
+        })()}
       </div>
     </div>
   )
