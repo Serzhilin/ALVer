@@ -1,6 +1,16 @@
 # ALVer Bug Tracking
 
-General:
+Publishing:
+
+Progrsasive web app
+
+Capacitor  app
+
+better logging kuz we gonna ppublish it
+
+google app
+
+w4ds:
 
 - Now eVault of a group exists, and peeps eVaults too. Data is saved on group eVault, but, groups created by me are empty from people - I don't add members in these groups...
 
@@ -13,20 +23,15 @@ I preregistered as attendee. Then Facilitator opened the meeting and thereafter 
 
 Facilitator flow:
 
-WYSIWYG still works shitty - list doesn't work properly. Whre is bullet points? ...
-
-Options for voting don't translate. pre-filled options can, I think, and if a person already wrote something this we obviousl;y don'ty change.
-
 
 Display screen:
 
-if a meeting is not announced - ?
-
-if voting in progress - more fun?
+if a meeting is not announced - what should be on display screen?
 
 Later, ideas, questions:
 
-idea: add slides and notulen, as links, hten ppl have them as well in archive. but can be overbodig maybe? or not? or later with nextcloud
+
+add slides and notulen, as links, hten ppl have them as well in archive. but can be overbodig maybe? or not? or later with nextcloud
 
 ideally not google maps but other maps...
 

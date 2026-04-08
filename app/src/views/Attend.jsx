@@ -32,41 +32,39 @@ export default function Attend() {
 
   const [myName, setMyName] = useState(() => localStorage.getItem('alver_my_name') || '')
   const [checkedIn, setCheckedIn] = useState(false)
-  const [greeting, setGreeting] = useState('')
-  const [showGreeting, setShowGreeting] = useState(false)
   const [votedPolls, setVotedPolls] = useState({})
   const checkInFired = useRef(false)
 
-  // When eID user logs in, auto-check-in with their full name (matches member record)
+  // Resolve name from eID and check in if appropriate.
+  // open phase: QR on display screen → scan → auto-check-in.
+  // in_session: no auto-check-in — facilitator must add manually (locked screen shown).
   useEffect(() => {
     if (!user || !meeting || checkedIn || checkInFired.current) return
     checkInFired.current = true
     const name = (user.firstName && user.lastName)
       ? `${user.firstName} ${user.lastName}`
       : user.displayName
-    // Clear any stale localStorage name so Effect 1 can't race with us
     localStorage.removeItem('alver_my_name')
+    setMyName(name)
     const found = meeting.checkedIn.find(c => c.name.toLowerCase() === name.toLowerCase())
     if (found) {
-      setMyName(name)
       setCheckedIn(true)
-    } else if (meeting.phase === 'in_session') {
-      // Meeting already live — do not auto-check-in. Facilitator must add them manually.
-      setMyName(name)
-      // checkedIn stays false → "meeting in progress" screen is shown
-    } else {
-      setMyName(name)
+    } else if (meeting.phase === 'open') {
       checkIn(name)
-        .then(() => {
-          localStorage.setItem('alver_my_name', name)
-          setCheckedIn(true)
-          setGreeting(t('attend.welcome_flash'))
-          setShowGreeting(true)
-          setTimeout(() => setShowGreeting(false), 3000)
-        })
+        .then(() => setCheckedIn(true))
         .catch(err => console.warn('Auto check-in failed:', err))
     }
+    // in_session: checkedIn stays false → locked screen or caught by second effect after manual add
   }, [user?.ename, meeting?.id])
+
+  // Catch manual check-in by facilitator while meeting is already live.
+  // The effect above fires once and marks checkInFired — so SSE-driven updates
+  // to meeting.checkedIn won't re-trigger it. This separate effect handles that.
+  useEffect(() => {
+    if (checkedIn || !myName || !meeting) return
+    const found = meeting.checkedIn.find(c => c.name.toLowerCase() === myName.toLowerCase())
+    if (found) setCheckedIn(true)
+  }, [meeting?.checkedIn?.length, myName, checkedIn])
 
   function handleVote(pollId, option, isMandate = false) {
     // Set optimistic local state immediately — disables buttons before re-render
@@ -98,21 +96,7 @@ export default function Attend() {
     ? new Date(meeting.date + 'T12:00').toLocaleDateString(dateLocale, { weekday: 'long', day: 'numeric', month: 'long' })
     : null
 
-  // ── Greeting flash ────────────────────────────────────────────────────────
-  const greetingFlash = showGreeting && (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'var(--color-primary, var(--color-terracotta))',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      zIndex: 200, flexDirection: 'column', padding: '0 32px',
-    }} className="greeting-flash">
-      <div style={{ fontSize: '3rem', marginBottom: 16 }}>👋</div>
-      <div style={{ color: 'white', fontSize: '1.8rem', fontFamily: 'var(--font-title)', fontWeight: 600, textAlign: 'center', lineHeight: 1.3 }}>
-        {greeting}
-      </div>
-    </div>
-  )
-
-  // ── Auto-checkin spinner / blocked screen ────────────────────────────────
+  // ── Not checked in ───────────────────────────────────────────────────────
   if (!checkedIn && user) {
     // If meeting is live and this user isn't in checkedIn list — block them
     if (meeting.phase === 'in_session') {
@@ -131,9 +115,22 @@ export default function Attend() {
         </div>
       )
     }
+    // archived: show results; open: show meeting info — in both cases without voting access
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: 'var(--color-charcoal-light)', fontSize: '0.9rem' }}>{t('common.loading')}</span>
+      <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', flexDirection: 'column' }}>
+        <AppHeader
+          logo={community?.logo_url}
+          title={meeting.name}
+          liveIndicator={false}
+          user={user ?? (myName ? { displayName: myName } : null)}
+          onLogout={logout}
+        />
+        <div style={{ flex: 1, maxWidth: 480, width: '100%', margin: '0 auto', padding: '20px 16px 40px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {meeting.phase === 'archived'
+            ? <ClosedMeetingScreen meeting={meeting} votedPolls={{}} onArchive={() => navigate(`/${community?.slug}/meeting/${meeting.id}/archive`)} t={t} />
+            : <WaitingScreen meeting={meeting} dateStr={dateStr} t={t} />
+          }
+        </div>
       </div>
     )
   }
@@ -179,7 +176,6 @@ export default function Attend() {
   // ── Checked in ────────────────────────────────────────────────────────────
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', flexDirection: 'column' }}>
-      {greetingFlash}
       {!sseConnected && (
         <div style={{ background: '#f59e0b', color: 'white', textAlign: 'center', padding: '6px 16px', fontSize: '0.82rem', fontWeight: 500 }}>
           {t('common.reconnecting')}
@@ -218,7 +214,7 @@ export default function Attend() {
 
         {/* Meeting not started */}
         {!isInSession && !isClosed && (
-          <WaitingScreen meeting={meeting} dateStr={dateStr} attendeeCount={attendeeCount} t={t} />
+          <WaitingScreen meeting={meeting} dateStr={dateStr} t={t} />
         )}
 
         {/* In session: active poll */}
@@ -286,7 +282,7 @@ export default function Attend() {
 
 // ── Sub-screens ───────────────────────────────────────────────────────────────
 
-function WaitingScreen({ meeting, dateStr, attendeeCount, t }) {
+function WaitingScreen({ meeting, dateStr, t }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ background: 'white', borderRadius: 14, padding: '32px 24px', textAlign: 'center' }}>
