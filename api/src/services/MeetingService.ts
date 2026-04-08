@@ -5,6 +5,8 @@ import { sseService } from "./SSEService";
 export class MeetingService {
     private repo = AppDataSource.getRepository(Meeting);
     private displayModes = new Map<string, string>()
+    private screenThemes    = new Map<string, 'day' | 'night'>()
+    private screenLanguages = new Map<string, string>()
 
     setDisplayMode(meetingId: string, mode: string): void {
         this.displayModes.set(meetingId, mode)
@@ -18,6 +20,22 @@ export class MeetingService {
      */
     getDisplayMode(meetingId: string): string {
         return this.displayModes.get(meetingId) ?? 'numbers'
+    }
+
+    setScreenTheme(meetingId: string, theme: 'day' | 'night'): void {
+        this.screenThemes.set(meetingId, theme)
+    }
+
+    getScreenTheme(meetingId: string): 'day' | 'night' {
+        return this.screenThemes.get(meetingId) ?? 'day'
+    }
+
+    setScreenLanguage(meetingId: string, language: string): void {
+        this.screenLanguages.set(meetingId, language)
+    }
+
+    getScreenLanguage(meetingId: string): string {
+        return this.screenLanguages.get(meetingId) ?? 'nl'
     }
 
     async create(data: {
@@ -98,7 +116,11 @@ export class MeetingService {
         if (!updated) throw new Error("Meeting not found after update");
 
         sseService.emit(id, "meeting_status_changed", { meetingId: id, status });
-        if (status === 'archived') this.displayModes.delete(id)
+        if (status === 'archived') {
+            this.displayModes.delete(id)
+            this.screenThemes.delete(id)
+            this.screenLanguages.delete(id)
+        }
 
         // W3DS SYNC HOOK — to be implemented
         // await web3Adapter.sync('meeting', id, updated);
@@ -117,6 +139,8 @@ export class MeetingService {
         if (!updated) throw new Error("Meeting not found after update");
         sseService.emit(id, "meeting_status_changed", { meetingId: id, status: "in_session" });
         this.displayModes.delete(id)
+        this.screenThemes.delete(id)
+        this.screenLanguages.delete(id)
         return updated;
     }
 
