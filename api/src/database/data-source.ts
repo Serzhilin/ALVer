@@ -24,7 +24,7 @@ export const dataSourceOptions: DataSourceOptions = {
     synchronize: !isProduction,
     entities: [Meeting, Attendee, Mandate, Poll, Vote, Decision, User, Community, Member],
     subscribers: [AlverSubscriber],
-    migrations: [path.join(__dirname, "migrations", "*.js")],
+    migrations: [path.join(__dirname, "migrations", __filename.endsWith(".ts") ? "*.ts" : "*.js")],
     logging: false,
     extra: {
         max: 10,

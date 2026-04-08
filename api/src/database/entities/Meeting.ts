@@ -11,6 +11,8 @@ import { Community } from "./Community";
 // Valid statuses are draft → open → in_session → archived.
 export type MeetingStatus = "draft" | "open" | "in_session" | "archived" | "closed";
 
+export type MinutesStatus = "draft" | "published" | null;
+
 @Entity("meetings")
 export class Meeting {
     @PrimaryGeneratedColumn("uuid")
@@ -57,6 +59,20 @@ export class Meeting {
 
     @Column({ nullable: true })
     facilitator_ename!: string;
+
+    @Column({ type: "text", nullable: true })
+    minutes_html!: string | null;
+
+    @Column({
+        type: "enum",
+        enum: ["draft", "published"],
+        nullable: true,
+        default: null,
+    })
+    minutes_status!: MinutesStatus;
+
+    @Column({ nullable: true })
+    notulist_ename!: string | null;
 
     @OneToMany(() => Attendee, (a) => a.meeting)
     attendees!: Attendee[];
