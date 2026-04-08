@@ -136,6 +136,16 @@ export default function Display() {
         <BetweenItems meeting={meeting} attendeeCount={attendeeCount} community={community} isDark={isDark} />
       )}
 
+      {/* Draft — just the logo */}
+      {phase === 'draft' && !showGreeting && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {community?.logo_url
+            ? <img src={community.logo_url} alt="logo" style={{ height: 120, maxWidth: 400, objectFit: 'contain', opacity: 0.7 }} />
+            : <img src="/logo.png" alt="ALVer" style={{ height: 120, maxWidth: 400, objectFit: 'contain', opacity: 0.4 }} />
+          }
+        </div>
+      )}
+
       {/* Meeting closed */}
       {isClosed && !showGreeting && (
         <ClosedDisplay meeting={meeting} isDark={isDark} />

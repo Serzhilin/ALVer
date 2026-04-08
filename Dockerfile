@@ -13,7 +13,7 @@
 FROM node:20-alpine AS frontend-build
 WORKDIR /build/app
 
-COPY app/package*.json ./
+COPY app/package*.json app/.npmrc ./
 RUN npm ci
 
 COPY app/ ./
