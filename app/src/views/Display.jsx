@@ -346,10 +346,10 @@ function VotingDisplay({ poll, attendeeCount, displayMode, community, chartColor
                   background: chartColors[i] ?? chartColors[chartColors.length - 1],
                   minWidth: 140,
                 }}>
-                  <span style={{ fontSize: '4rem', fontWeight: 700, color: 'white', lineHeight: 1 }}>
+                  <span style={{ fontSize: '4rem', fontWeight: 700, color: isDark ? 'white' : 'rgba(0,0,0,0.75)', lineHeight: 1 }}>
                     {tally[opt]}
                   </span>
-                  <span style={{ fontSize: '1.1rem', color: 'rgba(255,255,255,0.8)' }}>
+                  <span style={{ fontSize: '1.1rem', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.6)' }}>
                     {opt}
                   </span>
                 </div>
