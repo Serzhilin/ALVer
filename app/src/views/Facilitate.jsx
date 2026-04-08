@@ -694,14 +694,17 @@ export default function Facilitate() {
                     </div>
                   )}
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    {[['Voor', 'Tegen', 'Onthouding'], ['Ja', 'Nee']].map((preset, i) => (
+                    {[
+                      { label: t('facilitate.preset_voor_tegen'), options: [t('facilitate.preset_voor'), t('facilitate.preset_tegen'), t('facilitate.preset_onthouding')] },
+                      { label: t('facilitate.preset_ja_nee'), options: [t('facilitate.preset_ja'), t('facilitate.preset_nee')] },
+                    ].map((preset, i) => (
                       <button
                         key={i}
                         className="btn-secondary"
                         style={{ fontSize: '0.75rem', padding: '4px 10px' }}
-                        onClick={() => setNewPoll(p => ({ ...p, options: preset }))}
+                        onClick={() => setNewPoll(p => ({ ...p, options: preset.options }))}
                       >
-                        {preset.join(' / ')}
+                        {preset.label}
                       </button>
                     ))}
                   </div>

@@ -122,7 +122,14 @@
     "viz_mode_pie": "Pie",
     "viz_mode_bubbles": "Bubbles",
     "screen_theme_day": "☀️ Day",
-    "screen_theme_night": "🌙 Night"
+    "screen_theme_night": "🌙 Night",
+    "preset_voor_tegen": "For / Against / Abstain",
+    "preset_ja_nee": "Yes / No",
+    "preset_voor": "For",
+    "preset_tegen": "Against",
+    "preset_onthouding": "Abstain",
+    "preset_ja": "Yes",
+    "preset_nee": "No"
   },
   "attend": {
     "check_in_title": "Check in",

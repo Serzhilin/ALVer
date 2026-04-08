@@ -122,7 +122,14 @@
     "viz_mode_pie": "Taart",
     "viz_mode_bubbles": "Bellen",
     "screen_theme_day": "☀️ Dag",
-    "screen_theme_night": "🌙 Nacht"
+    "screen_theme_night": "🌙 Nacht",
+    "preset_voor_tegen": "Voor / Tegen / Onthouding",
+    "preset_ja_nee": "Ja / Nee",
+    "preset_voor": "Voor",
+    "preset_tegen": "Tegen",
+    "preset_onthouding": "Onthouding",
+    "preset_ja": "Ja",
+    "preset_nee": "Nee"
   },
   "attend": {
     "check_in_title": "Inchecken",

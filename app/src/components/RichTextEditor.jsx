@@ -35,7 +35,16 @@ function Toolbar({ editor, extraRight }) {
         <ToolbarBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')} title="Italic"><i>I</i></ToolbarBtn>
         <ToolbarBtn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} title="Strikethrough"><s>S</s></ToolbarBtn>
         <div style={{ width: 1, height: 18, background: 'var(--color-sand-dark)', margin: '0 4px' }} />
-        <ToolbarBtn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')} title="Bullet list">≡</ToolbarBtn>
+        <ToolbarBtn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')} title="Bullet list">
+          <svg width="14" height="12" viewBox="0 0 14 12" fill="currentColor" style={{ display: 'block' }}>
+            <circle cx="1.5" cy="2" r="1.5" />
+            <rect x="4.5" y="1" width="9" height="2" rx="1" />
+            <circle cx="1.5" cy="6" r="1.5" />
+            <rect x="4.5" y="5" width="9" height="2" rx="1" />
+            <circle cx="1.5" cy="10" r="1.5" />
+            <rect x="4.5" y="9" width="9" height="2" rx="1" />
+          </svg>
+        </ToolbarBtn>
         <ToolbarBtn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')} title="Numbered list">1.</ToolbarBtn>
         <div style={{ width: 1, height: 18, background: 'var(--color-sand-dark)', margin: '0 4px' }} />
         <ToolbarBtn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')} title="Quote">"</ToolbarBtn>
