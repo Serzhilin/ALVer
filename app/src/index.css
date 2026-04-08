@@ -277,3 +277,27 @@ label {
     opacity: 1;
   }
 }
+
+/* ── Rich text (agenda editor + display) ──────────────────────────────────── */
+.agenda-html ol,
+.ProseMirror ol {
+  list-style-type: decimal;
+  padding-left: 1.5em;
+  margin: 0.4em 0;
+}
+.agenda-html ul,
+.ProseMirror ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+  margin: 0.4em 0;
+}
+.agenda-html li,
+.ProseMirror li {
+  margin: 0.15em 0;
+}
+.agenda-html s,
+.agenda-html del,
+.ProseMirror s,
+.ProseMirror del {
+  text-decoration: line-through;
+}
