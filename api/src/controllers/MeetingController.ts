@@ -114,4 +114,40 @@ export class MeetingController {
             res.status(500).json({ error: e.message })
         }
     }
+
+    setScreenTheme = async (req: Request, res: Response) => {
+        try {
+            const { theme } = req.body
+            if (!['day', 'night'].includes(theme)) {
+                return res.status(400).json({ error: 'Invalid theme. Must be day or night' })
+            }
+            const meeting = await svc.findById(req.params.id)
+            if (!meeting) {
+                return res.status(404).json({ error: 'Meeting not found' })
+            }
+            svc.setScreenTheme(req.params.id, theme)
+            sseService.emit(req.params.id, 'screen_theme', { theme })
+            res.json({ theme })
+        } catch (e: any) {
+            res.status(500).json({ error: e.message })
+        }
+    }
+
+    setScreenLanguage = async (req: Request, res: Response) => {
+        try {
+            const { language } = req.body
+            if (!['en', 'nl'].includes(language)) {
+                return res.status(400).json({ error: 'Invalid language. Must be en or nl' })
+            }
+            const meeting = await svc.findById(req.params.id)
+            if (!meeting) {
+                return res.status(404).json({ error: 'Meeting not found' })
+            }
+            svc.setScreenLanguage(req.params.id, language)
+            sseService.emit(req.params.id, 'screen_language', { language })
+            res.json({ language })
+        } catch (e: any) {
+            res.status(500).json({ error: e.message })
+        }
+    }
 }
