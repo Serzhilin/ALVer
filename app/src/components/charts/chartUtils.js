@@ -16,3 +16,7 @@ export function tallyVotes(poll) {
   }
   return tally
 }
+
+// Chart color palettes — use NIGHT on dark backgrounds, DAY on light backgrounds
+export const CHART_COLORS_NIGHT = ['#E8C27A', '#6BBFCC', '#9BCB8A', '#E08888', '#9B8FCC']
+export const CHART_COLORS_DAY   = ['#C4A040', '#3A9AAA', '#5A9B60', '#C05A5A', '#6B5EAA']
