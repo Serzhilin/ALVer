@@ -4,6 +4,8 @@ import cors from "cors";
 import { config } from "dotenv";
 import express from "express";
 import rateLimit from "express-rate-limit";
+import pinoHttp from "pino-http";
+import { logger } from "./lib/logger";
 import { AppDataSource } from "./database/data-source";
 import { MeetingController } from "./controllers/MeetingController";
 import { AttendeeController } from "./controllers/AttendeeController";
@@ -25,6 +27,20 @@ const port = process.env.PORT || 3001;
 
 app.use(cors({ origin: "*", methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"] }));
 app.use(express.json({ limit: '10mb' }));
+
+// ── Request logging ───────────────────────────────────────────────────────────
+app.use(pinoHttp({
+    logger,
+    // Attach authenticated user's ename to every log line
+    customProps: (req: any) => ({ ename: req.user?.ename ?? undefined }),
+    // SSE streams are long-lived — skip auto-logging, SSEService logs connect/disconnect
+    autoLogging: { ignore: (req) => !!req.url?.includes("/stream") },
+    customLogLevel: (_req, res) => {
+        if (res.statusCode >= 500) return "error";
+        if (res.statusCode >= 400) return "warn";
+        return "info";
+    },
+}));
 
 // ── Controllers ──────────────────────────────────────────────────────────────
 const meeting = new MeetingController();
@@ -107,6 +123,13 @@ app.get("/api/polls/:pollId/votes/count", vote.count);
 app.get("/api/polls/:pollId/votes/has-voted", vote.hasVoted);
 app.get("/api/polls/:pollId/results", vote.results);
 
+// ── Client-side error reporting ───────────────────────────────────────────────
+app.post("/api/log/client-error", (req, res) => {
+    const { message, stack, url, component, ename, userAgent } = req.body ?? {};
+    logger.error({ type: "client_error", message, stack, url, component, ename, userAgent }, "client error");
+    res.status(204).send();
+});
+
 // ── Admin ─────────────────────────────────────────────────────────────────────
 app.get("/api/admin/communities", requireAuth, requireAdmin, listCommunities);
 app.post("/api/admin/communities", requireAuth, requireAdmin, createCommunity);
@@ -137,10 +160,10 @@ if (process.env.NODE_ENV === "production") {
 // ── DB init → listen ──────────────────────────────────────────────────────────
 AppDataSource.initialize()
     .then(() => {
-        console.log("✅ Database connected");
-        app.listen(port, () => console.log(`🚀 ALVer API running on http://localhost:${port}`));
+        logger.info("database connected");
+        app.listen(port, () => logger.info({ port }, "ALVer API started"));
     })
     .catch((err) => {
-        console.error("❌ Database connection failed:", err);
+        logger.fatal({ err }, "database connection failed");
         process.exit(1);
     });
