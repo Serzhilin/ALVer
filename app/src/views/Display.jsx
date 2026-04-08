@@ -339,18 +339,17 @@ function VotingDisplay({ poll, attendeeCount, displayMode, community, chartColor
           }
           return (
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', justifyContent: 'center' }}>
-              {poll.options.map((opt) => (
+              {poll.options.map((opt, i) => (
                 <div key={opt} style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
                   padding: '28px 48px', borderRadius: 16,
-                  background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(44,42,39,0.07)',
-                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(44,42,39,0.12)'}`,
+                  background: chartColors[i] ?? chartColors[chartColors.length - 1],
                   minWidth: 140,
                 }}>
-                  <span style={{ fontSize: '4rem', fontWeight: 700, color: isDark ? 'white' : 'var(--color-charcoal)', lineHeight: 1 }}>
+                  <span style={{ fontSize: '4rem', fontWeight: 700, color: 'white', lineHeight: 1 }}>
                     {tally[opt]}
                   </span>
-                  <span style={{ fontSize: '1.1rem', color: isDark ? 'rgba(255,255,255,0.55)' : 'var(--color-charcoal-light)' }}>
+                  <span style={{ fontSize: '1.1rem', color: 'rgba(255,255,255,0.8)' }}>
                     {opt}
                   </span>
                 </div>
