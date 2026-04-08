@@ -6,11 +6,6 @@ const CX = 16       // centre x
 const CY = 16       // centre y
 const CIRCUMFERENCE = 2 * Math.PI * R  // ~87.96
 
-/**
- * Compute SVG stroke-dasharray segments for a donut chart.
- * Each segment: stroke-dasharray="sliceLen remainingLen", stroke-dashoffset="-offsetSoFar"
- * We rotate the SVG -90deg so segments start at 12 o'clock.
- */
 function buildSegments(entries, total, colors) {
   let offset = 0
   return entries.map(([label, count], i) => {
@@ -21,7 +16,7 @@ function buildSegments(entries, total, colors) {
   })
 }
 
-export default function VotePie({ poll, colors = CHART_COLORS_NIGHT }) {
+export default function VotePie({ poll, colors = CHART_COLORS_NIGHT, isDark = true }) {
   const tally = tallyVotes(poll)
   const entries = Object.entries(tally)
   const total = Object.values(tally).reduce((a, b) => a + b, 0)
@@ -30,6 +25,8 @@ export default function VotePie({ poll, colors = CHART_COLORS_NIGHT }) {
   const winners = Object.values(tally).filter(c => c === maxCount)
   const isTie = total > 0 && winners.length > 1
   const leadingPct = total > 0 && !isTie ? Math.round((maxCount / total) * 100) : null
+  const textColor = isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'
+  const boldColor = isDark ? 'white' : 'black'
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
@@ -47,11 +44,10 @@ export default function VotePie({ poll, colors = CHART_COLORS_NIGHT }) {
               strokeDashoffset={`-${seg.offset.toFixed(2)}`}
             />
           ))}
-          {/* Centre label — counter-rotate to stay upright */}
           <text
             x={CX} y={CY + 1.8}
             textAnchor="middle"
-            fill="white"
+            fill={boldColor}
             fontSize="5"
             fontWeight="700"
             style={{ transform: `rotate(90deg)`, transformOrigin: `${CX}px ${CY}px` }}
@@ -63,10 +59,10 @@ export default function VotePie({ poll, colors = CHART_COLORS_NIGHT }) {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {entries.map(([label, count], i) => (
-          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: '0.95rem', color: 'rgba(255,255,255,0.8)' }}>
+          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: '0.95rem', color: textColor }}>
             <div style={{ width: 12, height: 12, borderRadius: 3, background: colors[i] ?? colors[colors.length - 1], flexShrink: 0 }} />
             <span>{label}</span>
-            <span style={{ marginLeft: 'auto', fontWeight: 700, color: 'white', paddingLeft: 16 }}>{count}</span>
+            <span style={{ marginLeft: 'auto', fontWeight: 700, color: boldColor, paddingLeft: 16 }}>{count}</span>
           </div>
         ))}
       </div>

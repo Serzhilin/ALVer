@@ -328,9 +328,9 @@ function VotingDisplay({ poll, attendeeCount, displayMode, community, chartColor
 
       {/* Chart area — full width of container */}
       <div style={{ width: '100%' }}>
-        {displayMode === 'bars'    && <VoteBar     poll={poll} colors={chartColors} />}
-        {displayMode === 'pie'     && <VotePie     poll={poll} colors={chartColors} />}
-        {displayMode === 'bubbles' && <VoteBubbles poll={poll} colors={chartColors} />}
+        {displayMode === 'bars'    && <VoteBar     poll={poll} colors={chartColors} isDark={isDark} />}
+        {displayMode === 'pie'     && <VotePie     poll={poll} colors={chartColors} isDark={isDark} />}
+        {displayMode === 'bubbles' && <VoteBubbles poll={poll} colors={chartColors} isDark={isDark} />}
         {(displayMode === 'numbers' || !displayMode) && (() => {
           const tally = Object.fromEntries(poll.options.map(o => [o, 0]))
           for (const optionId of Object.values(poll.votes ?? {})) {

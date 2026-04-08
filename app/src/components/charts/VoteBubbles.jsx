@@ -4,10 +4,11 @@ import { tallyVotes, CHART_COLORS_NIGHT } from './chartUtils'
 const MAX_RADIUS = 100  // px, largest possible bubble diameter
 const MIN_RADIUS = 32   // px, minimum so even 0-vote options are visible
 
-export default function VoteBubbles({ poll, colors = CHART_COLORS_NIGHT }) {
+export default function VoteBubbles({ poll, colors = CHART_COLORS_NIGHT, isDark = true }) {
   const tally = tallyVotes(poll)
   const entries = Object.entries(tally)
   const maxCount = Math.max(...Object.values(tally), 1)
+  const labelColor = isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)'
 
   return (
     <div style={{ display: 'flex', gap: 32, alignItems: 'flex-end', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -30,7 +31,7 @@ export default function VoteBubbles({ poll, colors = CHART_COLORS_NIGHT }) {
             }}>
               {count}
             </div>
-            <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)', textAlign: 'center' }}>
+            <span style={{ fontSize: '0.9rem', color: labelColor, textAlign: 'center' }}>
               {label}
             </span>
           </div>
