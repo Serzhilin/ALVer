@@ -6,19 +6,19 @@ import { useNavigate, useParams, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import FacilitatorHeader from '../components/FacilitatorHeader'
 import AgendaHtml from '../components/AgendaHtml'
-import { reopenMeeting, setDisplayMode as apiSetDisplayMode } from '../api/client'
+import { reopenMeeting, setDisplayMode as apiSetDisplayMode, setScreenTheme as apiSetScreenTheme, setScreenLanguage as apiSetScreenLanguage } from '../api/client'
 
 export default function Facilitate() {
   const { id } = useParams()
   const { setMeetingId,
     meeting, activePoll, attendeeCount,
-    displayMode,
+    displayMode, screenTheme,
     updatePhase, addPoll, updatePoll, deletePoll,
     startPoll, closePoll, addManualVote, checkIn,
     addMandate, revokeMandate, removeAttendee,
   } = useMeeting()
   const navigate = useNavigate()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { isFacilitator, loading: authLoading } = useUser()
   const { members, community } = useCommunity()
 
@@ -47,6 +47,12 @@ export default function Facilitate() {
   const [confirmRevokeMandateId, setConfirmRevokeMandateId] = useState(null)
 
   useEffect(() => { setMeetingId(id) }, [id])
+
+  useEffect(() => {
+    if (meeting?.phase === 'in_session' && meeting?.id) {
+      apiSetScreenLanguage(meeting.id, i18n.language).catch(console.error)
+    }
+  }, [i18n.language, meeting?.id, meeting?.phase])
 
   // Auth gate — must be logged in as facilitator via /facilitator
   if (authLoading) return <LoadingScreen />
@@ -172,6 +178,21 @@ export default function Facilitate() {
             >
               {t('facilitate.open_display')}
             </a>
+            <button
+              onClick={() => apiSetScreenTheme(meeting.id, screenTheme === 'day' ? 'night' : 'day').catch(console.error)}
+              style={{
+                background: 'transparent',
+                border: '1px solid var(--color-charcoal-light)',
+                color: 'var(--color-charcoal)',
+                borderRadius: 8,
+                padding: '9px 20px',
+                fontSize: '0.9rem',
+                fontWeight: 500,
+                cursor: 'pointer',
+              }}
+            >
+              {screenTheme === 'day' ? t('facilitate.screen_theme_night') : t('facilitate.screen_theme_day')}
+            </button>
             {meeting.phase === 'in_session' && !confirmCloseMeeting && (
               <button className="btn-danger" onClick={() => setConfirmCloseMeeting(true)}>
                 {t('facilitate.close_meeting')}

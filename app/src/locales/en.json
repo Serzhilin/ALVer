@@ -120,7 +120,9 @@
     "viz_mode_numbers": "Numbers",
     "viz_mode_bars": "Bars",
     "viz_mode_pie": "Pie",
-    "viz_mode_bubbles": "Bubbles"
+    "viz_mode_bubbles": "Bubbles",
+    "screen_theme_day": "☀️ Day",
+    "screen_theme_night": "🌙 Night"
   },
   "attend": {
     "check_in_title": "Check in",

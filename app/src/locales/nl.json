@@ -120,7 +120,9 @@
     "viz_mode_numbers": "Nummers",
     "viz_mode_bars": "Balken",
     "viz_mode_pie": "Taart",
-    "viz_mode_bubbles": "Bellen"
+    "viz_mode_bubbles": "Bellen",
+    "screen_theme_day": "☀️ Dag",
+    "screen_theme_night": "🌙 Nacht"
   },
   "attend": {
     "check_in_title": "Inchecken",
