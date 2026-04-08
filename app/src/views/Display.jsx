@@ -149,8 +149,8 @@ export default function Display() {
       )}
 
       {/* Bottom left brand tag */}
-      <div style={{ position: 'absolute', bottom: 20, left: 32, opacity: 0.35, fontSize: '0.8rem', color: theme.text }}>
-        🏛️ ALVer
+      <div style={{ position: 'absolute', bottom: 20, left: 32, opacity: 0.35 }}>
+        <img src="/logo.png" alt="ALVer" style={{ height: 28, objectFit: 'contain' }} />
       </div>
     </div>
   )
@@ -204,7 +204,7 @@ function CheckinDisplay({ meeting, attendeeCount, community, meetingId, communit
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         {community?.logo_url
           ? <img src={community.logo_url} alt="logo" style={{ height: 80, maxWidth: 320, objectFit: 'contain' }} />
-          : <div style={{ fontFamily: 'var(--font-title)', fontWeight: 700, fontSize: '2rem', color: c.title, opacity: 0.8 }}>🏛️ ALVer</div>
+          : <img src="/logo.png" alt="ALVer" style={{ height: 80, maxWidth: 320, objectFit: 'contain', opacity: 0.8 }} />
         }
       </div>
 
@@ -292,7 +292,7 @@ function VotingDisplay({ poll, attendeeCount, displayMode, community, chartColor
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
         {community?.logo_url
           ? <img src={community.logo_url} alt="logo" style={{ height: 72, maxWidth: 320, objectFit: 'contain' }} />
-          : <div style={{ fontFamily: 'var(--font-title)', fontWeight: 700, fontSize: '1.8rem', color: textColor, opacity: 0.7 }}>🏛️ ALVer</div>
+          : <img src="/logo.png" alt="ALVer" style={{ height: 72, maxWidth: 320, objectFit: 'contain', opacity: 0.7 }} />
         }
       </div>
 
@@ -380,7 +380,7 @@ function ResultDisplay({ poll, community, isDark }) {
         <div style={{ flexShrink: 0 }}>
           {community?.logo_url
             ? <img src={community.logo_url} alt="logo" style={{ height: 48, maxWidth: 200, objectFit: 'contain' }} />
-            : <div style={{ fontFamily: 'var(--font-title)', fontWeight: 700, fontSize: '1.3rem', color: textColor, opacity: 0.7 }}>🏛️ ALVer</div>
+            : <img src="/logo.png" alt="ALVer" style={{ height: 48, maxWidth: 200, objectFit: 'contain', opacity: 0.7 }} />
           }
         </div>
         <p style={{ color: mutedColor, margin: 0, fontSize: '1rem', flex: 1, textAlign: 'center' }}>{poll.title}</p>
