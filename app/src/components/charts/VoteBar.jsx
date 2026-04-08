@@ -7,7 +7,7 @@ export default function VoteBar({ poll, colors = CHART_COLORS_NIGHT }) {
   const max = Math.max(...Object.values(tally), 1)
 
   return (
-    <div style={{ width: '100%', maxWidth: 600, display: 'flex', flexDirection: 'column', gap: 14 }}>
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 14 }}>
       {entries.map(([label, count], i) => (
         <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ width: 110, textAlign: 'right', fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)', flexShrink: 0 }}>

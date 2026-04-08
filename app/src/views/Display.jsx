@@ -287,42 +287,36 @@ function VotingDisplay({ poll, attendeeCount, displayMode, community, chartColor
   const trackColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(44,42,39,0.12)'
 
   return (
-    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 0, animation: 'slideIn 0.4s ease' }}>
-      {/* Header row: logo | poll title | vote count */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 0 32px',
-        gap: 24,
-      }}>
-        {/* Logo */}
-        <div style={{ flexShrink: 0 }}>
-          {community?.logo_url
-            ? <img src={community.logo_url} alt="logo" style={{ height: 48, maxWidth: 200, objectFit: 'contain' }} />
-            : <div style={{ fontFamily: 'var(--font-title)', fontWeight: 700, fontSize: '1.3rem', color: textColor, opacity: 0.7 }}>🏛️ ALVer</div>
-          }
-        </div>
-        {/* Poll title */}
-        <h1 style={{
-          fontFamily: 'var(--font-title)',
-          fontSize: 'clamp(1.6rem, 3vw, 2.6rem)',
-          fontWeight: 600,
-          color: textColor,
-          lineHeight: 1.2,
-          margin: 0,
-          textAlign: 'center',
-          flex: 1,
-        }}>
-          {poll.title}
-        </h1>
-        {/* Vote count */}
-        <div style={{ flexShrink: 0, textAlign: 'right' }}>
-          <div style={{ fontSize: '1.8rem', fontWeight: 700, color: textColor, lineHeight: 1 }}>{totalVotes}</div>
-          <div style={{ fontSize: '0.8rem', color: mutedColor, marginTop: 2 }}>{t('display.of_total', { total: attendeeCount })}</div>
-        </div>
+    <div style={{ width: '66.67%', display: 'flex', flexDirection: 'column', gap: 0, animation: 'slideIn 0.4s ease' }}>
+      {/* Logo — centered, top */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
+        {community?.logo_url
+          ? <img src={community.logo_url} alt="logo" style={{ height: 72, maxWidth: 320, objectFit: 'contain' }} />
+          : <div style={{ fontFamily: 'var(--font-title)', fontWeight: 700, fontSize: '1.8rem', color: textColor, opacity: 0.7 }}>🏛️ ALVer</div>
+        }
       </div>
 
-      {/* Progress bar */}
-      <div style={{ marginBottom: 48 }}>
+      {/* Poll title */}
+      <h1 style={{
+        fontFamily: 'var(--font-title)',
+        fontSize: 'clamp(1.8rem, 3vw, 2.8rem)',
+        fontWeight: 600,
+        color: textColor,
+        lineHeight: 1.2,
+        margin: '0 0 28px',
+        textAlign: 'center',
+      }}>
+        {poll.title}
+      </h1>
+
+      {/* Vote count + progress bar */}
+      <div style={{ marginBottom: 40 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+          <div style={{ fontSize: '1.4rem', fontWeight: 700, color: textColor, lineHeight: 1 }}>
+            {totalVotes} <span style={{ fontSize: '0.85rem', color: mutedColor, fontWeight: 400 }}>{t('display.of_total', { total: attendeeCount })}</span>
+          </div>
+          <div style={{ color: mutedColor, fontSize: '0.85rem' }}>{pct}%</div>
+        </div>
         <div style={{ height: 8, background: trackColor, borderRadius: 4, overflow: 'hidden' }}>
           <div style={{
             height: '100%', borderRadius: 4,
@@ -330,17 +324,16 @@ function VotingDisplay({ poll, attendeeCount, displayMode, community, chartColor
             width: `${pct}%`, transition: 'width 0.5s ease',
           }} />
         </div>
-        <div style={{ color: mutedColor, fontSize: '0.85rem', marginTop: 6, textAlign: 'right' }}>{pct}%</div>
       </div>
 
-      {/* Chart area */}
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      {/* Chart area — full width of container */}
+      <div style={{ width: '100%' }}>
         {displayMode === 'bars'    && <VoteBar     poll={poll} colors={chartColors} />}
         {displayMode === 'pie'     && <VotePie     poll={poll} colors={chartColors} />}
         {displayMode === 'bubbles' && <VoteBubbles poll={poll} colors={chartColors} />}
         {(displayMode === 'numbers' || !displayMode) && (
           <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', justifyContent: 'center' }}>
-            {poll.options.map((opt, i) => (
+            {poll.options.map((opt) => (
               <span key={opt} style={{
                 padding: '12px 32px', borderRadius: 10,
                 background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(44,42,39,0.07)',
