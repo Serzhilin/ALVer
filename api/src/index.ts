@@ -19,6 +19,8 @@ import { listCommunities, createCommunity, deleteCommunity } from "./controllers
 import { requireAuth, optionalAuth } from "./middleware/auth";
 import { requireFacilitatorOfMeeting } from "./middleware/requireFacilitatorOfMeeting";
 import { requireAdmin } from "./middleware/adminAuth";
+import { MinutesController } from "./controllers/MinutesController";
+import { requireNotulisOrFacilitator } from "./middleware/requireNotulisOrFacilitator";
 
 config({ path: path.resolve(__dirname, "../../.env") });
 
@@ -50,6 +52,7 @@ const mandate = new MandateController();
 const poll = new PollController();
 const vote = new VoteController();
 const webhook = new WebhookController();
+const minutes = new MinutesController();
 
 // ── Health ───────────────────────────────────────────────────────────────────
 app.get("/api/health", (_, res) => res.json({
@@ -98,6 +101,11 @@ app.patch("/api/meetings/:id/polls/:pollId", requireAuth, requireFacilitatorOfMe
 app.delete("/api/meetings/:id/polls/:pollId", requireAuth, requireFacilitatorOfMeeting, poll.delete);
 app.patch("/api/meetings/:id/polls/:pollId/open", requireAuth, requireFacilitatorOfMeeting, poll.open);
 app.patch("/api/meetings/:id/polls/:pollId/close", requireAuth, requireFacilitatorOfMeeting, poll.close);
+
+// ── Minutes ───────────────────────────────────────────────────────────────────
+app.patch("/api/meetings/:id/notulist",         requireAuth, minutes.assignNotulist);
+app.patch("/api/meetings/:id/minutes",          requireAuth, requireNotulisOrFacilitator, minutes.saveDraft);
+app.patch("/api/meetings/:id/minutes/publish",  requireAuth, requireNotulisOrFacilitator, minutes.publish);
 
 // ── Meeting members (public — mandate dropdown) ───────────────────────────────
 app.get("/api/meetings/:id/members", meeting.getMembers);
