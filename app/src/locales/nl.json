@@ -356,5 +356,22 @@
     "field_facilitator_ename": "Facilitator eName",
     "field_color": "Kleur",
     "field_font": "Font"
+  },
+  "minutes": {
+    "section_title": "Notulen",
+    "assign_notulist": "Notulist toewijzen",
+    "notulist_label": "Notulist",
+    "notulist_none": "Geen notulist",
+    "notulist_assigned": "Notulist: {{name}}",
+    "import_word": "Importeer uit Word",
+    "import_replace_confirm": "Dit vervangt de huidige inhoud. Doorgaan?",
+    "publish_btn": "Notulen publiceren",
+    "publish_confirm": "Na publicatie zijn de notulen zichtbaar voor alle leden en kunnen niet meer worden bewerkt. Weet je zeker dat dit de definitieve versie is?",
+    "publish_confirm_yes": "Ja, publiceer",
+    "published_badge": "Gepubliceerd",
+    "draft_badge": "Concept",
+    "saving": "Opslaan…",
+    "saved": "Opgeslagen",
+    "no_minutes": "Geen notulen beschikbaar"
   }
 }

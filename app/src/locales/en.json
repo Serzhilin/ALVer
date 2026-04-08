@@ -356,5 +356,22 @@
     "field_facilitator_ename": "Facilitator eName",
     "field_color": "Color",
     "field_font": "Font"
+  },
+  "minutes": {
+    "section_title": "Minutes",
+    "assign_notulist": "Assign notulist",
+    "notulist_label": "Notulist",
+    "notulist_none": "No notulist",
+    "notulist_assigned": "Notulist: {{name}}",
+    "import_word": "Import from Word",
+    "import_replace_confirm": "This will replace the current content. Continue?",
+    "publish_btn": "Publish minutes",
+    "publish_confirm": "After publishing, minutes will be visible to all members and can no longer be edited. Are you sure this is the final version?",
+    "publish_confirm_yes": "Yes, publish",
+    "published_badge": "Published",
+    "draft_badge": "Draft",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "no_minutes": "No minutes available"
   }
 }
