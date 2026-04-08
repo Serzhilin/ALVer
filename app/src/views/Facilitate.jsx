@@ -37,7 +37,7 @@ export default function Facilitate() {
   const [mandateTo, setMandateTo] = useState('')
   const [mandateNote, setMandateNote] = useState('')
 
-  const [newPoll, setNewPoll] = useState({ title: '', options: ['Voor', 'Tegen', 'Onthouding'] })
+  const [newPoll, setNewPoll] = useState({ title: '', options: [] })
   const [customOption, setCustomOption] = useState('')
 
   // Confirmation state for irreversible actions
@@ -116,7 +116,7 @@ export default function Facilitate() {
     } else {
       addPoll({ title, options: cleanOptions })
     }
-    setNewPoll({ title: '', options: ['Voor', 'Tegen', 'Onthouding'] })
+    setNewPoll({ title: '', options: [] })
     setEditingPoll(null)
     setShowAddPollModal(false)
   }
@@ -394,7 +394,7 @@ export default function Facilitate() {
                 <button
                   className="btn-secondary"
                   style={{ fontSize: '0.8rem', padding: '6px 12px' }}
-                  onClick={() => { setNewPoll({ title: '', options: ['Voor', 'Tegen', 'Onthouding'] }); setEditingPoll(null); setShowAddPollModal(true) }}
+                  onClick={() => { setNewPoll({ title: '', options: [] }); setEditingPoll(null); setShowAddPollModal(true) }}
                 >
                   {t('facilitate.add_poll')}
                 </button>
