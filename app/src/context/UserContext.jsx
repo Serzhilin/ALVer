@@ -33,7 +33,19 @@ export function UserProvider({ children }) {
       setCommunityId(selectedId)
       const me = await getMe(selectedId)
       setUser(me)
-      setIsFacilitator(forceAttendee ? false : (me.isFacilitator ?? false))
+
+      // Determine isFacilitator from the community-scoped response when possible.
+      // For multi-community with no selection yet, fall back to checking if the user
+      // is a facilitator of any community — picker will refine this via selectCommunity.
+      let isFac = false
+      if (!forceAttendee) {
+        if (selectedId) {
+          isFac = me.isFacilitator ?? false
+        } else {
+          isFac = allCommunities.some(c => c.isFacilitator)
+        }
+      }
+      setIsFacilitator(isFac)
     } catch {
       localStorage.removeItem('alver_token')
       localStorage.removeItem('alver_community_id')

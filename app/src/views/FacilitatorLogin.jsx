@@ -1,35 +1,19 @@
-import { useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import { useUser } from '../context/UserContext'
 import { useTranslation } from 'react-i18next'
-import { getMe } from '../api/client'
 import LoginScreen from '../components/LoginScreen'
 
 export default function FacilitatorLogin() {
   const { isFacilitator, loginAsFacilitator } = useUser()
   const { t } = useTranslation()
-  const navigate = useNavigate()
-  const [authError, setAuthError] = useState(false)
 
   // Already logged in as facilitator — go straight to dashboard
   if (isFacilitator) return <Navigate to="/" replace />
 
-  async function handleLogin(token, user) {
-    // Store token temporarily so getMe() can use it
-    localStorage.setItem('alver_token', token)
-    try {
-      const profile = await getMe()
-      if (profile.isFacilitator) {
-        loginAsFacilitator(token, { ...user, ...profile })
-        navigate('/', { replace: true })
-      } else {
-        localStorage.removeItem('alver_token')
-        setAuthError(true)
-      }
-    } catch {
-      localStorage.removeItem('alver_token')
-      setAuthError(true)
-    }
+  function handleLogin(token) {
+    // resolveSession (called inside loginAsFacilitator) will fetch communities,
+    // set isFacilitator per the selected community, and show the picker if needed.
+    loginAsFacilitator(token)
   }
 
   return (
@@ -43,21 +27,9 @@ export default function FacilitatorLogin() {
           </div>
         </div>
 
-        {authError ? (
-          <div className="card" style={{ padding: 28, textAlign: 'center' }}>
-            <div style={{ fontSize: '2rem', marginBottom: 12 }}>🚫</div>
-            <p style={{ color: 'var(--color-red)', margin: '0 0 20px', fontWeight: 600, fontSize: '0.95rem' }}>
-              {t('auth.not_facilitator')}
-            </p>
-            <button className="btn-secondary" onClick={() => setAuthError(false)}>
-              {t('common.retry')}
-            </button>
-          </div>
-        ) : (
-          <div className="card" style={{ padding: 28 }}>
-            <LoginScreen onSuccess={handleLogin} nameOption={false} />
-          </div>
-        )}
+        <div className="card" style={{ padding: 28 }}>
+          <LoginScreen onSuccess={handleLogin} nameOption={false} />
+        </div>
 
         <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center', gap: 24, fontSize: '0.82rem' }}>
           <a href="/" style={{ color: 'var(--color-terracotta)', textDecoration: 'none', fontWeight: 500 }}>
