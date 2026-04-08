@@ -88,6 +88,8 @@ export function MeetingProvider({ children }) {
   const [sseConnected, setSseConnected] = useState(true)
   const meetingId = useRef(null)
   const [displayMode, setDisplayMode] = useState('numbers')
+  const [screenTheme, setScreenTheme] = useState('day')
+  const [screenLanguage, setScreenLanguage] = useState('nl')
   const unsubRef = useRef(null)
 
   // Compute derived shape
@@ -124,7 +126,9 @@ export function MeetingProvider({ children }) {
 
     // Tear down previous SSE
     if (unsubRef.current) { unsubRef.current(); unsubRef.current = null }
-    setDisplayMode('numbers')  // reset for the new meeting
+    setDisplayMode('numbers')
+    setScreenTheme('day')
+    setScreenLanguage('nl')
 
     setLoading(true)
     load(id)
@@ -134,7 +138,15 @@ export function MeetingProvider({ children }) {
     unsubRef.current = api.subscribeToMeeting(id, (event) => {
       if (event.event === 'display_mode') {
         if (VALID_MODES.includes(event.mode)) setDisplayMode(event.mode)
-        return  // no need to reload the full meeting for a mode change
+        return
+      }
+      if (event.event === 'screen_theme') {
+        if (['day', 'night'].includes(event.theme)) setScreenTheme(event.theme)
+        return
+      }
+      if (event.event === 'screen_language') {
+        if (['en', 'nl'].includes(event.language)) setScreenLanguage(event.language)
+        return
       }
       load(id)
     }, {
@@ -284,6 +296,8 @@ export function MeetingProvider({ children }) {
       revokeMandate,
       removeAttendee,
       displayMode,
+      screenTheme,
+      screenLanguage,
     }}>
       {children}
     </MeetingContext.Provider>
