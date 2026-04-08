@@ -6,7 +6,7 @@ import { useNavigate, useParams, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import FacilitatorHeader from '../components/FacilitatorHeader'
 import AgendaHtml from '../components/AgendaHtml'
-import { reopenMeeting, setDisplayMode as apiSetDisplayMode, setScreenTheme as apiSetScreenTheme, setScreenLanguage as apiSetScreenLanguage } from '../api/client'
+import { reopenMeeting, setDisplayMode as apiSetDisplayMode, setScreenTheme as apiSetScreenTheme, setScreenLanguage as apiSetScreenLanguage, assignNotulist as apiAssignNotulist } from '../api/client'
 
 export default function Facilitate() {
   const { id } = useParams()
@@ -39,6 +39,9 @@ export default function Facilitate() {
 
   const [newPoll, setNewPoll] = useState({ title: '', options: [] })
   const [customOption, setCustomOption] = useState('')
+
+  const [notulistOpen, setNotulistOpen] = useState(false)
+  const [notulistEname, setNotulistEname] = useState(meeting?.notulist_ename ?? '')
 
   // Confirmation state for irreversible actions
   const [confirmCloseAttendeeId, setConfirmCloseAttendeeId] = useState(null)
@@ -128,6 +131,23 @@ export default function Facilitate() {
   }
 
   const canStart = (poll) => meeting.phase === 'in_session' && !activePoll && poll.status === 'prepared'
+
+  // Sync notulistEname when meeting reloads via SSE
+  useEffect(() => {
+    if (meeting?.notulist_ename !== undefined) {
+      setNotulistEname(meeting.notulist_ename ?? '')
+    }
+  }, [meeting?.notulist_ename])
+
+  async function handleAssignNotulist(ename) {
+    const value = ename || null
+    try {
+      await apiAssignNotulist(mid, value)
+      setNotulistEname(value ?? '')
+    } catch (err) {
+      console.warn('Failed to assign notulist:', err)
+    }
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-cream)' }}>
@@ -452,6 +472,46 @@ export default function Facilitate() {
             </div>
           )}
         </div>
+
+        {/* Zone 5 — Notulen (collapsed by default, in_session only) */}
+        {meeting.phase === 'in_session' && (
+          <div className="card" style={{ padding: 0, marginTop: 16, overflow: 'hidden' }}>
+            <button
+              onClick={() => setNotulistOpen(o => !o)}
+              style={{ width: '100%', background: 'none', border: 'none', padding: '16px 24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: '0.9rem', color: 'var(--color-charcoal)' }}
+            >
+              <span>📝 {t('minutes.section_title')}</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)' }}>
+                {notulistOpen ? '▼' : '▶'}
+              </span>
+            </button>
+            {notulistOpen && (
+              <div style={{ padding: '0 24px 20px', borderTop: '1px solid var(--color-sand)' }}>
+                <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <label style={{ fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>
+                    {t('minutes.assign_notulist')}
+                  </label>
+                  <select
+                    className="input"
+                    value={notulistEname}
+                    onChange={e => handleAssignNotulist(e.target.value)}
+                    style={{ fontSize: '0.9rem' }}
+                  >
+                    <option value="">{t('minutes.notulist_none')}</option>
+                    {(members || []).map(m => (
+                      <option key={m.id} value={m.ename ?? ''}>{m.name}</option>
+                    ))}
+                  </select>
+                  {notulistEname && (
+                    <div style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)' }}>
+                      {t('minutes.notulist_assigned', { name: (members || []).find(m => m.ename === notulistEname)?.name ?? notulistEname })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Quick check-in modal — member picker */}
