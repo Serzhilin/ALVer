@@ -159,8 +159,13 @@ if (process.env.NODE_ENV === "production") {
 
 // ── DB init → listen ──────────────────────────────────────────────────────────
 AppDataSource.initialize()
-    .then(() => {
+    .then(async () => {
         logger.info("database connected");
+        // Run any pending migrations before accepting traffic
+        const ran = await AppDataSource.runMigrations();
+        if (ran.length > 0) {
+            logger.info({ migrations: ran.map(m => m.name) }, "migrations applied");
+        }
         app.listen(port, () => logger.info({ port }, "ALVer API started"));
     })
     .catch((err) => {

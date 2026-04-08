@@ -15,12 +15,16 @@ import { AlverSubscriber } from "../web3adapter/subscriber";
 
 config({ path: path.resolve(__dirname, "../../../.env") });
 
+const isProduction = process.env.NODE_ENV === "production";
+
 export const dataSourceOptions: DataSourceOptions = {
     type: "postgres",
     url: process.env.ALVER_DATABASE_URL,
-    synchronize: process.env.NODE_ENV !== "production" || process.env.DB_SYNCHRONIZE === "true",
+    // synchronize only in dev; migrations handle schema changes in production
+    synchronize: !isProduction,
     entities: [Meeting, Attendee, Mandate, Poll, Vote, Decision, User, Community, Member],
     subscribers: [AlverSubscriber],
+    migrations: [path.join(__dirname, "migrations", "*.js")],
     logging: false,
     extra: {
         max: 10,

@@ -8,7 +8,10 @@
     "start": "node dist/index.js",
     "seed": "npx ts-node src/seed.ts",
     "typeorm": "typeorm-ts-node-commonjs",
-    "provision": "npx ts-node src/scripts/provision-communities.ts"
+    "provision": "npx ts-node src/scripts/provision-communities.ts",
+    "migration:generate": "typeorm-ts-node-commonjs migration:generate src/database/migrations/$npm_config_name -d src/database/data-source.ts",
+    "migration:run": "typeorm-ts-node-commonjs migration:run -d src/database/data-source.ts",
+    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/database/data-source.ts"
   },
   "dependencies": {
     "@types/jsonwebtoken": "^9.0.10",
