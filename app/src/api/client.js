@@ -150,3 +150,8 @@ export function subscribeToMeeting(meetingId, onEvent, { onDisconnect, onReconne
 export const adminListCommunities = () => req('GET', '/admin/communities')
 export const adminCreateCommunity = (data) => req('POST', '/admin/communities', data)
 export const adminDeleteCommunity = (id) => req('DELETE', `/admin/communities/${id}`)
+
+// ── Minutes ───────────────────────────────────────────────────────────────────
+export const assignNotulist = (id, notulist_ename) => req('PATCH', `/meetings/${id}/notulist`, { notulist_ename })
+export const saveMinutes = (id, html) => req('PATCH', `/meetings/${id}/minutes`, { html })
+export const publishMinutes = (id) => req('PATCH', `/meetings/${id}/minutes/publish`, {})

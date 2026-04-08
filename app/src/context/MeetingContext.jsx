@@ -49,6 +49,9 @@ function adaptMeeting(m) {
     })),
     polls: (m.polls || []).map(adaptPoll),
     activePollId: activePoll?.id || null,
+    minutes_html: m.minutes_html ?? null,
+    minutes_status: m.minutes_status ?? null,
+    notulist_ename: m.notulist_ename ?? null,
   }
 }
 
