@@ -1,103 +1,23 @@
-import { useEffect, useState, useRef } from 'react'
-import { useEditor, EditorContent } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
+import { useEffect, useState } from 'react'
 import { useMeeting } from '../context/MeetingContext'
 import { useUser } from '../context/UserContext'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import FacilitatorHeader from '../components/FacilitatorHeader'
 import AgendaHtml from '../components/AgendaHtml'
-import { saveMinutes, publishMinutes } from '../api/client'
+import MinutesEditor from '../components/MinutesEditor'
 
 export default function Archive() {
   const { id } = useParams()
-  const { meeting, attendeeCount, setMeetingId } = useMeeting()
+  const { meeting, setMeetingId } = useMeeting()
   const { user, isFacilitator } = useUser()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
 
   const [attendeesOpen, setAttendeesOpen] = useState(false)
   const [mandatesOpen, setMandatesOpen] = useState(false)
-  const [minutesSaving, setMinutesSaving] = useState(false)
-  const [minutesPublishConfirm, setMinutesPublishConfirm] = useState(false)
-  const saveTimerRef = useRef(null)
 
   useEffect(() => { setMeetingId(id) }, [id])
-
-  const isMinutesEditor = !!(meeting && user && (
-    user.ename === meeting.notulist_ename || isFacilitator
-  ) && meeting.minutes_status !== 'published')
-
-  async function handleSaveMinutes(editorInstance) {
-    if (!editorInstance || !meeting) return
-    setMinutesSaving(true)
-    try {
-      await saveMinutes(meeting.id, editorInstance.getHTML())
-    } catch (err) {
-      console.warn('Auto-save failed:', err)
-    } finally {
-      setMinutesSaving(false)
-    }
-  }
-
-  const editor = useEditor({
-    extensions: [StarterKit],
-    content: meeting?.minutes_html ?? '',
-    editable: isMinutesEditor,
-    onBlur: ({ editor: ed }) => {
-      if (!isMinutesEditor) return
-      clearTimeout(saveTimerRef.current)
-      handleSaveMinutes(ed)
-    },
-    onUpdate: ({ editor: ed }) => {
-      if (!isMinutesEditor) return
-      clearTimeout(saveTimerRef.current)
-      saveTimerRef.current = setTimeout(() => handleSaveMinutes(ed), 30000)
-    },
-  })
-
-  // Update editor content when meeting loads/changes
-  useEffect(() => {
-    if (editor && meeting?.minutes_html !== undefined) {
-      const current = editor.getHTML()
-      const incoming = meeting.minutes_html ?? ''
-      if (current !== incoming && !editor.isFocused) {
-        editor.commands.setContent(incoming)
-      }
-    }
-  }, [meeting?.minutes_html, editor])
-
-  async function handlePublishMinutes() {
-    if (!meeting) return
-    try {
-      await publishMinutes(meeting.id)
-      setMinutesPublishConfirm(false)
-      setMeetingId(id)
-    } catch (err) {
-      console.warn('Publish failed:', err)
-    }
-  }
-
-  async function handleImportDocx(e) {
-    const file = e.target.files?.[0]
-    if (!file || !editor) return
-    if (editor.getText().trim().length > 0) {
-      if (!window.confirm(t('minutes.import_replace_confirm'))) {
-        e.target.value = ''
-        return
-      }
-    }
-    try {
-      const mammoth = await import('mammoth/mammoth.browser')
-      const arrayBuffer = await file.arrayBuffer()
-      const result = await mammoth.convertToHtml({ arrayBuffer })
-      editor.commands.setContent(result.value)
-      handleSaveMinutes(editor)
-    } catch (err) {
-      console.warn('Import failed:', err)
-    }
-    e.target.value = ''
-  }
 
   if (!meeting) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--color-charcoal-light)' }}>{t('common.loading')}</div>
 
@@ -106,6 +26,10 @@ export default function Archive() {
   const dateStr = new Date(meeting.date + 'T12:00').toLocaleDateString(dateLocale, {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
   })
+
+  const isMinutesEditor = !!(user && (
+    user.ename === meeting.notulist_ename || isFacilitator
+  ) && meeting.minutes_status !== 'published')
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-cream)' }}>
@@ -296,69 +220,15 @@ export default function Archive() {
               )}
             </div>
 
-            {/* Editor view — notulist or facilitator, not yet published */}
-            {isMinutesEditor && editor && (
-              <div className="card" style={{ padding: 24 }}>
-                {/* Import from Word */}
-                <div style={{ marginBottom: 16 }}>
-                  <label
-                    htmlFor="docx-import"
-                    className="btn-secondary"
-                    style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.85rem' }}
-                  >
-                    📄 {t('minutes.import_word')}
-                  </label>
-                  <input
-                    id="docx-import"
-                    type="file"
-                    accept=".docx"
-                    style={{ display: 'none' }}
-                    onChange={handleImportDocx}
-                  />
-                </div>
-
-                {/* TipTap editor */}
-                <div style={{ border: '1px solid var(--color-sand-dark)', borderRadius: 8, padding: '12px 16px', minHeight: 200, fontSize: '0.92rem', lineHeight: 1.7 }}>
-                  <EditorContent editor={editor} />
-                </div>
-
-                {/* Save indicator */}
-                {minutesSaving && (
-                  <div style={{ marginTop: 8, fontSize: '0.78rem', color: 'var(--color-charcoal-light)' }}>
-                    {t('minutes.saving')}
-                  </div>
-                )}
-
-                {/* Publish button */}
-                <div style={{ marginTop: 20 }}>
-                  {!minutesPublishConfirm ? (
-                    <button
-                      className="btn-primary"
-                      onClick={() => setMinutesPublishConfirm(true)}
-                      style={{ width: '100%', justifyContent: 'center' }}
-                    >
-                      {t('minutes.publish_btn')}
-                    </button>
-                  ) : (
-                    <div style={{ background: 'rgba(196,98,45,0.06)', border: '1.5px solid rgba(196,98,45,0.25)', borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                      <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--color-charcoal)', lineHeight: 1.5 }}>
-                        {t('minutes.publish_confirm')}
-                      </p>
-                      <div style={{ display: 'flex', gap: 10 }}>
-                        <button className="btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={handlePublishMinutes}>
-                          {t('minutes.publish_confirm_yes')}
-                        </button>
-                        <button className="btn-secondary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setMinutesPublishConfirm(false)}>
-                          {t('common.cancel')}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+            {/* Editor — notulist or facilitator, not yet published */}
+            {isMinutesEditor && (
+              <MinutesEditor
+                meeting={meeting}
+                onPublished={() => setMeetingId(id)}
+              />
             )}
 
-            {/* Read-only view — published minutes, for all logged-in members */}
+            {/* Read-only — published, for all logged-in members */}
             {meeting.minutes_status === 'published' && user && !isMinutesEditor && (
               <div className="card" style={{ padding: 24 }}>
                 <AgendaHtml html={meeting.minutes_html ?? ''} />
