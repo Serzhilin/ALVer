@@ -363,6 +363,7 @@
   "minutes": {
     "section_title": "Minutes",
     "assign_notulist": "Assign notulist",
+    "assign_btn": "Assign",
     "notulist_label": "Notulist",
     "notulist_none": "No notulist",
     "notulist_assigned": "Notulist: {{name}}",

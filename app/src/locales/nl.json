@@ -363,6 +363,7 @@
   "minutes": {
     "section_title": "Notulen",
     "assign_notulist": "Notulist toewijzen",
+    "assign_btn": "Toewijzen",
     "notulist_label": "Notulist",
     "notulist_none": "Geen notulist",
     "notulist_assigned": "Notulist: {{name}}",

@@ -42,6 +42,7 @@ export default function Facilitate() {
 
   const [notulistOpen, setNotulistOpen] = useState(false)
   const [notulistEname, setNotulistEname] = useState(meeting?.notulist_ename ?? '')
+  const [notulistDraft, setNotulistDraft] = useState(meeting?.notulist_ename ?? '')
 
   // Confirmation state for irreversible actions
   const [confirmCloseAttendeeId, setConfirmCloseAttendeeId] = useState(null)
@@ -57,10 +58,11 @@ export default function Facilitate() {
     }
   }, [i18n.language, meeting?.id, meeting?.phase])
 
-  // Sync notulistEname when meeting reloads via SSE
+  // Sync notulist state when meeting reloads via SSE
   useEffect(() => {
     if (meeting?.notulist_ename !== undefined) {
       setNotulistEname(meeting.notulist_ename ?? '')
+      setNotulistDraft(meeting.notulist_ename ?? '')
     }
   }, [meeting?.notulist_ename])
 
@@ -487,21 +489,31 @@ export default function Facilitate() {
             </button>
             {notulistOpen && (
               <div style={{ padding: '0 24px 20px', borderTop: '1px solid var(--color-sand)' }}>
-                <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <label style={{ fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>
                     {t('minutes.assign_notulist')}
                   </label>
-                  <select
-                    className="input"
-                    value={notulistEname}
-                    onChange={e => handleAssignNotulist(e.target.value)}
-                    style={{ fontSize: '0.9rem' }}
-                  >
-                    <option value="">{t('minutes.notulist_none')}</option>
-                    {(members || []).map(m => (
-                      <option key={m.id} value={m.ename ?? ''}>{m.name}</option>
-                    ))}
-                  </select>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <select
+                      className="input"
+                      value={notulistDraft}
+                      onChange={e => setNotulistDraft(e.target.value)}
+                      style={{ fontSize: '0.9rem', width: 'auto', minWidth: 160, flex: '0 1 260px' }}
+                    >
+                      <option value="">{t('minutes.notulist_none')}</option>
+                      {(members || []).filter(m => m.ename).map(m => (
+                        <option key={m.id} value={m.ename}>{m.name}</option>
+                      ))}
+                    </select>
+                    <button
+                      className="btn-primary"
+                      style={{ fontSize: '0.85rem', padding: '7px 14px', whiteSpace: 'nowrap' }}
+                      onClick={() => handleAssignNotulist(notulistDraft)}
+                      disabled={notulistDraft === notulistEname}
+                    >
+                      {t('minutes.assign_btn')}
+                    </button>
+                  </div>
                   {notulistEname && (
                     <div style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)' }}>
                       {t('minutes.notulist_assigned', { name: (members || []).find(m => m.ename === notulistEname)?.name ?? notulistEname })}
