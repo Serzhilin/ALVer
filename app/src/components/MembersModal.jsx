@@ -265,6 +265,11 @@ function MemberRow({ member: m, rowBg, isEditing, confirmDelete, onEdit, onDelet
       <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: '0.92rem', color: 'var(--color-charcoal)', fontWeight: 500 }}>{m.name}</span>
+          {!m.ename && (
+            <span title={t('settings.member_no_eid')} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 16, height: 16, borderRadius: '50%', background: 'var(--color-sand-dark)', color: 'var(--color-charcoal-light)', fontSize: '0.65rem', fontWeight: 700, flexShrink: 0 }}>
+              ?
+            </span>
+          )}
           {m.is_facilitator && (
             <span className="badge badge-blue" style={{ fontSize: '0.68rem', padding: '1px 7px' }}>
               {t('settings.member_facilitator_badge')}

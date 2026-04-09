@@ -302,6 +302,7 @@
     "member_ename_placeholder": "eID identity (optional)",
     "member_aspirant_label": "Aspirant member",
     "members_facilitators": "Facilitators",
+    "member_no_eid": "No eID linked",
     "member_facilitator_badge": "Facilitator",
     "member_facilitator_label": "Facilitator",
     "member_facilitator_self": "cannot change own role"

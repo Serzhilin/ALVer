@@ -57,6 +57,13 @@ export default function Facilitate() {
     }
   }, [i18n.language, meeting?.id, meeting?.phase])
 
+  // Sync notulistEname when meeting reloads via SSE
+  useEffect(() => {
+    if (meeting?.notulist_ename !== undefined) {
+      setNotulistEname(meeting.notulist_ename ?? '')
+    }
+  }, [meeting?.notulist_ename])
+
   // Auth gate — must be logged in as facilitator via /facilitator
   if (authLoading) return <LoadingScreen />
   if (!isFacilitator) return <Navigate to="/facilitator" replace />
@@ -131,13 +138,6 @@ export default function Facilitate() {
   }
 
   const canStart = (poll) => meeting.phase === 'in_session' && !activePoll && poll.status === 'prepared'
-
-  // Sync notulistEname when meeting reloads via SSE
-  useEffect(() => {
-    if (meeting?.notulist_ename !== undefined) {
-      setNotulistEname(meeting.notulist_ename ?? '')
-    }
-  }, [meeting?.notulist_ename])
 
   async function handleAssignNotulist(ename) {
     const value = ename || null
