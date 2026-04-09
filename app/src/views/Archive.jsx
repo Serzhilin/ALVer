@@ -16,6 +16,7 @@ export default function Archive() {
 
   const [attendeesOpen, setAttendeesOpen] = useState(false)
   const [mandatesOpen, setMandatesOpen] = useState(false)
+  const [minutesOpen, setMinutesOpen] = useState(false)
 
   useEffect(() => { setMeetingId(id) }, [id])
 
@@ -204,35 +205,40 @@ export default function Archive() {
         {/* Minutes — shown only when a notulist is assigned */}
         {meeting.notulist_ename && (
           <div style={{ marginTop: 32 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <h2 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--color-charcoal)' }}>
-                {t('minutes.section_title')}
-              </h2>
-              {meeting.minutes_status === 'published' && (
-                <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-green)', background: 'rgba(45,122,74,0.1)', padding: '2px 8px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  {t('minutes.published_badge')}
-                </span>
-              )}
-              {meeting.minutes_status === 'draft' && isMinutesEditor && (
-                <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-charcoal-light)', background: 'var(--color-sand)', padding: '2px 8px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  {t('minutes.draft_badge')}
-                </span>
-              )}
-            </div>
-
-            {/* Editor — notulist or facilitator, not yet published */}
-            {isMinutesEditor && (
-              <MinutesEditor
-                meeting={meeting}
-                onPublished={() => setMeetingId(id)}
-              />
-            )}
-
-            {/* Read-only — published, for all logged-in members */}
-            {meeting.minutes_status === 'published' && user && !isMinutesEditor && (
-              <div className="card" style={{ padding: 24 }}>
-                <AgendaHtml html={meeting.minutes_html ?? ''} />
+            <button
+              onClick={() => setMinutesOpen(o => !o)}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0, margin: '0 0 12px' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <h2 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--color-charcoal)' }}>
+                  {t('minutes.section_title')}
+                </h2>
+                {meeting.minutes_status === 'draft' && isMinutesEditor && (
+                  <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-charcoal-light)', background: 'var(--color-sand)', padding: '2px 8px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    {t('minutes.draft_badge')}
+                  </span>
+                )}
               </div>
+              <span style={{ fontSize: '0.85rem', color: 'var(--color-charcoal-light)' }}>{minutesOpen ? '▼' : '▶'}</span>
+            </button>
+
+            {minutesOpen && (
+              <>
+                {/* Editor — notulist or facilitator, not yet published */}
+                {isMinutesEditor && (
+                  <MinutesEditor
+                    meeting={meeting}
+                    onPublished={() => setMeetingId(id)}
+                  />
+                )}
+
+                {/* Read-only — published, for all logged-in members */}
+                {meeting.minutes_status === 'published' && user && !isMinutesEditor && (
+                  <div className="card" style={{ padding: 24 }}>
+                    <AgendaHtml html={meeting.minutes_html ?? ''} />
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
