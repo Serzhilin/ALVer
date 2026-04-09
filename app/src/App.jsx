@@ -19,9 +19,15 @@ import AdminDashboard from './views/AdminDashboard'
 function CommunityPickerGate({ children }) {
   const { token, loading, communityId, communities, selectCommunity } = useUser()
   if (loading) return null
-  if (token && communities.length > 1 && !communityId) {
+  if (token && !communityId) {
     const isFacilitatorSession = localStorage.getItem('alver_facilitator_mode') === 'true'
-    return <CommunityPicker communities={communities} onSelect={selectCommunity} isFacilitatorSession={isFacilitatorSession} />
+    const pickerCommunities = isFacilitatorSession
+      ? communities.filter(c => c.isFacilitator)
+      : communities
+    // Show picker if: multiple eligible communities, OR facilitator with none (to show error)
+    if (pickerCommunities.length !== 1 && (isFacilitatorSession || communities.length > 1)) {
+      return <CommunityPicker communities={pickerCommunities} onSelect={selectCommunity} isFacilitatorSession={isFacilitatorSession} />
+    }
   }
   return children
 }
