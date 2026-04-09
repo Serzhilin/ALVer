@@ -335,7 +335,9 @@
   "community_picker": {
     "title": "Kies een gemeenschap",
     "subtitle": "Je bent lid van meerdere gemeenschappen. Welke wil je betreden?",
-    "role_facilitator": "U bent facilitator van deze gemeenschap",
+    "facilitator_title": "Je bent facilitator van meerdere communities",
+    "no_facilitator_communities": "Je hebt geen facilitatorrechten in een community.",
+    "back_to_attendee": "← Terug naar attendee login",
     "role_member": "Lid",
     "switch_btn": "Wissel van gemeenschap"
   },

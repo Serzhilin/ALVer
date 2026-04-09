@@ -335,7 +335,9 @@
   "community_picker": {
     "title": "Choose a community",
     "subtitle": "You are a member of multiple communities. Which one would you like to enter?",
-    "role_facilitator": "You are a facilitator of this community",
+    "facilitator_title": "You are a facilitator of multiple communities",
+    "no_facilitator_communities": "You don't have facilitator rights in any community.",
+    "back_to_attendee": "← Back to attendee login",
     "role_member": "Member",
     "switch_btn": "Switch community"
   },
