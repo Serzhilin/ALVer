@@ -18,12 +18,17 @@ export function UserProvider({ children }) {
       const allCommunities = await getCommunities()
       setCommunities(allCommunities)
 
+      // For facilitator sessions, only consider communities where user is facilitator
+      const eligibleCommunities = forceAttendee
+        ? allCommunities
+        : allCommunities.filter(c => c.isFacilitator)
+
       const storedId = localStorage.getItem('alver_community_id')
-      const validStored = allCommunities.find(c => c.id === storedId)
+      const validStored = eligibleCommunities.find(c => c.id === storedId)
 
       let selectedId = null
-      if (allCommunities.length === 1) {
-        selectedId = allCommunities[0].id
+      if (eligibleCommunities.length === 1) {
+        selectedId = eligibleCommunities[0].id
         localStorage.setItem('alver_community_id', selectedId)
       } else if (validStored) {
         selectedId = storedId
@@ -34,15 +39,12 @@ export function UserProvider({ children }) {
       const me = await getMe(selectedId)
       setUser(me)
 
-      // Determine isFacilitator from the community-scoped response when possible.
-      // For multi-community with no selection yet, fall back to checking if the user
-      // is a facilitator of any community — picker will refine this via selectCommunity.
       let isFac = false
       if (!forceAttendee) {
         if (selectedId) {
           isFac = me.isFacilitator ?? false
         } else {
-          isFac = allCommunities.some(c => c.isFacilitator)
+          isFac = eligibleCommunities.length > 0
         }
       }
       setIsFacilitator(isFac)
