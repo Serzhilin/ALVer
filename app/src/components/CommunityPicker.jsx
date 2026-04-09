@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 /**
@@ -5,11 +6,54 @@ import { useTranslation } from 'react-i18next'
  * Shown after login when the user belongs to more than one community.
  *
  * Props:
- *   communities — array of { id, name, slug, logo_url, primary_color, isFacilitator }
- *   onSelect    — called with community id when user picks one
+ *   communities       — array of { id, name, slug, logo_url, primary_color, isFacilitator }
+ *   onSelect          — called with community id when user picks one
+ *   isFacilitatorSession — true when user logged in via /facilitator route
  */
 export default function CommunityPicker({ communities, onSelect, isFacilitatorSession = false }) {
   const { t } = useTranslation()
+  const navigate = useNavigate()
+
+  // Error state: facilitator login but no facilitator communities
+  if (isFacilitatorSession && communities.length === 0) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '24px',
+        background: 'var(--color-cream, #faf8f5)',
+      }}>
+        <div style={{ fontSize: '2rem', marginBottom: 16 }}>🔒</div>
+        <h1 style={{
+          fontFamily: 'var(--font-title, serif)',
+          fontSize: '1.4rem',
+          fontWeight: 700,
+          marginBottom: 12,
+          color: 'var(--color-charcoal, #2c2c2c)',
+          textAlign: 'center',
+        }}>
+          {t('community_picker.no_facilitator_communities')}
+        </h1>
+        <button
+          onClick={() => navigate('/')}
+          style={{
+            marginTop: 8,
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            color: 'var(--color-terracotta)',
+            fontSize: '0.95rem',
+            fontWeight: 500,
+          }}
+        >
+          {t('community_picker.back_to_attendee')}
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div style={{
@@ -29,16 +73,19 @@ export default function CommunityPicker({ communities, onSelect, isFacilitatorSe
         color: 'var(--color-charcoal, #2c2c2c)',
         textAlign: 'center',
       }}>
-        {t('community_picker.title')}
+        {isFacilitatorSession ? t('community_picker.facilitator_title') : t('community_picker.title')}
       </h1>
-      <p style={{
-        fontSize: '0.95rem',
-        color: 'var(--color-muted, #888)',
-        marginBottom: 32,
-        textAlign: 'center',
-      }}>
-        {t('community_picker.subtitle')}
-      </p>
+      {!isFacilitatorSession && (
+        <p style={{
+          fontSize: '0.95rem',
+          color: 'var(--color-muted, #888)',
+          marginBottom: 32,
+          textAlign: 'center',
+        }}>
+          {t('community_picker.subtitle')}
+        </p>
+      )}
+      {isFacilitatorSession && <div style={{ marginBottom: 32 }} />}
 
       <div style={{
         display: 'flex',
@@ -96,11 +143,6 @@ export default function CommunityPicker({ communities, onSelect, isFacilitatorSe
               }}>
                 {c.name}
               </div>
-              {isFacilitatorSession && c.isFacilitator && (
-                <div style={{ fontSize: '0.8rem', color: 'var(--color-muted, #888)', marginTop: 2 }}>
-                  {t('community_picker.role_facilitator')}
-                </div>
-              )}
             </div>
 
             <span style={{ color: 'var(--color-muted, #888)', fontSize: '1.1rem' }}>›</span>
