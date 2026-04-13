@@ -13,7 +13,7 @@ export default function Facilitate() {
   const { setMeetingId,
     meeting, activePoll, attendeeCount,
     displayMode, screenTheme,
-    updatePhase, addPoll, updatePoll, deletePoll,
+    updatePhase, addPoll, updatePoll, deletePoll, reorderPolls,
     startPoll, closePoll, addManualVote, checkIn,
     addMandate, revokeMandate, removeAttendee,
   } = useMeeting()
@@ -49,6 +49,8 @@ export default function Facilitate() {
   const [confirmCloseMeeting, setConfirmCloseMeeting] = useState(false)
   const [confirmClosePollId, setConfirmClosePollId] = useState(null)
   const [confirmRevokeMandateId, setConfirmRevokeMandateId] = useState(null)
+
+  const [dragOverId, setDragOverId] = useState(null)
 
   useEffect(() => { setMeetingId(id) }, [id])
 
@@ -434,24 +436,60 @@ export default function Facilitate() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {meeting.polls.map((poll, idx) => (
-                <PollCard
+                <div
                   key={poll.id}
-                  poll={poll}
-                  idx={idx}
-                  activePoll={activePoll}
-                  attendeeCount={attendeeCount}
-                  canStart={canStart(poll)}
-                  onStart={() => startPoll(poll.id)}
-                  onClose={() => closePoll(poll.id)}
-                  onEdit={() => openEditPoll(poll)}
-                  onDelete={() => deletePoll(poll.id)}
-                  onManualVote={() => setShowManualVoteModal(true)}
-                  getVoteCount={getVoteCount}
-                  isActive={activePoll?.id === poll.id}
-                  phase={meeting.phase}
-                  confirmClosePollId={confirmClosePollId}
-                  setConfirmClosePollId={setConfirmClosePollId}
-                />
+                  draggable={poll.status === 'prepared' && meeting.phase !== 'archived'}
+                  onDragStart={e => {
+                    e.dataTransfer.effectAllowed = 'move'
+                    e.dataTransfer.setData('text/plain', poll.id)
+                  }}
+                  onDragOver={e => {
+                    if (poll.status !== 'prepared') return
+                    e.preventDefault()
+                    e.dataTransfer.dropEffect = 'move'
+                    setDragOverId(poll.id)
+                  }}
+                  onDragLeave={() => setDragOverId(null)}
+                  onDrop={e => {
+                    e.preventDefault()
+                    setDragOverId(null)
+                    const draggedId = e.dataTransfer.getData('text/plain')
+                    if (draggedId === poll.id) return
+                    const ids = meeting.polls.map(p => p.id)
+                    const fromIdx = ids.indexOf(draggedId)
+                    const toIdx = ids.indexOf(poll.id)
+                    if (fromIdx === -1 || toIdx === -1) return
+                    const reordered = [...ids]
+                    reordered.splice(fromIdx, 1)
+                    reordered.splice(toIdx, 0, draggedId)
+                    reorderPolls(reordered)
+                  }}
+                  onDragEnd={() => setDragOverId(null)}
+                  style={{
+                    opacity: dragOverId === poll.id ? 0.6 : 1,
+                    transition: 'opacity 0.15s',
+                    cursor: poll.status === 'prepared' && meeting.phase !== 'archived' ? 'grab' : 'default',
+                  }}
+                >
+                  <PollCard
+                    poll={poll}
+                    idx={idx}
+                    activePoll={activePoll}
+                    attendeeCount={attendeeCount}
+                    canStart={canStart(poll)}
+                    onStart={() => startPoll(poll.id)}
+                    onClose={() => closePoll(poll.id)}
+                    onEdit={() => openEditPoll(poll)}
+                    onDelete={() => deletePoll(poll.id)}
+                    onManualVote={() => setShowManualVoteModal(true)}
+                    getVoteCount={getVoteCount}
+                    isActive={activePoll?.id === poll.id}
+                    phase={meeting.phase}
+                    confirmClosePollId={confirmClosePollId}
+                    setConfirmClosePollId={setConfirmClosePollId}
+                    isDraggable={poll.status === 'prepared' && meeting.phase !== 'archived'}
+                  />
+                </div>
               ))}
             </div>
           </div>
@@ -796,7 +834,7 @@ export default function Facilitate() {
   )
 }
 
-function PollCard({ poll, idx, activePoll, attendeeCount, canStart, onStart, onClose, onEdit, onDelete, onManualVote, getVoteCount, isActive, phase, confirmClosePollId, setConfirmClosePollId }) {
+function PollCard({ poll, idx, activePoll, attendeeCount, canStart, onStart, onClose, onEdit, onDelete, onManualVote, getVoteCount, isActive, phase, confirmClosePollId, setConfirmClosePollId, isDraggable }) {
   const { t } = useTranslation()
   const voteCount = getVoteCount(poll)
   const pct = attendeeCount > 0 ? Math.round((voteCount / attendeeCount) * 100) : 0
@@ -804,13 +842,24 @@ function PollCard({ poll, idx, activePoll, attendeeCount, canStart, onStart, onC
   return (
     <div
       style={{
+        position: 'relative',
         border: `2px solid ${isActive ? 'var(--color-terracotta)' : 'var(--color-sand)'}`,
         borderRadius: 10,
         padding: 18,
+        paddingLeft: isDraggable ? 28 : 18,
         background: isActive ? 'rgba(196,98,45,0.03)' : 'white',
         transition: 'all 0.2s',
       }}
     >
+      {isDraggable && (
+        <div style={{
+          position: 'absolute', left: 6, top: '50%', transform: 'translateY(-50%)',
+          color: 'var(--color-charcoal-light)', fontSize: '1rem', lineHeight: 1,
+          cursor: 'grab', userSelect: 'none', opacity: 0.4,
+        }}>
+          ⠿
+        </div>
+      )}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>

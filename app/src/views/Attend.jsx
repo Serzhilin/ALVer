@@ -129,7 +129,7 @@ export default function Attend() {
         <div style={{ flex: 1, maxWidth: 480, width: '100%', margin: '0 auto', padding: '20px 16px 40px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           {meeting.phase === 'archived'
             ? <ClosedMeetingScreen meeting={meeting} votedPolls={{}} onArchive={() => navigate(`/${community?.slug}/meeting/${meeting.id}/archive`)} t={t} />
-            : <WaitingScreen meeting={meeting} dateStr={dateStr} t={t} />
+            : <WaitingScreen meeting={meeting} dateStr={dateStr} amAspirant={amAspirant} t={t} />
           }
         </div>
       </div>
@@ -159,7 +159,7 @@ export default function Attend() {
               </div>
             )}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.85)', fontSize: '0.9rem' }}>
-              <span>🕐</span><span>{meeting.time}</span>
+              <span>🕐</span><span>{meeting.time}{meeting.end_time ? ` – ${meeting.end_time}` : ''}</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.85)', fontSize: '0.9rem' }}>
               <span>📍</span><span>{meeting.location}</span>
@@ -215,7 +215,7 @@ export default function Attend() {
 
         {/* Meeting not started */}
         {!isInSession && !isClosed && (
-          <WaitingScreen meeting={meeting} dateStr={dateStr} t={t} />
+          <WaitingScreen meeting={meeting} dateStr={dateStr} amAspirant={amAspirant} t={t} />
         )}
 
         {/* In session: active poll */}
@@ -276,6 +276,9 @@ export default function Attend() {
             <AgendaHtml html={meeting.agenda} />
           </div>
         )}
+
+        {/* Upcoming prepared polls (in session, no active poll) */}
+        {isInSession && !activePoll && !amAspirant && <UpcomingPolls polls={meeting.polls} t={t} />}
       </div>
     </div>
   )
@@ -283,7 +286,7 @@ export default function Attend() {
 
 // ── Sub-screens ───────────────────────────────────────────────────────────────
 
-function WaitingScreen({ meeting, dateStr, t }) {
+function WaitingScreen({ meeting, dateStr, amAspirant, t }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ background: 'white', borderRadius: 14, padding: '32px 24px', textAlign: 'center' }}>
@@ -301,21 +304,23 @@ function WaitingScreen({ meeting, dateStr, t }) {
             </div>
           )}
           <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: '0.9rem', color: 'var(--color-charcoal)' }}>
-            <span>🕐</span><span>{meeting.time}</span>
+            <span>🕐</span><span>{meeting.time}{meeting.end_time ? ` – ${meeting.end_time}` : ''}</span>
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: '0.9rem', color: 'var(--color-charcoal)' }}>
             <span>📍</span><span>{meeting.location}</span>
           </div>
         </div>
       </div>
-      {meeting.agenda && (
-        <div style={{ background: 'white', borderRadius: 14, padding: '20px' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-charcoal-light)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 12 }}>
-            📋 {t('common.agenda')}
-          </div>
-          <AgendaHtml html={meeting.agenda} />
+      <div style={{ background: 'white', borderRadius: 14, padding: '20px' }}>
+        <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-charcoal-light)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 12 }}>
+          📋 {t('common.agenda')}
         </div>
-      )}
+        {meeting.agenda
+          ? <AgendaHtml html={meeting.agenda} />
+          : <p style={{ margin: 0, color: 'var(--color-charcoal-light)', fontSize: '0.9rem', fontStyle: 'italic' }}>{t('attend.agenda_tba')}</p>
+        }
+      </div>
+      {!amAspirant && <UpcomingPolls polls={meeting.polls} t={t} />}
     </div>
   )
 }
@@ -452,6 +457,52 @@ function ClosedPollResult({ poll, votedPolls, t }) {
           {myVote && <span style={{ color: 'var(--color-charcoal-light)', marginLeft: 'auto' }}>{t('attend.your_vote_history')} <strong>{myVote}</strong></span>}
         </div>
       </div>
+    </div>
+  )
+}
+
+function UpcomingPolls({ polls, t }) {
+  const [open, setOpen] = useState(false)
+  const prepared = (polls || []).filter(p => p.status === 'prepared')
+  if (prepared.length === 0) return null
+
+  return (
+    <div style={{ background: 'white', borderRadius: 14, overflow: 'hidden' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%', background: 'none', border: 'none', padding: '16px 20px',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: '0.85rem',
+          color: 'var(--color-charcoal)',
+        }}
+      >
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-charcoal-light)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🗳️ {t('attend.upcoming_polls')}
+          </span>
+          <span style={{ fontSize: '0.72rem', background: 'var(--color-sand)', color: 'var(--color-charcoal-light)', borderRadius: 10, padding: '1px 7px', fontWeight: 600 }}>
+            {prepared.length}
+          </span>
+        </span>
+        <span style={{ fontSize: '0.7rem', color: 'var(--color-charcoal-light)' }}>{open ? '▼' : '▶'}</span>
+      </button>
+      {open && (
+        <div style={{ padding: '0 20px 16px', borderTop: '1px solid var(--color-sand)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
+            {prepared.map((poll, i) => (
+              <div key={poll.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)', marginTop: 2, minWidth: 16, fontWeight: 600 }}>
+                  {i + 1}.
+                </span>
+                <span style={{ fontSize: '0.9rem', color: 'var(--color-charcoal)', lineHeight: 1.5 }}>
+                  {poll.title}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

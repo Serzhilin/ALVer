@@ -94,6 +94,7 @@ export const updatePoll = (id, pollId, data) => req('PATCH', `/meetings/${id}/po
 export const deletePoll = (id, pollId) => req('DELETE', `/meetings/${id}/polls/${pollId}`)
 export const openPoll = (id, pollId) => req('PATCH', `/meetings/${id}/polls/${pollId}/open`, {})
 export const closePoll = (id, pollId) => req('PATCH', `/meetings/${id}/polls/${pollId}/close`, {})
+export const reorderPolls = (meetingId, ids) => req('PATCH', `/meetings/${meetingId}/polls/reorder`, { ids })
 
 // ── Votes ─────────────────────────────────────────────────────────────────────
 export const castVote = (pollId, data) => req('POST', `/polls/${pollId}/votes`, data)

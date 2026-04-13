@@ -68,6 +68,19 @@ export class PollController {
         }
     };
 
+    reorder = async (req: Request, res: Response) => {
+        try {
+            const { ids } = req.body;
+            if (!Array.isArray(ids) || ids.some(id => typeof id !== 'string')) {
+                return res.status(400).json({ error: "ids must be an array of strings" });
+            }
+            await svc.reorder(req.params.id, ids);
+            res.status(204).send();
+        } catch (e: any) {
+            res.status(400).json({ error: e.message });
+        }
+    };
+
     decisions = async (req: Request, res: Response) => {
         try {
             const decisions = await svc.getDecisionsForMeeting(req.params.id);

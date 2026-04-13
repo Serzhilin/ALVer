@@ -50,6 +50,9 @@ export class Poll {
     @Column({ type: "timestamptz", nullable: true })
     closed_at!: Date | null;
 
+    @Column({ type: "int", default: 0 })
+    sort_order!: number;
+
     @Column({ nullable: true })
     facilitator_ename!: string;
 

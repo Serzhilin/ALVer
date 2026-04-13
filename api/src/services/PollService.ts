@@ -15,12 +15,14 @@ export class PollService {
         vote_options: VoteOption[];
         facilitator_ename?: string;
     }): Promise<Poll> {
+        const existingCount = await this.pollRepo.count({ where: { meeting_id: meetingId } });
         const poll = this.pollRepo.create({
             meeting_id: meetingId,
             motion_text: data.motion_text,
             vote_options: data.vote_options,
             facilitator_ename: data.facilitator_ename,
             status: "prepared",
+            sort_order: existingCount,
         });
         const saved = await this.pollRepo.save(poll);
 
@@ -36,7 +38,7 @@ export class PollService {
         return this.pollRepo.find({
             where: { meeting_id: meetingId },
             relations: ["votes"],
-            order: { created_at: "ASC" },
+            order: { sort_order: "ASC", created_at: "ASC" },
         });
     }
 
@@ -147,5 +149,18 @@ export class PollService {
             where: { meeting_id: meetingId },
             order: { closed_at: "ASC" },
         });
+    }
+
+    async reorder(meetingId: string, ids: string[]): Promise<void> {
+        // Validate all ids belong to this meeting
+        const polls = await this.pollRepo.find({ where: { meeting_id: meetingId } });
+        const meetingPollIds = new Set(polls.map(p => p.id));
+        for (const id of ids) {
+            if (!meetingPollIds.has(id)) throw new Error(`Poll ${id} does not belong to meeting ${meetingId}`);
+        }
+        await Promise.all(
+            ids.map((id, index) => this.pollRepo.update(id, { sort_order: index }))
+        );
+        sseService.emit(meetingId, "polls_reordered", { meetingId });
     }
 }

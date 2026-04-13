@@ -17,7 +17,9 @@ function adaptMeeting(m) {
   // Derive active poll
   const activePoll = (m.polls || []).find(p => p.status === 'active') || null
   // Count checked-in and active mandates
-  const checkedIn = (m.attendees || []).filter(a => a.status === 'checked_in')
+  const checkedIn = (m.attendees || [])
+    .filter(a => a.status === 'checked_in')
+    .sort((a, b) => new Date(a.checked_in_at || 0) - new Date(b.checked_in_at || 0))
   const mandates = (m.mandates || []).filter(mn => mn.status === 'active')
 
   return {
@@ -205,6 +207,11 @@ export function MeetingProvider({ children }) {
     await load(meetingId.current)
   }
 
+  const reorderPollsAction = async (ids) => {
+    await api.reorderPolls(meetingId.current, ids)
+    await load(meetingId.current)
+  }
+
   const startPoll = async (pollId) => {
     await api.openPoll(meetingId.current, pollId)
     await load(meetingId.current)
@@ -289,6 +296,7 @@ export function MeetingProvider({ children }) {
       addPoll,
       updatePoll: updatePollAction,
       deletePoll: deletePollAction,
+      reorderPolls: reorderPollsAction,
       startPoll,
       closePoll: closePollAction,
       castVote: castVoteAction,

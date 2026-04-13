@@ -97,6 +97,7 @@ app.post("/api/meetings/:id/attendees/manual", requireAuth, requireFacilitatorOf
 app.post("/api/meetings/:id/mandates", requireAuth, requireFacilitatorOfMeeting, mandate.create);
 app.patch("/api/meetings/:id/mandates/:mandateId/revoke", requireAuth, requireFacilitatorOfMeeting, mandate.revoke);
 app.post("/api/meetings/:id/polls", requireAuth, requireFacilitatorOfMeeting, poll.create);
+app.patch("/api/meetings/:id/polls/reorder", requireAuth, requireFacilitatorOfMeeting, poll.reorder);
 app.patch("/api/meetings/:id/polls/:pollId", requireAuth, requireFacilitatorOfMeeting, poll.update);
 app.delete("/api/meetings/:id/polls/:pollId", requireAuth, requireFacilitatorOfMeeting, poll.delete);
 app.patch("/api/meetings/:id/polls/:pollId/open", requireAuth, requireFacilitatorOfMeeting, poll.open);
