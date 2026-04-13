@@ -78,17 +78,19 @@ export default function Display() {
 
   return (
     <div style={{
-      minHeight: '100vh',
+      width: '100vw',
+      height: '100vh',
       background: theme.bg,
       color: theme.text,
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 40,
+      padding: '3vw',
       position: 'relative',
       overflow: 'hidden',
       fontFamily: 'Inter, sans-serif',
+      fontSize: '1.2vw',
     }}>
       {/* Background texture — night mode only */}
       {isDark && <div style={{
@@ -109,8 +111,8 @@ export default function Display() {
             zIndex: 10,
           }}
         >
-          <div style={{ fontSize: '5rem', marginBottom: 24 }}>👋</div>
-          <div style={{ fontSize: '4rem', fontFamily: 'var(--font-title)', fontWeight: 600, textAlign: 'center', padding: '0 60px', lineHeight: 1.2 }}>
+          <div style={{ fontSize: '8vw', marginBottom: '3vh' }}>👋</div>
+          <div style={{ fontSize: '6vw', fontFamily: 'var(--font-title)', fontWeight: 600, textAlign: 'center', padding: '0 8vw', lineHeight: 1.2 }}>
             {greeting}
           </div>
         </div>
@@ -140,8 +142,8 @@ export default function Display() {
       {phase === 'draft' && !showGreeting && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {community?.logo_url
-            ? <img src={community.logo_url} alt="logo" style={{ height: 120, maxWidth: 400, objectFit: 'contain', opacity: 0.7 }} />
-            : <img src="/logo.png" alt="ALVer" style={{ height: 120, maxWidth: 400, objectFit: 'contain', opacity: 0.4 }} />
+            ? <img src={community.logo_url} alt="logo" style={{ height: '20vh', maxWidth: '40vw', objectFit: 'contain', opacity: 0.7 }} />
+            : <img src="/logo.png" alt="ALVer" style={{ height: '20vh', maxWidth: '40vw', objectFit: 'contain', opacity: 0.4 }} />
           }
         </div>
       )}
@@ -209,34 +211,34 @@ function CheckinDisplay({ meeting, attendeeCount, community, meetingId, communit
   const expectedCount = (meeting.preRegistrations || []).length
 
   return (
-    <div style={{ width: '100%', maxWidth: 1200, display: 'flex', flexDirection: 'column', gap: 40 }}>
+    <div style={{ width: '90vw', display: 'flex', flexDirection: 'column', gap: '4vh' }}>
       {/* Logo */}
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         {community?.logo_url
-          ? <img src={community.logo_url} alt="logo" style={{ height: 80, maxWidth: 320, objectFit: 'contain' }} />
-          : <img src="/logo.png" alt="ALVer" style={{ height: 80, maxWidth: 320, objectFit: 'contain', opacity: 0.8 }} />
+          ? <img src={community.logo_url} alt="logo" style={{ height: '8vh', maxWidth: '25vw', objectFit: 'contain' }} />
+          : <img src="/logo.png" alt="ALVer" style={{ height: '8vh', maxWidth: '25vw', objectFit: 'contain', opacity: 0.8 }} />
         }
       </div>
 
       {/* Two columns */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 60, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5vw', alignItems: 'start' }}>
 
         {/* Left: QR + stats */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 36 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-            <div style={{ background: 'white', padding: 20, borderRadius: 16, boxShadow: '0 0 60px rgba(196,98,45,0.25)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4vh' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2vh' }}>
+            <div style={{ background: 'white', padding: '2vw', borderRadius: 16, boxShadow: '0 0 60px rgba(196,98,45,0.25)' }}>
               {qrDataUrl
-                ? <img src={qrDataUrl} alt="QR check-in" width={200} height={200} style={{ display: 'block' }} />
-                : <div style={{ width: 200, height: 200, background: 'rgba(0,0,0,0.04)', borderRadius: 4 }} />
+                ? <img src={qrDataUrl} alt="QR check-in" style={{ display: 'block', width: '18vw', height: '18vw' }} />
+                : <div style={{ width: '18vw', height: '18vw', background: 'rgba(0,0,0,0.04)', borderRadius: 4 }} />
               }
             </div>
-            <p style={{ color: c.faint, fontSize: '1rem', margin: 0, textAlign: 'center' }}>
+            <p style={{ color: c.faint, fontSize: '1.4vw', margin: 0, textAlign: 'center' }}>
               {t('display.scan_checkin')}
             </p>
           </div>
 
           {/* Stats */}
-          <div style={{ display: 'flex', gap: 32, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '3vw', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Stat value={expectedCount} label={t('facilitate.expected')} color={c.statDim} labelColor={c.statLabel} />
             <div style={{ width: 1, background: c.divider }} />
             <Stat value={meeting.checkedIn.length} label={t('display.present')} color="var(--color-terracotta)" labelColor={c.statLabel} />
@@ -246,31 +248,31 @@ function CheckinDisplay({ meeting, attendeeCount, community, meetingId, communit
         </div>
 
         {/* Right: event info */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
-          <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '2.2rem', color: c.title, margin: 0, lineHeight: 1.2 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '3vh' }}>
+          <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '3.5vw', color: c.title, margin: 0, lineHeight: 1.2 }}>
             {meeting.name}
           </h1>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5vh' }}>
             {dateStr && (
-              <div style={{ display: 'flex', gap: 12, alignItems: 'center', color: c.meta, fontSize: '1.05rem' }}>
+              <div style={{ display: 'flex', gap: '1vw', alignItems: 'center', color: c.meta, fontSize: '1.6vw' }}>
                 <span>📅</span><span>{dateStr}</span>
               </div>
             )}
-            <div style={{ display: 'flex', gap: 12, alignItems: 'center', color: c.meta, fontSize: '1.05rem' }}>
-              <span>🕐</span><span>{meeting.time}</span>
+            <div style={{ display: 'flex', gap: '1vw', alignItems: 'center', color: c.meta, fontSize: '1.6vw' }}>
+              <span>🕐</span><span>{meeting.time}{meeting.end_time ? ` – ${meeting.end_time}` : ''}</span>
             </div>
-            <div style={{ display: 'flex', gap: 12, alignItems: 'center', color: c.meta, fontSize: '1.05rem' }}>
+            <div style={{ display: 'flex', gap: '1vw', alignItems: 'center', color: c.meta, fontSize: '1.6vw' }}>
               <span>📍</span><span>{meeting.location}</span>
             </div>
           </div>
 
           {meeting.agenda && (
-            <div style={{ borderTop: `1px solid ${c.divider}`, paddingTop: 24 }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: c.muted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 14 }}>
+            <div style={{ borderTop: `1px solid ${c.divider}`, paddingTop: '2vh' }}>
+              <div style={{ fontSize: '1vw', fontWeight: 600, color: c.muted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1.5vh' }}>
                 {t('common.agenda')}
               </div>
-              <AgendaHtml html={meeting.agenda} style={{ fontSize: '0.95rem', color: c.agendaText, lineHeight: 1.9 }} />
+              <AgendaHtml html={meeting.agenda} style={{ fontSize: '1.4vw', color: c.agendaText, lineHeight: 1.9 }} />
             </div>
           )}
         </div>
@@ -282,8 +284,8 @@ function CheckinDisplay({ meeting, attendeeCount, community, meetingId, communit
 function Stat({ value, label, color, labelColor }) {
   return (
     <div style={{ textAlign: 'center' }}>
-      <div style={{ fontSize: '3.5rem', fontWeight: 700, color, lineHeight: 1 }}>{value}</div>
-      <div style={{ color: labelColor, fontSize: '0.85rem', marginTop: 6 }}>{label}</div>
+      <div style={{ fontSize: '5vw', fontWeight: 700, color, lineHeight: 1 }}>{value}</div>
+      <div style={{ color: labelColor, fontSize: '1.2vw', marginTop: '0.8vh' }}>{label}</div>
     </div>
   )
 }
@@ -297,37 +299,37 @@ function VotingDisplay({ poll, attendeeCount, displayMode, community, chartColor
   const trackColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(44,42,39,0.12)'
 
   return (
-    <div style={{ width: '66.67%', display: 'flex', flexDirection: 'column', gap: 0, animation: 'slideIn 0.4s ease' }}>
+    <div style={{ width: '70vw', display: 'flex', flexDirection: 'column', gap: 0, animation: 'slideIn 0.4s ease' }}>
       {/* Logo — centered, top */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '3vh' }}>
         {community?.logo_url
-          ? <img src={community.logo_url} alt="logo" style={{ height: 72, maxWidth: 320, objectFit: 'contain' }} />
-          : <img src="/logo.png" alt="ALVer" style={{ height: 72, maxWidth: 320, objectFit: 'contain', opacity: 0.7 }} />
+          ? <img src={community.logo_url} alt="logo" style={{ height: '7vh', maxWidth: '20vw', objectFit: 'contain' }} />
+          : <img src="/logo.png" alt="ALVer" style={{ height: '7vh', maxWidth: '20vw', objectFit: 'contain', opacity: 0.7 }} />
         }
       </div>
 
       {/* Poll title */}
       <h1 style={{
         fontFamily: 'var(--font-title)',
-        fontSize: 'clamp(1.8rem, 3vw, 2.8rem)',
+        fontSize: '3.5vw',
         fontWeight: 600,
         color: textColor,
         lineHeight: 1.2,
-        margin: '0 0 28px',
+        margin: '0 0 3vh',
         textAlign: 'center',
       }}>
         {poll.title}
       </h1>
 
       {/* Vote count + progress bar */}
-      <div style={{ marginBottom: 40 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-          <div style={{ fontSize: '1.4rem', fontWeight: 700, color: textColor, lineHeight: 1 }}>
-            {totalVotes} <span style={{ fontSize: '0.85rem', color: mutedColor, fontWeight: 400 }}>{t('display.of_total', { total: attendeeCount })}</span>
+      <div style={{ marginBottom: '4vh' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1vh' }}>
+          <div style={{ fontSize: '2vw', fontWeight: 700, color: textColor, lineHeight: 1 }}>
+            {totalVotes} <span style={{ fontSize: '1.2vw', color: mutedColor, fontWeight: 400 }}>{t('display.of_total', { total: attendeeCount })}</span>
           </div>
-          <div style={{ color: mutedColor, fontSize: '0.85rem' }}>{pct}%</div>
+          <div style={{ color: mutedColor, fontSize: '1.2vw' }}>{pct}%</div>
         </div>
-        <div style={{ height: 8, background: trackColor, borderRadius: 4, overflow: 'hidden' }}>
+        <div style={{ height: '0.8vh', background: trackColor, borderRadius: 4, overflow: 'hidden' }}>
           <div style={{
             height: '100%', borderRadius: 4,
             background: 'linear-gradient(90deg, var(--color-terracotta), var(--color-amber))',
@@ -348,18 +350,18 @@ function VotingDisplay({ poll, attendeeCount, displayMode, community, chartColor
             if (idx != null && idx !== -1) tally[poll.options[idx]]++
           }
           return (
-            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', gap: '2vw', flexWrap: 'wrap', justifyContent: 'center' }}>
               {poll.options.map((opt, i) => (
                 <div key={opt} style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
-                  padding: '28px 48px', borderRadius: 16,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5vh',
+                  padding: '3vh 4vw', borderRadius: 16,
                   background: chartColors[i] ?? chartColors[chartColors.length - 1],
-                  minWidth: 140,
+                  minWidth: '10vw',
                 }}>
-                  <span style={{ fontSize: '4rem', fontWeight: 700, color: isDark ? 'white' : 'black', lineHeight: 1 }}>
+                  <span style={{ fontSize: '6vw', fontWeight: 700, color: isDark ? 'white' : 'black', lineHeight: 1 }}>
                     {tally[opt]}
                   </span>
-                  <span style={{ fontSize: '1.1rem', color: isDark ? 'white' : 'black' }}>
+                  <span style={{ fontSize: '1.5vw', color: isDark ? 'white' : 'black' }}>
                     {opt}
                   </span>
                 </div>
@@ -384,25 +386,25 @@ function ResultDisplay({ poll, community, isDark }) {
   }, [])
 
   return (
-    <div style={{ width: '100%' }}>
+    <div style={{ width: '80vw' }}>
       {/* Header row */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 0 32px', gap: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 0 4vh', gap: '2vw' }}>
         <div style={{ flexShrink: 0 }}>
           {community?.logo_url
-            ? <img src={community.logo_url} alt="logo" style={{ height: 48, maxWidth: 200, objectFit: 'contain' }} />
-            : <img src="/logo.png" alt="ALVer" style={{ height: 48, maxWidth: 200, objectFit: 'contain', opacity: 0.7 }} />
+            ? <img src={community.logo_url} alt="logo" style={{ height: '6vh', maxWidth: '15vw', objectFit: 'contain' }} />
+            : <img src="/logo.png" alt="ALVer" style={{ height: '6vh', maxWidth: '15vw', objectFit: 'contain', opacity: 0.7 }} />
           }
         </div>
-        <p style={{ color: mutedColor, margin: 0, fontSize: '1rem', flex: 1, textAlign: 'center' }}>{poll.title}</p>
-        <div style={{ width: 200, flexShrink: 0 }} />
+        <p style={{ color: mutedColor, margin: 0, fontSize: '1.4vw', flex: 1, textAlign: 'center' }}>{poll.title}</p>
+        <div style={{ width: '15vw', flexShrink: 0 }} />
       </div>
 
       {showBreakdown && (
-        <div className="animate-fade-in" style={{ display: 'flex', justifyContent: 'center', gap: 56, flexWrap: 'wrap' }}>
+        <div className="animate-fade-in" style={{ display: 'flex', justifyContent: 'center', gap: '5vw', flexWrap: 'wrap' }}>
           {Object.entries(poll.result.tally).map(([opt, count]) => (
             <div key={opt} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '4rem', fontWeight: 700, color: textColor, lineHeight: 1 }}>{count}</div>
-              <div style={{ color: mutedColor, fontSize: '1rem', marginTop: 8 }}>{opt}</div>
+              <div style={{ fontSize: '7vw', fontWeight: 700, color: textColor, lineHeight: 1 }}>{count}</div>
+              <div style={{ color: mutedColor, fontSize: '1.5vw', marginTop: '1vh' }}>{opt}</div>
             </div>
           ))}
         </div>
@@ -418,22 +420,22 @@ function BetweenItems({ meeting, attendeeCount, community, isDark }) {
   const amberColor = isDark ? 'var(--color-amber)' : 'var(--color-terracotta)'
 
   return (
-    <div style={{ textAlign: 'center', maxWidth: 800 }}>
+    <div style={{ textAlign: 'center', width: '60vw' }}>
       {community?.logo_url && (
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
-          <img src={community.logo_url} alt="logo" style={{ height: 56, maxWidth: 240, objectFit: 'contain' }} />
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '3vh' }}>
+          <img src={community.logo_url} alt="logo" style={{ height: '7vh', maxWidth: '20vw', objectFit: 'contain' }} />
         </div>
       )}
-      <div style={{ fontSize: '1rem', color: mutedColor, marginBottom: 24, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+      <div style={{ fontSize: '1.2vw', color: mutedColor, marginBottom: '2vh', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
         {meeting.name}
       </div>
-      <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '3rem', color: textColor, margin: '0 0 40px' }}>
+      <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '4vw', color: textColor, margin: '0 0 5vh' }}>
         {t('display.session_ongoing')}
       </h1>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 40 }}>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '4vw' }}>
         <div>
-          <div style={{ fontSize: '3rem', fontWeight: 700, color: amberColor, lineHeight: 1 }}>{attendeeCount}</div>
-          <div style={{ color: mutedColor, fontSize: '0.9rem', marginTop: 6 }}>{t('display.eligible')}</div>
+          <div style={{ fontSize: '5vw', fontWeight: 700, color: amberColor, lineHeight: 1 }}>{attendeeCount}</div>
+          <div style={{ color: mutedColor, fontSize: '1.2vw', marginTop: '1vh' }}>{t('display.eligible')}</div>
         </div>
       </div>
     </div>
@@ -449,11 +451,11 @@ function ClosedDisplay({ meeting, isDark }) {
   const closedPolls = meeting.polls.filter(p => p.status === 'closed' && p.result)
 
   return (
-    <div style={{ textAlign: 'center', maxWidth: 800, width: '100%' }}>
-      <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '2.5rem', color: textColor, margin: '0 0 12px' }}>
+    <div style={{ textAlign: 'center', width: '60vw' }}>
+      <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '3.5vw', color: textColor, margin: '0 0 1vh' }}>
         {t('display.meeting_closed')}
       </h1>
-      <p style={{ color: mutedColor, margin: '0 0 40px' }}>{meeting.name}</p>
+      <p style={{ color: mutedColor, margin: '0 0 4vh', fontSize: '1.4vw' }}>{meeting.name}</p>
       {closedPolls.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {closedPolls.map(poll => (

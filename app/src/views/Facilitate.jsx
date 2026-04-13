@@ -373,7 +373,8 @@ export default function Facilitate() {
             </div>
           </div>
 
-          {/* Zone 3 — Polls */}
+          {/* Zone 3 — Right column: Polls + Agenda + Notes */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div className="card" style={{ padding: 20 }}>
             {meeting.phase === 'in_session' && (
               <div style={{
@@ -493,75 +494,76 @@ export default function Facilitate() {
               ))}
             </div>
           </div>
-        </div>
 
-        {/* Zone 4 — Agenda (collapsible) */}
-        <div className="card" style={{ padding: 0, marginTop: 16, overflow: 'hidden' }}>
-          <button
-            onClick={() => setAgendaOpen(o => !o)}
-            style={{ width: '100%', background: 'none', border: 'none', padding: '16px 24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: '0.9rem', color: 'var(--color-charcoal)' }}
-          >
-            <span>📋 {t('common.agenda')}</span>
-            <span style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)' }}>
-              {agendaOpen ? '▼' : '▶'}
-            </span>
-          </button>
-          {agendaOpen && (
-            <div style={{ padding: '0 24px 20px', borderTop: '1px solid var(--color-sand)' }}>
-              <AgendaHtml html={meeting.agenda} style={{ marginTop: 16 }} />
-            </div>
-          )}
-        </div>
-
-        {/* Zone 5 — Notulen (collapsed by default, in_session only) */}
-        {meeting.phase === 'in_session' && (
-          <div className="card" style={{ padding: 0, marginTop: 16, overflow: 'hidden' }}>
+          {/* Agenda (collapsible) */}
+          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
             <button
-              onClick={() => setNotulistOpen(o => !o)}
+              onClick={() => setAgendaOpen(o => !o)}
               style={{ width: '100%', background: 'none', border: 'none', padding: '16px 24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: '0.9rem', color: 'var(--color-charcoal)' }}
             >
-              <span>📝 {t('minutes.section_title')}</span>
+              <span>{t('common.agenda')}</span>
               <span style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)' }}>
-                {notulistOpen ? '▼' : '▶'}
+                {agendaOpen ? '▼' : '▶'}
               </span>
             </button>
-            {notulistOpen && (
+            {agendaOpen && (
               <div style={{ padding: '0 24px 20px', borderTop: '1px solid var(--color-sand)' }}>
-                <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <label style={{ fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>
-                    {t('minutes.assign_notulist')}
-                  </label>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <select
-                      className="input"
-                      value={notulistDraft}
-                      onChange={e => setNotulistDraft(e.target.value)}
-                      style={{ fontSize: '0.9rem', width: 'auto', minWidth: 160, flex: '0 1 260px' }}
-                    >
-                      <option value="">{t('minutes.notulist_none')}</option>
-                      {(members || []).filter(m => m.ename).map(m => (
-                        <option key={m.id} value={m.ename}>{m.name}</option>
-                      ))}
-                    </select>
-                    <button
-                      className="btn-primary"
-                      style={{ fontSize: '0.85rem', padding: '7px 14px', whiteSpace: 'nowrap' }}
-                      onClick={() => handleAssignNotulist(notulistDraft)}
-                      disabled={notulistDraft === notulistEname}
-                    >
-                      {t('minutes.assign_btn')}
-                    </button>
-                  </div>
-                  {notulistEname && (
-                    <div style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)' }}>
-                      {t('minutes.notulist_assigned', { name: (members || []).find(m => m.ename === notulistEname)?.name ?? notulistEname })}
-                    </div>
-                  )}
-                </div>
+                <AgendaHtml html={meeting.agenda} style={{ marginTop: 16 }} />
               </div>
             )}
           </div>
-        )}
+
+          {/* Notes (collapsible, in_session only) */}
+          {meeting.phase === 'in_session' && (
+            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+              <button
+                onClick={() => setNotulistOpen(o => !o)}
+                style={{ width: '100%', background: 'none', border: 'none', padding: '16px 24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: '0.9rem', color: 'var(--color-charcoal)' }}
+              >
+                <span>{t('minutes.section_title')}</span>
+                <span style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)' }}>
+                  {notulistOpen ? '▼' : '▶'}
+                </span>
+              </button>
+              {notulistOpen && (
+                <div style={{ padding: '0 24px 20px', borderTop: '1px solid var(--color-sand)' }}>
+                  <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <label style={{ fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>
+                      {t('minutes.assign_notulist')}
+                    </label>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <select
+                        className="input"
+                        value={notulistDraft}
+                        onChange={e => setNotulistDraft(e.target.value)}
+                        style={{ fontSize: '0.9rem', width: 'auto', minWidth: 160, flex: '0 1 260px' }}
+                      >
+                        <option value="">{t('minutes.notulist_none')}</option>
+                        {(members || []).filter(m => m.ename).map(m => (
+                          <option key={m.id} value={m.ename}>{m.name}</option>
+                        ))}
+                      </select>
+                      <button
+                        className="btn-primary"
+                        style={{ fontSize: '0.85rem', padding: '7px 14px', whiteSpace: 'nowrap' }}
+                        onClick={() => handleAssignNotulist(notulistDraft)}
+                        disabled={notulistDraft === notulistEname}
+                      >
+                        {t('minutes.assign_btn')}
+                      </button>
+                    </div>
+                    {notulistEname && (
+                      <div style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)' }}>
+                        {t('minutes.notulist_assigned', { name: (members || []).find(m => m.ename === notulistEname)?.name ?? notulistEname })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          </div>
+        </div>
       </div>
 
       {/* Quick check-in modal — member picker */}

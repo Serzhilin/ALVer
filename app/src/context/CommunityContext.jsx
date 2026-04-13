@@ -51,7 +51,7 @@ export function CommunityProvider({ children }) {
         // Authenticated: load full community data (members, settings, etc.)
         const c = await api.getCommunity(communityId)
         setCommunity(c)
-        setMembers(c.members || [])
+        setMembers((c.members || []).sort((a, b) => a.name.localeCompare(b.name)))
         applyTheme(c)
       } else {
         // Unauthenticated: load just branding so logo/colour/font work everywhere
@@ -83,7 +83,7 @@ export function CommunityProvider({ children }) {
 
   async function updateMember(id, data) {
     const member = await api.updateCommunityMember(id, data, communityId)
-    setMembers(prev => prev.map(m => m.id === id ? member : m))
+    setMembers(prev => prev.map(m => m.id === id ? member : m).sort((a, b) => a.name.localeCompare(b.name)))
     return member
   }
 

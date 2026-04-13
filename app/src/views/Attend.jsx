@@ -462,7 +462,7 @@ function ClosedPollResult({ poll, votedPolls, t }) {
 }
 
 function UpcomingPolls({ polls, t }) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(true)
   const prepared = (polls || []).filter(p => p.status === 'prepared')
   if (prepared.length === 0) return null
 

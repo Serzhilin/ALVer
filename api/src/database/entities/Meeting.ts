@@ -41,6 +41,9 @@ export class Meeting {
     @Column({ length: 5 })
     time!: string;
 
+    @Column({ length: 5, nullable: true })
+    end_time!: string | null;
+
     @Column()
     location!: string;
 

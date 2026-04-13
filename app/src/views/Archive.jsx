@@ -58,7 +58,7 @@ export default function Archive() {
               </h1>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                 <div style={{ fontSize: '0.88rem', color: 'var(--color-charcoal-light)' }}>📅 {dateStr}</div>
-                <div style={{ fontSize: '0.88rem', color: 'var(--color-charcoal-light)' }}>🕐 {meeting.time}</div>
+                <div style={{ fontSize: '0.88rem', color: 'var(--color-charcoal-light)' }}>🕐 {meeting.time}{meeting.end_time ? ` – ${meeting.end_time}` : ''}</div>
                 <div style={{ fontSize: '0.88rem', color: 'var(--color-charcoal-light)' }}>📍 {meeting.location}</div>
               </div>
             </div>

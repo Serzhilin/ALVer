@@ -46,6 +46,7 @@ export default function Home() {
   const [proxyName, setProxyName] = useState('')
   const [mandateNote, setMandateNote] = useState('')
   const [agendaOpen, setAgendaOpen] = useState(false)
+  const [pollsOpen, setPollsOpen] = useState(false)
   const [meetingMembersList, setMeetingMembersList] = useState([])
   const [submitting, setSubmitting] = useState(false)
 
@@ -66,10 +67,10 @@ export default function Home() {
 
   const currentMeeting = meetings.find(m => CURRENT_STATUSES.includes(m.status))
 
-  // Init MeetingContext for attendee actions (preRegister, addMandate, etc.)
+  // Init MeetingContext for attendee actions (preRegister, addMandate, etc.) and poll visibility
   useEffect(() => {
-    if (currentMeeting && !isFacilitator) setMeetingId(currentMeeting.id)
-  }, [currentMeeting?.id, isFacilitator])
+    if (currentMeeting) setMeetingId(currentMeeting.id)
+  }, [currentMeeting?.id])
 
   // Read pre-reg status from localStorage when meeting is known
   useEffect(() => {
@@ -300,6 +301,29 @@ export default function Home() {
                   </div>
                 )}
 
+                {/* Collapsible polls */}
+                {(ctxMeeting?.polls || []).filter(p => p.status === 'prepared').length > 0 && (
+                  <div style={{ marginBottom: 20, paddingTop: 14 }}>
+                    <button
+                      onClick={() => setPollsOpen(o => !o)}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', fontWeight: 600, color: 'var(--color-charcoal-light)', padding: 0 }}
+                    >
+                      <span>{pollsOpen ? '▼' : '▶'}</span>
+                      <span>{t('attend.upcoming_polls')}</span>
+                    </button>
+                    {pollsOpen && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
+                        {(ctxMeeting?.polls || []).filter(p => p.status === 'prepared').map((poll, i) => (
+                          <div key={poll.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)', marginTop: 2, minWidth: 16, fontWeight: 600 }}>{i + 1}.</span>
+                            <span style={{ fontSize: '0.83rem', color: 'var(--color-charcoal)', lineHeight: 1.5 }}>{poll.title}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* ── Action area ── */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {isLive && !localPreReg && (
@@ -519,6 +543,7 @@ export default function Home() {
 function AnnounceCard({ upcomingMeetings, onAnnounce, t }) {
   const [selected, setSelected] = useState(upcomingMeetings[0]?.id ?? '')
   const [loading, setLoading] = useState(false)
+  const [confirming, setConfirming] = useState(false)
 
   if (upcomingMeetings.length === 0) {
     return (
@@ -531,6 +556,7 @@ function AnnounceCard({ upcomingMeetings, onAnnounce, t }) {
   async function handleAnnounce() {
     if (!selected) return
     setLoading(true)
+    setConfirming(false)
     try { await transitionStatus(selected, 'open'); onAnnounce() }
     finally { setLoading(false) }
   }
@@ -539,12 +565,24 @@ function AnnounceCard({ upcomingMeetings, onAnnounce, t }) {
     <div className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 16 }}>
       <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-charcoal-light)' }}>{t('dashboard.no_announced_hint')}</p>
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-        <select className="input" value={selected} onChange={e => setSelected(e.target.value)} style={{ flex: 1, minWidth: 180 }}>
+        <select className="input" value={selected} onChange={e => { setSelected(e.target.value); setConfirming(false) }} style={{ flex: 1, minWidth: 180 }}>
           {upcomingMeetings.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
         </select>
-        <button className="btn-primary" onClick={handleAnnounce} disabled={loading || !selected}>
-          📢 {loading ? t('common.loading') : t('facilitate.announce')}
-        </button>
+        {confirming ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>{t('dashboard.announce_confirm')}</span>
+            <button onClick={handleAnnounce} disabled={loading} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--color-terracotta)', fontWeight: 600, padding: '4px 8px' }}>
+              {loading ? t('common.loading') : t('dashboard.announce_yes')}
+            </button>
+            <button onClick={() => setConfirming(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--color-charcoal-light)', padding: '4px 8px' }}>
+              {t('common.cancel')}
+            </button>
+          </div>
+        ) : (
+          <button className="btn-primary" onClick={() => setConfirming(true)} disabled={!selected}>
+            📢 {t('facilitate.announce')}
+          </button>
+        )}
       </div>
     </div>
   )

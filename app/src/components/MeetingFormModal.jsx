@@ -25,6 +25,7 @@ export default function MeetingFormModal({ meeting, communityId, communityLocati
   const [form, setForm] = useState({
     date: meeting?.date ?? '',
     time: meeting?.time ?? '',
+    end_time: meeting?.end_time ?? '',
     location: meeting?.location ?? defaultLocation,
     agenda_text: meeting?.agenda_text ?? meeting?.agenda ?? '',
     facilitator_ename: meeting?.facilitator_ename ?? '',
@@ -85,7 +86,7 @@ export default function MeetingFormModal({ meeting, communityId, communityLocati
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
             <div>
               <label>{t('dashboard.meeting_date')}</label>
               <input className="input" type="date" value={form.date} onChange={e => set('date', e.target.value)} />
@@ -93,6 +94,10 @@ export default function MeetingFormModal({ meeting, communityId, communityLocati
             <div>
               <label>{t('dashboard.meeting_time')}</label>
               <input className="input" type="time" value={form.time} onChange={e => set('time', e.target.value)} />
+            </div>
+            <div>
+              <label>{t('dashboard.meeting_end_time')}</label>
+              <input className="input" type="time" value={form.end_time} onChange={e => set('end_time', e.target.value)} />
             </div>
           </div>
 

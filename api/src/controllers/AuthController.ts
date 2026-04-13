@@ -60,6 +60,15 @@ export async function epassportLogin(req: Request, res: Response) {
         return;
     }
 
+    // Mobile double-POST: wallet already processed this session server-to-server.
+    // Return the cached payload so the browser deeplink gets the correct returnTo.
+    const cached = sessionResults.get(session);
+    if (cached) {
+        sessionResults.delete(session);
+        res.json(cached);
+        return;
+    }
+
     const registryUrl = process.env.PUBLIC_REGISTRY_URL;
     if (!registryUrl) {
         res.status(500).json({ error: "PUBLIC_REGISTRY_URL not configured" });

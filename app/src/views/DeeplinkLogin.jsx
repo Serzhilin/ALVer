@@ -54,7 +54,11 @@ export default function DeeplinkLogin() {
           const data = await response.json()
           if (data.token && data.user) {
             localStorage.setItem('alver_token', data.token)
-            window.location.href = data.returnTo || '/'
+            const returnTo = data.returnTo || '/'
+            if (returnTo.startsWith('/facilitator')) {
+              localStorage.setItem('alver_facilitator_mode', 'true')
+            }
+            window.location.href = returnTo
           } else {
             setError('Invalid response from server')
             setIsLoading(false)

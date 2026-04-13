@@ -42,6 +42,7 @@ export class MeetingService {
         name: string;
         date: string;
         time: string;
+        end_time?: string;
         location: string;
         agenda_text: string;
         facilitator_name?: string;

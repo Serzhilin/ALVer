@@ -28,7 +28,7 @@ export default function FacilitatorLogin() {
         </div>
 
         <div className="card" style={{ padding: 28 }}>
-          <LoginScreen onSuccess={handleLogin} nameOption={false} />
+          <LoginScreen onSuccess={handleLogin} nameOption={false} returnTo="/facilitator" />
         </div>
 
         <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center', gap: 24, fontSize: '0.82rem' }}>
