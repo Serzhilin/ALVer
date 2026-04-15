@@ -152,7 +152,7 @@ async function createGroupManifestWithRetry(registryUrl, w3id, groupData, maxRet
             `;
             const result = await client.request(STORE_META_ENVELOPE, {
                 input: {
-                    ontology: "550e8400-e29b-41d4-a716-446655440003", // GroupManifest schema ID
+                    ontology: "a8bfb7cf-3200-4b25-9ea9-ee41100f212e", // GroupManifest schema ID
                     payload: groupManifest,
                     acl: ["*"],
                 },
