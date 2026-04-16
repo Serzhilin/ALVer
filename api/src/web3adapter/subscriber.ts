@@ -191,6 +191,7 @@ export class AlverSubscriber implements EntitySubscriberInterface {
                 plain.options      = (plain.vote_options ?? []).map((o: any) => o.label);
                 plain.mode         = "normal";
                 plain.votingWeight = "1p1v";
+                // String-based repository lookup avoids circular import (Decision → Poll → Meeting).
                 const decision = await AppDataSource.getRepository("Decision").findOne({
                     where: { poll_id: plain.id },
                 } as any) as any;
