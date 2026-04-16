@@ -1,11 +1,16 @@
 {
   "tableName": "communities",
-  "schemaId": "550e8400-e29b-41d4-a716-446655440003",
+  "schemaId": "a8bfb7cf-3200-4b25-9ea9-ee41100f212e",
   "ownerEnamePath": "ename",
   "localToUniversalMap": {
     "name": "name",
+    "ename": "eName",
+    "facilitator_ename": "owner",
+    "admins": "admins",
+    "members": "members",
+    "logo_url": "avatar",
     "slug": "slug",
-    "ename": "ename",
-    "facilitator_ename": "owner"
+    "created_at": "createdAt",
+    "updated_at": "updatedAt"
   }
 }
