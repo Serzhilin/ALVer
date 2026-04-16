@@ -1,14 +1,18 @@
 {
   "tableName": "meetings",
-  "schemaId": "48584d08-5b6f-40b2-8159-34198221a858",
-  "ownerEnamePath": "groups(community.ename)",
+  "schemaId": "880e8400-e29b-41d4-a716-446655440099",
+  "ownerEnamePath": "communities(community.ename)",
   "localToUniversalMap": {
-    "name": "name",
-    "date": "date",
-    "time": "time",
+    "name": "title",
+    "startDateTime": "start",
+    "endDateTime": "end",
     "location": "location",
     "agenda_text": "agendaText",
     "status": "status",
-    "community_id": "communityId"
+    "facilitator_ename": "facilitatorEname",
+    "minutes_html": "minutesHtml",
+    "minutes_status": "minutesStatus",
+    "attendees": "attendees",
+    "mandates": "mandates"
   }
 }
