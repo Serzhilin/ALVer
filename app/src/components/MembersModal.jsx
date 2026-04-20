@@ -210,6 +210,18 @@ export default function MembersModal({ onClose }) {
             t={t}
           />
         </div>
+
+        {/* Group eVault eName */}
+        {community?.ename && (
+          <div style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid var(--color-sand)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.07em', flexShrink: 0 }}>
+              Group eVault
+            </span>
+            <span style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+              {community.ename}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   )
