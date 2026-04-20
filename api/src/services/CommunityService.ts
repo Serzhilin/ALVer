@@ -190,6 +190,9 @@ export class CommunityService {
     }
 
     async deleteMember(id: string): Promise<void> {
-        await this.memberRepo.delete(id);
+        const member = await this.memberRepo.findOneBy({ id });
+        if (member) {
+            await this.memberRepo.remove(member);
+        }
     }
 }
