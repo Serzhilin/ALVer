@@ -4,6 +4,8 @@ import { config } from "dotenv";
 import { createGroupEVault } from "web3-adapter";
 import { AppDataSource } from "../database/data-source";
 import { Community } from "../database/entities/Community";
+// subscriber.ts loads dotenv and constructs the adapter at CJS module-evaluation
+// time, so env vars are available when the adapter is constructed (no race).
 import { adapter } from "../web3adapter/subscriber";
 
 // Use override: true so ALVer's .env takes precedence over any .env loaded
