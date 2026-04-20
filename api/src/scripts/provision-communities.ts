@@ -70,6 +70,7 @@ async function provisionCommunities() {
                 relations: ["members"],
             });
             if (withMembers) {
+                // Keep this enrichment in sync with enrichEntity("communities") in subscriber.ts.
                 const enriched: Record<string, any> = {
                     id: withMembers.id,
                     name: withMembers.name,

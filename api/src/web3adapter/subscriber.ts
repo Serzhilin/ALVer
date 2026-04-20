@@ -98,11 +98,14 @@ export class AlverSubscriber implements EntitySubscriberInterface {
     async afterRemove(event: RemoveEvent<any>) {
         const tableName = event.metadata.tableName;
         const parentTrigger = PARENT_TRIGGER_MAP[tableName];
-        if (!parentTrigger || !event.entity) return;
+        // databaseEntity is always populated by TypeORM; entity may be undefined
+        // for cascade-triggered removes where no instance was loaded.
+        const entityForSync = event.entity ?? event.databaseEntity;
+        if (!parentTrigger || !entityForSync) return;
 
         setTimeout(async () => {
             try {
-                await this.syncParent(event.entity, parentTrigger);
+                await this.syncParent(entityForSync, parentTrigger);
             } catch (err) {
                 console.error(`[W3DS] Sync failed (remove) for ${tableName}:`, err);
             }
