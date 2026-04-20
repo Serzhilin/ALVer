@@ -4,6 +4,7 @@ import { config } from "dotenv";
 import { createGroupEVault } from "web3-adapter";
 import { AppDataSource } from "../database/data-source";
 import { Community } from "../database/entities/Community";
+import { adapter } from "../web3adapter/subscriber";
 
 // Use override: true so ALVer's .env takes precedence over any .env loaded
 // transitively by dependencies (e.g. web3-adapter loads prototype/.env via its
@@ -17,6 +18,9 @@ async function provisionCommunities() {
     if (!AppDataSource.isInitialized) {
         await AppDataSource.initialize();
     }
+
+    // Ensure adapter's JSON mapping files are loaded before we call handleChange
+    await adapter.readPaths();
 
     const registryUrl = process.env.PUBLIC_REGISTRY_URL;
     const provisionerUrl = process.env.PUBLIC_PROVISIONER_URL;
@@ -50,6 +54,48 @@ async function provisionCommunities() {
             community.ename = result.w3id;
             community.evault_uri = result.uri;
             await repo.save(community);
+
+            // Register the manifest ID so future handleChange calls update rather
+            // than create a second envelope.
+            await adapter.mappingDb.storeMapping({
+                localId: community.id,
+                globalId: result.manifestId,
+            });
+
+            // Backfill existing members with eNames into the GroupManifest.
+            const withMembers = await repo.findOne({
+                where: { id: community.id },
+                relations: ["members"],
+            });
+            if (withMembers) {
+                const enriched: Record<string, any> = {
+                    id: withMembers.id,
+                    name: withMembers.name,
+                    slug: withMembers.slug ?? null,
+                    ename: withMembers.ename,
+                    facilitator_ename: withMembers.facilitator_ename ?? null,
+                    logo_url: withMembers.logo_url ?? null,
+                    created_at: withMembers.created_at instanceof Date
+                        ? withMembers.created_at.toISOString()
+                        : withMembers.created_at,
+                    updated_at: withMembers.updated_at instanceof Date
+                        ? withMembers.updated_at.toISOString()
+                        : withMembers.updated_at,
+                    admins: withMembers.facilitator_ename
+                        ? [{ ename: withMembers.facilitator_ename, isChair: true }]
+                        : [],
+                    members: (withMembers.members ?? [])
+                        .filter((m) => m.ename)
+                        .map((m) => ({
+                            ename: m.ename,
+                            name: m.name,
+                            isAspirant: m.is_aspirant ?? false,
+                        })),
+                };
+                await adapter.handleChange({ data: enriched, tableName: "communities" });
+                const synced = enriched.members.length;
+                console.log(`  [synced] ${synced} member(s) with eName to GroupManifest`);
+            }
 
             console.log(`  [ok] ${community.name} → ${result.w3id}`);
         } catch (err) {
