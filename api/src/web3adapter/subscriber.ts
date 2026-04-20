@@ -3,6 +3,7 @@ import {
     EntitySubscriberInterface,
     InsertEvent,
     UpdateEvent,
+    RemoveEvent,
 } from "typeorm";
 import { Web3Adapter } from "web3-adapter";
 import path from "path";
@@ -90,6 +91,20 @@ export class AlverSubscriber implements EntitySubscriberInterface {
                 }
             } catch (err) {
                 console.error(`[W3DS] Sync failed (update) for ${tableName}:`, err);
+            }
+        }, 3_000);
+    }
+
+    async afterRemove(event: RemoveEvent<any>) {
+        const tableName = event.metadata.tableName;
+        const parentTrigger = PARENT_TRIGGER_MAP[tableName];
+        if (!parentTrigger || !event.entity) return;
+
+        setTimeout(async () => {
+            try {
+                await this.syncParent(event.entity, parentTrigger);
+            } catch (err) {
+                console.error(`[W3DS] Sync failed (remove) for ${tableName}:`, err);
             }
         }, 3_000);
     }
