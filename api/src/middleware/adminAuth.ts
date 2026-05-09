@@ -7,7 +7,7 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction) {
         res.status(401).json({ error: "Unauthorized" });
         return;
     }
-    if (req.user.ename !== ADMIN_ENAME) {
+    if (process.env.NODE_ENV === "production" && req.user.ename !== ADMIN_ENAME) {
         res.status(403).json({ error: "Forbidden" });
         return;
     }

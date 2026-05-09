@@ -15,6 +15,7 @@ export class VoteService {
         option_id: string;
         method?: VoteMethod;
         on_behalf_of_name?: string;
+        voter_ename?: string;
     }): Promise<Vote> {
         const poll = await this.pollRepo.findOneBy({ id: pollId });
         if (!poll) throw new Error("Poll not found");
@@ -23,31 +24,77 @@ export class VoteService {
         const validOption = poll.vote_options.find((o) => o.id === data.option_id);
         if (!validOption) throw new Error(`Invalid option_id: ${data.option_id}`);
 
-        // If voting on behalf of someone, verify an active mandate exists
-        if (data.on_behalf_of_name) {
-            const mandateRepo = AppDataSource.getRepository(Mandate);
-            const mandate = await mandateRepo.findOne({
-                where: {
-                    meeting_id: poll.meeting_id,
-                    proxy_name: data.voter_name,
-                    granter_name: data.on_behalf_of_name,
-                    status: "active",
-                },
-            });
-            if (!mandate) throw new Error("No active mandate found for this voter");
+        // Verify voter is checked in and not an aspirant (manual votes skip — facilitator is responsible)
+        if (data.method !== "manual") {
+            const attendeeRepo = AppDataSource.getRepository(Attendee);
+            let checkedInAttendee: Attendee | null = null;
+
+            if (data.voter_ename) {
+                checkedInAttendee = await attendeeRepo.findOne({
+                    where: { meeting_id: poll.meeting_id, attendee_ename: data.voter_ename, status: "checked_in" },
+                });
+            }
+            if (!checkedInAttendee) {
+                checkedInAttendee = await attendeeRepo.findOne({
+                    where: { meeting_id: poll.meeting_id, attendee_name: data.voter_name, status: "checked_in" },
+                });
+            }
+            if (!checkedInAttendee) throw new Error("not_checked_in");
+            if (checkedInAttendee.is_aspirant) throw new Error("aspirants_cannot_vote");
         }
 
-        // Prevent duplicate votes from the same voter (for same context: own vs mandate)
-        const existing = await this.voteRepo.findOne({
-            where: {
-                poll_id: pollId,
-                voter_name: data.voter_name,
-                on_behalf_of_name: data.on_behalf_of_name ?? null as any,
-            },
-        });
+        // Verify mandate exists when voting on behalf; capture granter ename for the vote record
+        let on_behalf_of_ename: string | undefined;
+        if (data.on_behalf_of_name) {
+            const mandateRepo = AppDataSource.getRepository(Mandate);
+            // Try ename-first match, fall back to name match
+            const whereConditions: any[] = [];
+            if (data.voter_ename) {
+                whereConditions.push({
+                    meeting_id: poll.meeting_id,
+                    proxy_ename: data.voter_ename,
+                    granter_name: data.on_behalf_of_name,
+                    status: "active",
+                });
+            }
+            whereConditions.push({
+                meeting_id: poll.meeting_id,
+                proxy_name: data.voter_name,
+                granter_name: data.on_behalf_of_name,
+                status: "active",
+            });
+
+            const mandate = await mandateRepo.findOne({ where: whereConditions });
+            if (!mandate) throw new Error("No active mandate found for this voter");
+            on_behalf_of_ename = mandate.granter_ename ?? undefined;
+        }
+
+        // Dedup: ename-first, name fallback
+        let existing: Vote | null = null;
+        if (data.voter_ename) {
+            existing = await this.voteRepo.findOne({
+                where: {
+                    poll_id: pollId,
+                    voter_ename: data.voter_ename,
+                    on_behalf_of_name: data.on_behalf_of_name ?? null as any,
+                },
+            });
+        }
+        if (!existing) {
+            existing = await this.voteRepo.findOne({
+                where: {
+                    poll_id: pollId,
+                    voter_name: data.voter_name,
+                    on_behalf_of_name: data.on_behalf_of_name ?? null as any,
+                },
+            });
+        }
         if (existing) {
-            // Update instead of duplicate
-            await this.voteRepo.update(existing.id, { option_id: data.option_id });
+            await this.voteRepo.update(existing.id, {
+                option_id: data.option_id,
+                voter_ename: data.voter_ename ?? existing.voter_ename,
+                on_behalf_of_ename: on_behalf_of_ename ?? existing.on_behalf_of_ename,
+            });
             return this.voteRepo.findOneByOrFail({ id: existing.id });
         }
 
@@ -55,22 +102,19 @@ export class VoteService {
             poll_id: pollId,
             meeting_id: poll.meeting_id,
             voter_name: data.voter_name,
+            voter_ename: data.voter_ename,
             option_id: data.option_id,
             cast_at: new Date(),
             method: data.method ?? "app",
             on_behalf_of_name: data.on_behalf_of_name,
+            on_behalf_of_ename,
         });
         const saved = await this.voteRepo.save(vote);
 
-        // Count total votes (no breakdown while open)
         const count = await this.voteRepo.count({ where: { poll_id: pollId } });
         sseService.emit(poll.meeting_id, "vote_cast", { meetingId: poll.meeting_id, pollId, count });
 
-        // Auto-close when all eligible votes are cast
         await this.autoCloseIfComplete(poll);
-
-        // W3DS SYNC HOOK — to be implemented
-        // await web3Adapter.sync('vote', saved.id, saved);
 
         return saved;
     }
@@ -103,22 +147,39 @@ export class VoteService {
         const checkedIn = await attendeeRepo.find({
             where: { meeting_id: poll.meeting_id, status: "checked_in", is_aspirant: false },
         });
-        const checkedInNames = new Set(checkedIn.map(a => a.attendee_name.toLowerCase()));
+        // Build sets for both identity strategies
+        const checkedInEnames = new Set(checkedIn.filter(a => a.attendee_ename).map(a => a.attendee_ename!.toLowerCase()));
+        const checkedInNames  = new Set(checkedIn.map(a => a.attendee_name.toLowerCase()));
+
         const mandates = await mandateRepo.find({
             where: { meeting_id: poll.meeting_id, status: "active" },
         });
-        // A mandate counts only when the granter is absent AND the proxy has checked in
-        const unbodiedMandates = mandates.filter(m =>
-            !checkedInNames.has(m.granter_name.toLowerCase()) &&
-            checkedInNames.has(m.proxy_name.toLowerCase())
-        );
+
+        // Mandate counts only when: granter is absent AND proxy has checked in
+        const unbodiedMandates = mandates.filter(m => {
+            const granterPresent =
+                (m.granter_ename && checkedInEnames.has(m.granter_ename.toLowerCase())) ||
+                checkedInNames.has(m.granter_name.toLowerCase());
+            const proxyPresent =
+                (m.proxy_ename && checkedInEnames.has(m.proxy_ename.toLowerCase())) ||
+                checkedInNames.has(m.proxy_name.toLowerCase());
+            return !granterPresent && proxyPresent;
+        });
         const eligible = checkedIn.length + unbodiedMandates.length;
         if (eligible === 0) return;
 
-        // Cast = own votes + unique on-behalf votes
+        // Cast = own votes + unique on-behalf votes; dedup by ename when available
         const allVotes = await this.voteRepo.find({ where: { poll_id: poll.id } });
-        const ownVoters = new Set(allVotes.filter(v => !v.on_behalf_of_name).map(v => v.voter_name.toLowerCase()));
-        const behalfGranters = new Set(allVotes.filter(v => v.on_behalf_of_name).map(v => v.on_behalf_of_name.toLowerCase()));
+        const ownVoters = new Set(
+            allVotes
+                .filter(v => !v.on_behalf_of_name)
+                .map(v => v.voter_ename ? `e:${v.voter_ename.toLowerCase()}` : `n:${v.voter_name.toLowerCase()}`)
+        );
+        const behalfGranters = new Set(
+            allVotes
+                .filter(v => v.on_behalf_of_name)
+                .map(v => v.on_behalf_of_ename ? `e:${v.on_behalf_of_ename.toLowerCase()}` : `n:${v.on_behalf_of_name.toLowerCase()}`)
+        );
         const totalCast = ownVoters.size + behalfGranters.size;
 
         if (totalCast >= eligible) {
@@ -127,7 +188,21 @@ export class VoteService {
         }
     }
 
-    async hasVoted(pollId: string, voterName: string, onBehalfOf?: string): Promise<boolean> {
+    async deleteVote(voteId: string): Promise<void> {
+        await this.voteRepo.delete(voteId);
+    }
+
+    async hasVoted(pollId: string, voterName: string, onBehalfOf?: string, voterEname?: string): Promise<boolean> {
+        if (voterEname) {
+            const byEname = await this.voteRepo.findOne({
+                where: {
+                    poll_id: pollId,
+                    voter_ename: voterEname,
+                    on_behalf_of_name: onBehalfOf ?? null as any,
+                },
+            });
+            if (byEname) return true;
+        }
         const vote = await this.voteRepo.findOne({
             where: {
                 poll_id: pollId,

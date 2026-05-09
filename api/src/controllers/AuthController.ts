@@ -75,24 +75,29 @@ export async function epassportLogin(req: Request, res: Response) {
         return;
     }
 
-    console.log("[Auth] Verifying signature for ename:", ename);
-    try {
-        const result = await verifySignature({
-            eName: ename,
-            signature,
-            payload: session,
-            registryBaseUrl: registryUrl,
-        });
+    const useLocalW3DS = process.env.USE_LOCAL_W3DS === "true";
+    if (useLocalW3DS) {
+        console.log("[Auth] USE_LOCAL_W3DS=true — skipping signature verification (local dev)");
+    } else {
+        console.log("[Auth] Verifying signature for ename:", ename);
+        try {
+            const result = await verifySignature({
+                eName: ename,
+                signature,
+                payload: session,
+                registryBaseUrl: registryUrl,
+            });
 
-        console.log("[Auth] Signature valid:", result.valid);
-        if (!result.valid) {
-            res.status(401).json({ error: "Invalid signature" });
+            console.log("[Auth] Signature valid:", result.valid);
+            if (!result.valid) {
+                res.status(401).json({ error: "Invalid signature" });
+                return;
+            }
+        } catch (err) {
+            console.error("[Auth] verifySignature error:", err);
+            res.status(401).json({ error: "Signature verification failed" });
             return;
         }
-    } catch (err) {
-        console.error("[Auth] verifySignature error:", err);
-        res.status(401).json({ error: "Signature verification failed" });
-        return;
     }
 
     let user = await findOrCreateByEname(ename);

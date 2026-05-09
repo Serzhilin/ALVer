@@ -16,12 +16,13 @@ export class AttendeeController {
         }
     };
 
-    /** Check in via app (participant self-service) */
+    /** Check in via app (participant self-service — requires JWT, ename used for dedup) */
     checkIn = async (req: Request, res: Response) => {
         try {
             const { name } = req.body;
             if (!name) return res.status(400).json({ error: "name is required" });
-            const attendee = await svc.checkIn(req.params.id, name, "app");
+            const ename = req.user?.ename;
+            const attendee = await svc.checkIn(req.params.id, name, "app", undefined, ename);
             res.json(attendee);
         } catch (e: any) {
             res.status(400).json({ error: e.message });

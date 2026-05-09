@@ -84,16 +84,10 @@ async function provisionCommunities() {
                     updated_at: withMembers.updated_at instanceof Date
                         ? withMembers.updated_at.toISOString()
                         : withMembers.updated_at,
-                    admins: withMembers.facilitator_ename
-                        ? [{ ename: withMembers.facilitator_ename, isChair: true }]
-                        : [],
+                    admins: withMembers.facilitator_ename ? [withMembers.facilitator_ename] : [],
                     members: (withMembers.members ?? [])
                         .filter((m) => m.ename)
-                        .map((m) => ({
-                            ename: m.ename,
-                            name: m.name,
-                            isAspirant: m.is_aspirant ?? false,
-                        })),
+                        .map((m) => m.ename),
                 };
                 await adapter.handleChange({ data: enriched, tableName: "communities" });
                 const synced = enriched.members.length;

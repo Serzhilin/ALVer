@@ -1,6 +1,7 @@
 import { AppDataSource } from "../database/data-source";
 import { Meeting, MeetingStatus } from "../database/entities/Meeting";
 import { sseService } from "./SSEService";
+import { AttendanceService } from "./AttendanceService";
 
 export class MeetingService {
     private repo = AppDataSource.getRepository(Meeting);
@@ -81,6 +82,12 @@ export class MeetingService {
         if (stale.length > 0) {
             await Promise.all(stale.map(m => this.repo.update(m.id, { status: "archived" })));
             stale.forEach(m => { m.status = "archived"; });
+            const attendanceSvc = new AttendanceService();
+            for (const m of stale) {
+                attendanceSvc.recordForMeeting(m.id).catch(err =>
+                    console.error("[Attendance] Auto-archive failed to record for meeting", m.id, err)
+                );
+            }
         }
 
         return meetings;
@@ -121,6 +128,10 @@ export class MeetingService {
             this.displayModes.delete(id)
             this.screenThemes.delete(id)
             this.screenLanguages.delete(id)
+            // Record attendance snapshot for all community members
+            new AttendanceService().recordForMeeting(id).catch(err =>
+                console.error("[Attendance] Failed to record for meeting", id, err)
+            );
         }
 
         // W3DS SYNC HOOK — to be implemented

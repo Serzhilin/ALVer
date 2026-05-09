@@ -8,6 +8,7 @@ import pinoHttp from "pino-http";
 import { logger } from "./lib/logger";
 import { AppDataSource } from "./database/data-source";
 import { MeetingController } from "./controllers/MeetingController";
+import { AttendanceService } from "./services/AttendanceService";
 import { AttendeeController } from "./controllers/AttendeeController";
 import { MandateController } from "./controllers/MandateController";
 import { PollController } from "./controllers/PollController";
@@ -111,10 +112,20 @@ app.patch("/api/meetings/:id/minutes/publish",  requireAuth, requireNotulisOrFac
 // ── Meeting members (public — mandate dropdown) ───────────────────────────────
 app.get("/api/meetings/:id/members", meeting.getMembers);
 
-// ── Attendees (public — self check-in) ───────────────────────────────────────
+// ── Attendance records (created on archive, used for statistics) ──────────────
+app.get("/api/meetings/:id/attendance", requireAuth, async (req, res) => {
+    try {
+        const records = await new AttendanceService().getForMeeting(req.params.id);
+        res.json(records);
+    } catch (e: any) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ── Attendees (self check-in requires auth — ename used for dedup) ────────────
 app.get("/api/meetings/:id/attendees", attendee.list);
 app.post("/api/meetings/:id/attendees", attendee.preRegister);
-app.post("/api/meetings/:id/attendees/checkin", attendee.checkIn);
+app.post("/api/meetings/:id/attendees/checkin", requireAuth, attendee.checkIn);
 app.patch("/api/meetings/:id/attendees/:attendeeId", attendee.update);
 app.delete("/api/meetings/:id/attendees/:attendeeId", requireAuth, requireFacilitatorOfMeeting, attendee.delete);
 
@@ -125,9 +136,10 @@ app.get("/api/meetings/:id/mandates", mandate.list);
 app.get("/api/meetings/:id/polls", poll.list);
 app.get("/api/meetings/:id/decisions", poll.decisions);
 
-// ── Votes (public — self service) ────────────────────────────────────────────
-app.post("/api/polls/:pollId/votes", vote.cast);
+// ── Votes (auth required — voter identity verified via JWT) ──────────────────
+app.post("/api/polls/:pollId/votes", requireAuth, vote.cast);
 app.post("/api/polls/:pollId/votes/manual", requireAuth, vote.manualVote);
+app.delete("/api/polls/:pollId/votes/:voteId", requireAuth, vote.deleteVote);
 app.get("/api/polls/:pollId/votes/count", vote.count);
 app.get("/api/polls/:pollId/votes/has-voted", vote.hasVoted);
 app.get("/api/polls/:pollId/results", vote.results);

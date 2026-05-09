@@ -49,6 +49,7 @@ export default function Home() {
   const [pollsOpen, setPollsOpen] = useState(false)
   const [meetingMembersList, setMeetingMembersList] = useState([])
   const [submitting, setSubmitting] = useState(false)
+  const [mandateError, setMandateError] = useState(null)
 
   function loadMeetings() {
     setMeetingsLoading(true)
@@ -143,9 +144,8 @@ export default function Home() {
 
   // ── Attendee actions ──────────────────────────────────────────────────────
   async function handleIllCome() {
-    const name = (user?.firstName && user?.lastName)
-      ? `${user.firstName} ${user.lastName}`
-      : user?.displayName
+    const name = user?.member?.name
+      || ((user?.firstName && user?.lastName) ? `${user.firstName} ${user.lastName}` : user?.displayName)
     if (!name || !currentMeeting) return
     setSubmitting(true)
     try {
@@ -159,11 +159,11 @@ export default function Home() {
   }
 
   async function handleMandateSubmit() {
-    const name = (user?.firstName && user?.lastName)
-      ? `${user.firstName} ${user.lastName}`
-      : user?.displayName
+    const name = user?.member?.name
+      || ((user?.firstName && user?.lastName) ? `${user.firstName} ${user.lastName}` : user?.displayName)
     if (!name || !proxyName || !currentMeeting) return
     setSubmitting(true)
+    setMandateError(null)
     try {
       await addMandate(name, proxyName, mandateNote)
       const data = { type: 'mandate', name, proxy: proxyName }
@@ -172,6 +172,8 @@ export default function Home() {
       setAttendanceMode(null)
       setProxyName('')
       setMandateNote('')
+    } catch (e) {
+      setMandateError(e.message || 'Failed to submit mandate')
     } finally {
       setSubmitting(false)
     }
@@ -186,7 +188,12 @@ export default function Home() {
   async function handleModify() {
     if (!currentMeeting) return
     if (localPreReg?.type === 'attend' && ctxMeeting) {
-      const preReg = ctxMeeting.preRegistrations.find(p => p.name.toLowerCase() === localPreReg.name?.toLowerCase())
+      // Match by ename (from checkedIn shape) or by name for pre-registrations
+      const myEname = user?.ename
+      const preReg = ctxMeeting.preRegistrations.find(p =>
+        (myEname && p.ename && p.ename === myEname) ||
+        p.name.toLowerCase() === localPreReg.name?.toLowerCase()
+      )
       if (preReg) await removeAttendee(preReg.id).catch(() => {})
     }
     if (localPreReg?.type === 'mandate' && localPreReg.name) {
@@ -326,12 +333,6 @@ export default function Home() {
 
                 {/* ── Action area ── */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {isLive && !localPreReg && (
-                    <div style={{ padding: '12px 16px', background: 'rgba(45,122,74,0.06)', border: '1.5px solid rgba(45,122,74,0.25)', borderRadius: 10, fontSize: '0.88rem', color: 'var(--color-green)', fontWeight: 500, textAlign: 'center' }}>
-                      {t('home.scan_qr_to_checkin')}
-                    </div>
-                  )}
-
                   {localPreReg?.type === 'attend' ? (
                     <>
                       <div style={{ padding: '12px 16px', background: 'rgba(45,122,74,0.08)', border: '1.5px solid rgba(45,122,74,0.3)', borderRadius: 10, fontSize: '0.88rem', color: 'var(--color-green)', fontWeight: 500, textAlign: 'center' }}>
@@ -362,6 +363,10 @@ export default function Home() {
                       </button>
                     </>
 
+                  ) : isLive && !localPreReg ? (
+                    <div style={{ padding: '12px 16px', background: 'rgba(45,122,74,0.06)', border: '1.5px solid rgba(45,122,74,0.25)', borderRadius: 10, fontSize: '0.88rem', color: 'var(--color-green)', fontWeight: 500, textAlign: 'center' }}>
+                      {t('home.scan_qr_to_checkin')}
+                    </div>
                   ) : attendanceMode === 'mandate' ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                       <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>📜 {t('register.give_mandate_title')}</h3>
@@ -383,6 +388,9 @@ export default function Home() {
                         onChange={e => setMandateNote(e.target.value)}
                         placeholder={t('register.note_placeholder')}
                       />
+                      {mandateError && (
+                        <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--color-red)', fontWeight: 500 }}>{mandateError}</p>
+                      )}
                       <div style={{ display: 'flex', gap: 8 }}>
                         <button
                           className="btn-primary"
@@ -392,7 +400,7 @@ export default function Home() {
                         >
                           {submitting ? t('common.loading') : t('register.sign_confirm')}
                         </button>
-                        <button className="btn-secondary" onClick={() => { setAttendanceMode(null); setProxyName(''); setMandateNote('') }}>
+                        <button className="btn-secondary" onClick={() => { setAttendanceMode(null); setProxyName(''); setMandateNote(''); setMandateError(null) }}>
                           {t('common.cancel')}
                         </button>
                       </div>

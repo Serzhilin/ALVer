@@ -99,6 +99,7 @@ export const reorderPolls = (meetingId, ids) => req('PATCH', `/meetings/${meetin
 // ── Votes ─────────────────────────────────────────────────────────────────────
 export const castVote = (pollId, data) => req('POST', `/polls/${pollId}/votes`, data)
 export const manualVote = (pollId, data) => req('POST', `/polls/${pollId}/votes/manual`, data)
+export const deleteVote = (pollId, voteId) => req('DELETE', `/polls/${pollId}/votes/${voteId}`)
 export const getVoteCount = (pollId) => req('GET', `/polls/${pollId}/votes/count`)
 export const getResults = (pollId) => req('GET', `/polls/${pollId}/results`)
 export const hasVoted = (pollId, voterName, onBehalfOf) => {

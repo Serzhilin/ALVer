@@ -41,12 +41,20 @@ export default function Attend() {
   useEffect(() => {
     if (!user || !meeting || checkedIn || checkInFired.current) return
     checkInFired.current = true
-    const name = (user.firstName && user.lastName)
-      ? `${user.firstName} ${user.lastName}`
-      : user.displayName
+
+    // Prefer canonical member name (matches what's stored in DB for this community)
+    // so manual and auto check-in resolve to the same string.
+    const name = user.member?.name
+      || ((user.firstName && user.lastName) ? `${user.firstName} ${user.lastName}` : user.displayName)
+
     localStorage.removeItem('alver_my_name')
     setMyName(name)
-    const found = meeting.checkedIn.find(c => c.name.toLowerCase() === name.toLowerCase())
+
+    // Match by ename first (survives any name spelling difference), then by name
+    const found = meeting.checkedIn.find(c =>
+      (user.ename && c.ename && c.ename === user.ename) ||
+      c.name.toLowerCase() === name.toLowerCase()
+    )
     if (found) {
       setCheckedIn(true)
     } else if (meeting.phase === 'open') {
@@ -57,14 +65,23 @@ export default function Attend() {
     // in_session: checkedIn stays false → locked screen or caught by second effect after manual add
   }, [user?.ename, meeting?.id])
 
-  // Catch manual check-in by facilitator while meeting is already live.
-  // The effect above fires once and marks checkInFired — so SSE-driven updates
-  // to meeting.checkedIn won't re-trigger it. This separate effect handles that.
+  // Sync checkedIn state with live meeting data — handles both:
+  // - facilitator manually adds person (checkedIn false → true)
+  // - facilitator deletes check-in (checkedIn true → false)
   useEffect(() => {
-    if (checkedIn || !myName || !meeting) return
-    const found = meeting.checkedIn.find(c => c.name.toLowerCase() === myName.toLowerCase())
-    if (found) setCheckedIn(true)
-  }, [meeting?.checkedIn?.length, myName, checkedIn])
+    if (!myName || !meeting) return
+    const found = meeting.checkedIn.find(c =>
+      (user?.ename && c.ename && c.ename === user.ename) ||
+      c.name.toLowerCase() === myName.toLowerCase()
+    )
+    if (found && !checkedIn) {
+      setCheckedIn(true)
+    } else if (!found && checkedIn) {
+      // Facilitator removed this person — reset so they see the correct locked/waiting screen
+      setCheckedIn(false)
+      checkInFired.current = false  // allow re-auto-checkin if meeting is still open
+    }
+  }, [meeting?.checkedIn?.length, myName])
 
   function handleVote(pollId, option, isMandate = false) {
     // Set optimistic local state immediately — disables buttons before re-render
@@ -84,8 +101,15 @@ export default function Attend() {
   }
 
   // My mandate and member info (safe: meeting is loaded)
-  const myMandate = myName ? meeting.confirmedMandates.find(m => m.to.toLowerCase() === myName.toLowerCase()) : null
-  const myAttendee = myName ? meeting.checkedIn.find(c => c.name.toLowerCase() === myName.toLowerCase()) : null
+  // Match mandate by ename first (survives name spelling differences), then by name
+  const myMandate = myName ? meeting.confirmedMandates.find(m =>
+    (user?.ename && m.toEname && m.toEname === user.ename) ||
+    m.to.toLowerCase() === myName.toLowerCase()
+  ) : null
+  const myAttendee = myName ? meeting.checkedIn.find(c =>
+    (user?.ename && c.ename && c.ename === user.ename) ||
+    c.name.toLowerCase() === myName.toLowerCase()
+  ) : null
   const amAspirant = myAttendee?.isAspirant || false
 
   const isInSession = meeting.phase === 'in_session'
@@ -244,8 +268,8 @@ export default function Attend() {
           </div>
         )}
 
-        {/* In session: waiting for poll (only if more polls are queued) */}
-        {isInSession && !activePoll && meeting.polls.some(p => p.status === 'queued') && (
+        {/* In session: waiting for poll (only if more polls are prepared) */}
+        {isInSession && !activePoll && meeting.polls.some(p => p.status === 'prepared') && (
           <div style={{ background: 'white', borderRadius: 14, padding: '40px 24px', textAlign: 'center' }}>
             <div style={{ fontSize: '2rem', marginBottom: 14 }}>💬</div>
             <p style={{ color: 'var(--color-charcoal)', fontSize: '1rem', margin: '0 0 6px', fontWeight: 500 }}>

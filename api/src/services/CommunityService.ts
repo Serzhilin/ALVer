@@ -165,6 +165,9 @@ export class CommunityService {
         is_aspirant?: boolean;
         is_facilitator?: boolean;
     }): Promise<Member> {
+        if (!data.ename?.trim()) {
+            throw new Error("ename is required — every member must have an eID identity");
+        }
         const name = `${data.first_name.trim()} ${data.last_name.trim()}`;
         const member = this.memberRepo.create({
             community_id: communityId,

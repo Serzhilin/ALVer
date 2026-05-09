@@ -30,6 +30,7 @@ function adaptMeeting(m) {
     checkedIn: checkedIn.map(a => ({
       id: a.id,
       name: a.attendee_name,
+      ename: a.attendee_ename ?? null,
       checkedInAt: a.checked_in_at
         ? new Date(a.checked_in_at).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
         : '',
@@ -39,7 +40,9 @@ function adaptMeeting(m) {
     confirmedMandates: mandates.map(mn => ({
       id: mn.id,
       from: mn.granter_name,
+      fromEname: mn.granter_ename ?? null,
       to: mn.proxy_name,
+      toEname: mn.proxy_ename ?? null,
       note: mn.scope_note,
       confirmedAt: mn.granted_at
         ? new Date(mn.granted_at).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
@@ -48,6 +51,7 @@ function adaptMeeting(m) {
     preRegistrations: (m.attendees || []).filter(a => a.status === 'expected').map(a => ({
       id: a.id,
       name: a.attendee_name,
+      ename: a.attendee_ename ?? null,
     })),
     polls: (m.polls || []).map(adaptPoll),
     activePollId: activePoll?.id || null,
@@ -65,6 +69,7 @@ function adaptPoll(p) {
     options: (p.vote_options || []).map(o => o.label),
     _optionIds: (p.vote_options || []).map(o => o.id),
     votes: Object.fromEntries((p.votes || []).filter(v => !v.on_behalf_of_name).map(v => [v.voter_name, v.option_id])),
+    allVotes: (p.votes || []).map(v => ({ id: v.id, voter_name: v.voter_name, on_behalf_of_name: v.on_behalf_of_name, option_id: v.option_id, method: v.method })),
     manualVotes: (p.votes || []).filter(v => v.method === 'manual').map(v => ({ id: v.id, option: v.option_id, name: v.voter_name })),
     onBehalfVoters: new Set((p.votes || []).filter(v => v.on_behalf_of_name).map(v => v.on_behalf_of_name)),
     result: p.status === 'closed' ? buildResult(p) : null,
@@ -103,12 +108,19 @@ export function MeetingProvider({ children }) {
   // Voting units = present non-aspirants + mandates whose granter is NOT also present.
   // If a granter shows up and forgets to revoke their mandate, we must not count them twice.
   const checkedInNonAspirants = meeting ? meeting.checkedIn.filter(c => !c.isAspirant) : []
-  const checkedInNames = new Set(checkedInNonAspirants.map(c => c.name.toLowerCase()))
-  // A mandate counts as an eligible vote only when the granter is absent AND the proxy has checked in
-  const unbodiedMandates = meeting ? meeting.confirmedMandates.filter(m =>
-    !checkedInNames.has(m.from.toLowerCase()) &&
-    checkedInNames.has(m.to.toLowerCase())
-  ) : []
+  const checkedInNames  = new Set(checkedInNonAspirants.map(c => c.name.toLowerCase()))
+  const checkedInEnames = new Set(checkedInNonAspirants.filter(c => c.ename).map(c => c.ename.toLowerCase()))
+  // A mandate counts as an eligible vote only when the granter is absent AND the proxy has checked in.
+  // Use ename-first matching (same logic as backend autoCloseIfComplete) so counts stay in sync.
+  const unbodiedMandates = meeting ? meeting.confirmedMandates.filter(m => {
+    const granterPresent =
+      (m.fromEname && checkedInEnames.has(m.fromEname.toLowerCase())) ||
+      checkedInNames.has(m.from.toLowerCase())
+    const proxyPresent =
+      (m.toEname && checkedInEnames.has(m.toEname.toLowerCase())) ||
+      checkedInNames.has(m.to.toLowerCase())
+    return !granterPresent && proxyPresent
+  }) : []
   const attendeeCount = checkedInNonAspirants.length + unbodiedMandates.length
 
   // ── Load meeting ────────────────────────────────────────────────────────────
@@ -156,7 +168,7 @@ export function MeetingProvider({ children }) {
       load(id)
     }, {
       onDisconnect: () => setSseConnected(false),
-      onReconnect: () => setSseConnected(true),
+      onReconnect: () => { setSseConnected(true); load(id) },
     })
   }, [load])
 
@@ -235,6 +247,11 @@ export function MeetingProvider({ children }) {
     await load(meetingId.current)
   }
 
+  const deleteVoteAction = async (pollId, voteId) => {
+    await api.deleteVote(pollId, voteId)
+    await load(meetingId.current)
+  }
+
   const addManualVote = async (pollId, optionLabel, name, onBehalfOf) => {
     const poll = (raw?.polls || []).find(p => p.id === pollId)
     const opt = (poll?.vote_options || []).find(o => o.label === optionLabel)
@@ -301,6 +318,7 @@ export function MeetingProvider({ children }) {
       closePoll: closePollAction,
       castVote: castVoteAction,
       addManualVote,
+      deleteVote: deleteVoteAction,
       checkIn,
       preRegister,
       addMandate,

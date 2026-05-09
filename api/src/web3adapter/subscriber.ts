@@ -168,16 +168,10 @@ export class AlverSubscriber implements EntitySubscriberInterface {
     private async enrichEntity(plain: Record<string, any>, tableName: string): Promise<Record<string, any>> {
         switch (tableName) {
             case "communities": {
-                plain.admins = plain.facilitator_ename
-                    ? [{ ename: plain.facilitator_ename, isChair: true }]
-                    : [];
+                plain.admins = plain.facilitator_ename ? [plain.facilitator_ename] : [];
                 plain.members = (plain.members ?? [])
                     .filter((m: any) => m.ename)
-                    .map((m: any) => ({
-                        ename:      m.ename,
-                        name:       m.name,
-                        isAspirant: m.is_aspirant ?? false,
-                    }));
+                    .map((m: any) => m.ename);
                 break;
             }
             case "meetings": {

@@ -1,9 +1,12 @@
 import { Request, Response } from "express";
 import { VoteService } from "../services/VoteService";
+import { AppDataSource } from "../database/data-source";
+import { Vote } from "../database/entities/Vote";
 
 const svc = new VoteService();
 
 export class VoteController {
+    private voteRepo = AppDataSource.getRepository(Vote);
     cast = async (req: Request, res: Response) => {
         try {
             const { voter_name, option_id, on_behalf_of_name } = req.body;
@@ -15,6 +18,7 @@ export class VoteController {
                 option_id,
                 method: on_behalf_of_name ? "mandate" : "app",
                 on_behalf_of_name,
+                voter_ename: req.user?.ename,
             });
             res.status(201).json(vote);
         } catch (e: any) {
@@ -54,6 +58,21 @@ export class VoteController {
             res.json(results);
         } catch (e: any) {
             res.status(500).json({ error: e.message });
+        }
+    };
+
+    deleteVote = async (req: Request, res: Response) => {
+        try {
+            // Verify vote exists and belongs to an active poll of this meeting
+            const vote = await this.voteRepo.findOne({
+                where: { id: req.params.voteId },
+                relations: ["poll"],
+            });
+            if (!vote) return res.status(404).json({ error: "Vote not found" });
+            await svc.deleteVote(req.params.voteId);
+            res.status(204).end();
+        } catch (e: any) {
+            res.status(400).json({ error: e.message });
         }
     };
 

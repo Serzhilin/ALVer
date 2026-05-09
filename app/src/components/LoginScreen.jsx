@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import QRCode from 'qrcode'
-import { getAuthOffer, subscribeToAuthSession } from '../api/client'
+import { getAuthOffer, subscribeToAuthSession, pollAuthSessionResult } from '../api/client'
 import { useTranslation } from 'react-i18next'
 
 
@@ -26,11 +26,11 @@ export default function LoginScreen({ onSuccess, nameOption = false, onNameConti
     let sessionId = null
     let done = false
 
-    function finish(token, user) {
+    function finish(token) {
       if (done) return
       done = true
       if (unsub) unsub()
-      onSuccess(token, user)
+      onSuccess(token)
     }
 
     getAuthOffer(returnTo)
@@ -45,7 +45,16 @@ export default function LoginScreen({ onSuccess, nameOption = false, onNameConti
         } else {
           const dataUrl = await QRCode.toDataURL(offerUrl, { width: 220, margin: 2 })
           setQrDataUrl(dataUrl)
-          unsub = subscribeToAuthSession(sid, ({ token, user }) => finish(token, user))
+          unsub = subscribeToAuthSession(sid, ({ token }) => finish(token))
+
+          // Polling fallback — SSE can silently fail in some browser/network setups
+          const pollInterval = setInterval(async () => {
+            if (done) { clearInterval(pollInterval); return }
+            const result = await pollAuthSessionResult(sid).catch(() => null)
+            if (result?.token) finish(result.token)
+          }, 2000)
+          const originalUnsub = unsub
+          unsub = () => { originalUnsub(); clearInterval(pollInterval) }
         }
       })
       .catch(() => setStatus('error'))
@@ -96,8 +105,13 @@ export default function LoginScreen({ onSuccess, nameOption = false, onNameConti
         )}
 
         {status === 'waiting' && !isMobile && qrDataUrl && (
-          <div style={{ padding: 12, background: 'white', borderRadius: 10, border: '1px solid var(--color-sand)', display: 'inline-block' }}>
-            <img src={qrDataUrl} alt="QR code" width={200} height={200} style={{ display: 'block' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+            <div style={{ padding: 12, background: 'white', borderRadius: 10, border: '1px solid var(--color-sand)', display: 'inline-block' }}>
+              <img src={qrDataUrl} alt="QR code" width={200} height={200} style={{ display: 'block' }} />
+            </div>
+            {import.meta.env.DEV && offer && (
+              <p style={{ margin: 0, fontSize: '0.7rem', color: 'var(--color-charcoal-light)', wordBreak: 'break-all', textAlign: 'center', maxWidth: 260 }}>{offer}</p>
+            )}
           </div>
         )}
 

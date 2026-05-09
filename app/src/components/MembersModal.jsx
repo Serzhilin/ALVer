@@ -44,7 +44,7 @@ export default function MembersModal({ onClose }) {
   }
 
   async function handleSave() {
-    if (!form.first_name.trim() || !form.last_name.trim()) return
+    if (!form.first_name.trim() || !form.last_name.trim() || !form.ename.trim()) return
     setSaving(true)
     try {
       const payload = {
@@ -140,12 +140,20 @@ export default function MembersModal({ onClose }) {
                 placeholder={t('settings.member_phone_placeholder')}
                 type="tel"
               />
-              <input
-                className="input"
-                value={form.ename}
-                onChange={e => set('ename', e.target.value)}
-                placeholder={t('settings.member_ename_placeholder')}
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  className="input"
+                  value={form.ename}
+                  onChange={e => set('ename', e.target.value)}
+                  placeholder={t('settings.member_ename_placeholder')}
+                  style={{ borderColor: form.ename.trim() ? undefined : 'var(--color-terracotta)', paddingRight: 32 }}
+                />
+                {!form.ename.trim() && (
+                  <span title={t('settings.member_ename_required')} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-terracotta)' }}>
+                    {t('common.required_short')}
+                  </span>
+                )}
+              </div>
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.88rem', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
@@ -170,7 +178,7 @@ export default function MembersModal({ onClose }) {
                 )
               })()}
               <div style={{ display: 'flex', gap: 8 }}>
-                <button className="btn-primary" onClick={handleSave} disabled={saving || !form.first_name.trim() || !form.last_name.trim()}>
+                <button className="btn-primary" onClick={handleSave} disabled={saving || !form.first_name.trim() || !form.last_name.trim() || !form.ename.trim()}>
                   {saving ? t('common.loading') : t('common.save')}
                 </button>
                 <button className="btn-secondary" onClick={cancel}>{t('common.cancel')}</button>

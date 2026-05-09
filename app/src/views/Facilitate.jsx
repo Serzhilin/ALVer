@@ -14,7 +14,7 @@ export default function Facilitate() {
     meeting, activePoll, attendeeCount,
     displayMode, screenTheme,
     updatePhase, addPoll, updatePoll, deletePoll, reorderPolls,
-    startPoll, closePoll, addManualVote, checkIn,
+    startPoll, closePoll, addManualVote, deleteVote, checkIn,
     addMandate, revokeMandate, removeAttendee,
   } = useMeeting()
   const navigate = useNavigate()
@@ -646,6 +646,30 @@ export default function Facilitate() {
             <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.82rem', margin: '0 0 16px' }}>
               {t('facilitate.modal_manual_vote_hint')}
             </p>
+
+            {/* Cast votes list — all votes with delete button */}
+            {activePoll.allVotes?.length > 0 && (
+              <div style={{ marginBottom: 16, border: '1px solid var(--color-sand)', borderRadius: 8, overflow: 'hidden' }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '8px 12px', background: 'var(--color-cream)', borderBottom: '1px solid var(--color-sand)' }}>
+                  {t('facilitate.cast_votes')}
+                </div>
+                {activePoll.allVotes.map(v => {
+                  const optLabel = activePoll.options[activePoll._optionIds?.indexOf(v.option_id)] ?? v.option_id
+                  const label = v.on_behalf_of_name ? `📜 ${v.on_behalf_of_name} (→ ${v.voter_name})` : v.voter_name
+                  return (
+                    <div key={v.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 12px', borderBottom: '1px solid var(--color-sand)', gap: 8 }}>
+                      <span style={{ fontSize: '0.88rem', color: 'var(--color-charcoal)', flex: 1 }}>{label}</span>
+                      <span style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', background: 'var(--color-sand)', padding: '2px 8px', borderRadius: 4 }}>{optLabel}</span>
+                      <button
+                        onClick={() => { deleteVote(activePoll.id, v.id); }}
+                        title={t('common.delete')}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-red)', fontSize: '0.85rem', padding: '2px 4px', flexShrink: 0 }}
+                      >✕</button>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
             <div style={{ marginBottom: 12 }}>
               <label>{t('facilitate.member_name_optional')}</label>
               <select className="input" value={manualVoteName} onChange={e => setManualVoteName(e.target.value)}>

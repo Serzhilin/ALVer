@@ -11,6 +11,7 @@ import { Decision } from "./entities/Decision";
 import { User } from "./entities/User";
 import { Community } from "./entities/Community";
 import { Member } from "./entities/Member";
+import { MeetingAttendanceRecord } from "./entities/MeetingAttendanceRecord";
 import { AlverSubscriber } from "../web3adapter/subscriber";
 
 config({ path: path.resolve(__dirname, "../../../.env") });
@@ -22,7 +23,7 @@ export const dataSourceOptions: DataSourceOptions = {
     url: process.env.ALVER_DATABASE_URL,
     // synchronize only in dev; migrations handle schema changes in production
     synchronize: !isProduction,
-    entities: [Meeting, Attendee, Mandate, Poll, Vote, Decision, User, Community, Member],
+    entities: [Meeting, Attendee, Mandate, Poll, Vote, Decision, User, Community, Member, MeetingAttendanceRecord],
     subscribers: [AlverSubscriber],
     migrations: [path.join(__dirname, "migrations", __filename.endsWith(".ts") ? "*.ts" : "*.js")],
     logging: false,

@@ -30,9 +30,9 @@ export class MandateController {
 
     revoke = async (req: Request, res: Response) => {
         try {
-            const mandate = await svc.revoke(req.params.mandateId);
+            await svc.revoke(req.params.mandateId);
             sseService.emit(req.params.id, "mandate_updated", { meetingId: req.params.id });
-            res.json(mandate);
+            res.status(204).end();
         } catch (e: any) {
             res.status(400).json({ error: e.message });
         }
