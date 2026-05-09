@@ -73,7 +73,7 @@ export default function Archive() {
                 <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-charcoal)' }}>
                   {meeting.confirmedMandates.length}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)' }}>{t('archive.mandates')}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)' }}>{t('facilitate.mandates')}</div>
               </div>
             </div>
           </div>
