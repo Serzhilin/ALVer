@@ -309,6 +309,9 @@
     "member_aspirant_label": "Aspirant-lid",
     "members_facilitators": "Facilitatoren",
     "member_no_eid": "Geen eID gekoppeld",
+    "evault_identity": "W3DS identiteit",
+    "evault_ename": "eID",
+    "evault_name": "eVault naam",
     "member_facilitator_badge": "Facilitator",
     "member_facilitator_label": "Facilitator",
     "member_facilitator_self": "eigen rol kan niet gewijzigd worden"

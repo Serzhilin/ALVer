@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useCommunity } from '../context/CommunityContext'
 import { useUser } from '../context/UserContext'
 
-const EMPTY = { first_name: '', last_name: '', email: '', phone: '', ename: '', is_aspirant: false, is_facilitator: false }
+const EMPTY = { app_first_name: '', app_last_name: '', email: '', phone: '', ename: '', is_aspirant: false, is_facilitator: false }
 
 export default function MembersModal({ onClose }) {
   const { t } = useTranslation()
@@ -11,6 +11,7 @@ export default function MembersModal({ onClose }) {
   const { user } = useUser()
 
   const [editing, setEditing]     = useState(null)  // null | 'new' | member id
+  const [editingMember, setEditingMember] = useState(null)  // the full member object being edited
   const [form, setForm]           = useState(EMPTY)
   const [saving, setSaving]       = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(null) // member id
@@ -22,38 +23,41 @@ export default function MembersModal({ onClose }) {
   function openNew() {
     setForm(EMPTY)
     setEditing('new')
+    setEditingMember(null)
   }
 
   function openEdit(m) {
     setForm({
-      first_name:    m.first_name    || '',
-      last_name:     m.last_name     || '',
-      email:         m.email         || '',
-      phone:         m.phone         || '',
-      ename:         m.ename         || '',
-      is_aspirant:   m.is_aspirant,
+      app_first_name: m.app_first_name || '',
+      app_last_name:  m.app_last_name  || '',
+      email:          m.email          || '',
+      phone:          m.phone          || '',
+      ename:          m.ename          || '',
+      is_aspirant:    m.is_aspirant,
       is_facilitator: m.is_facilitator,
     })
     setEditing(m.id)
+    setEditingMember(m)
   }
 
   function cancel() {
     setEditing(null)
     setConfirmDelete(null)
     setForm(EMPTY)
+    setEditingMember(null)
   }
 
   async function handleSave() {
-    if (!form.first_name.trim() || !form.last_name.trim() || !form.ename.trim()) return
+    if (!form.app_first_name.trim() || !form.app_last_name.trim()) return
     setSaving(true)
     try {
       const payload = {
-        first_name:    form.first_name.trim(),
-        last_name:     form.last_name.trim(),
-        email:         form.email.trim()  || undefined,
-        phone:         form.phone.trim()  || undefined,
-        ename:         form.ename.trim()  || undefined,
-        is_aspirant:   form.is_aspirant,
+        app_first_name: form.app_first_name.trim(),
+        app_last_name:  form.app_last_name.trim(),
+        email:          form.email.trim()  || null,
+        phone:          form.phone.trim()  || null,
+        ename:          form.ename.trim()  || null,
+        is_aspirant:    form.is_aspirant,
         is_facilitator: form.is_facilitator,
       }
       if (editing === 'new') {
@@ -112,15 +116,15 @@ export default function MembersModal({ onClose }) {
                 <input
                   className="input"
                   autoFocus
-                  value={form.first_name}
-                  onChange={e => set('first_name', e.target.value)}
+                  value={form.app_first_name}
+                  onChange={e => set('app_first_name', e.target.value)}
                   placeholder={t('settings.member_first_name_placeholder')}
                   style={{ flex: 1 }}
                 />
                 <input
                   className="input"
-                  value={form.last_name}
-                  onChange={e => set('last_name', e.target.value)}
+                  value={form.app_last_name}
+                  onChange={e => set('app_last_name', e.target.value)}
                   placeholder={t('settings.member_last_name_placeholder')}
                   style={{ flex: 1 }}
                   onKeyDown={e => e.key === 'Enter' && handleSave()}
@@ -140,20 +144,35 @@ export default function MembersModal({ onClose }) {
                 placeholder={t('settings.member_phone_placeholder')}
                 type="tel"
               />
-              <div style={{ position: 'relative' }}>
-                <input
-                  className="input"
-                  value={form.ename}
-                  onChange={e => set('ename', e.target.value)}
-                  placeholder={t('settings.member_ename_placeholder')}
-                  style={{ borderColor: form.ename.trim() ? undefined : 'var(--color-terracotta)', paddingRight: 32 }}
-                />
-                {!form.ename.trim() && (
-                  <span title={t('settings.member_ename_required')} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-terracotta)' }}>
-                    {t('common.required_short')}
-                  </span>
-                )}
-              </div>
+              <input
+                className="input"
+                value={form.ename}
+                onChange={e => set('ename', e.target.value)}
+                placeholder={t('settings.member_ename_placeholder')}
+              />
+              {editingMember?.ename && (
+                <div style={{ marginTop: 8, padding: '12px 16px', background: 'var(--color-sand)', borderRadius: 8 }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
+                    {t('settings.evault_identity')}
+                  </div>
+                  {editingMember.avatar_url && (
+                    <img
+                      src={editingMember.avatar_url}
+                      alt="avatar"
+                      style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', marginBottom: 8, display: 'block' }}
+                    />
+                  )}
+                  <div style={{ fontSize: '0.85rem', color: 'var(--color-charcoal)' }}>
+                    <strong>{t('settings.evault_ename')}:</strong> {editingMember.ename}
+                  </div>
+                  {(editingMember.first_name || editingMember.last_name) && (
+                    <div style={{ fontSize: '0.85rem', color: 'var(--color-charcoal)', marginTop: 4 }}>
+                      <strong>{t('settings.evault_name')}:</strong>{' '}
+                      {[editingMember.first_name, editingMember.last_name].filter(Boolean).join(' ')}
+                    </div>
+                  )}
+                </div>
+              )}
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.88rem', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
@@ -178,7 +197,7 @@ export default function MembersModal({ onClose }) {
                 )
               })()}
               <div style={{ display: 'flex', gap: 8 }}>
-                <button className="btn-primary" onClick={handleSave} disabled={saving || !form.first_name.trim() || !form.last_name.trim() || !form.ename.trim()}>
+                <button className="btn-primary" onClick={handleSave} disabled={saving || !form.app_first_name.trim() || !form.app_last_name.trim()}>
                   {saving ? t('common.loading') : t('common.save')}
                 </button>
                 <button className="btn-secondary" onClick={cancel}>{t('common.cancel')}</button>
@@ -284,7 +303,7 @@ function MemberRow({ member: m, rowBg, isEditing, confirmDelete, onEdit, onDelet
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: '0.92rem', color: 'var(--color-charcoal)', fontWeight: 500 }}>{m.name}</span>
+          <span style={{ fontSize: '0.92rem', color: 'var(--color-charcoal)', fontWeight: 500 }}>{[m.app_first_name, m.app_last_name].filter(Boolean).join(' ') || m.ename || '?'}</span>
           {!m.ename && (
             <span title={t('settings.member_no_eid')} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 16, height: 16, borderRadius: '50%', background: 'var(--color-sand-dark)', color: 'var(--color-charcoal-light)', fontSize: '0.65rem', fontWeight: 700, flexShrink: 0 }}>
               ?
