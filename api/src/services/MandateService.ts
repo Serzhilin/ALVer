@@ -3,57 +3,68 @@ import { Mandate } from "../database/entities/Mandate";
 import { Member } from "../database/entities/Member";
 import { Meeting } from "../database/entities/Meeting";
 import { Attendee } from "../database/entities/Attendee";
-import { ILike } from "typeorm";
+import { appDisplayName } from "../lib/member-display";
 
 export class MandateService {
     private repo = AppDataSource.getRepository(Mandate);
 
     async create(meetingId: string, data: {
-        granter_name: string;
-        proxy_name: string;
+        granter_ename: string;
+        proxy_member_id: string;
         scope_note?: string;
     }): Promise<Mandate> {
         const meetingRepo = AppDataSource.getRepository(Meeting);
         const memberRepo = AppDataSource.getRepository(Member);
         const attendeeRepo = AppDataSource.getRepository(Attendee);
 
+        // 1. Find meeting
         const meeting = await meetingRepo.findOneBy({ id: meetingId });
-
-        // Verify proxy is not an aspirant
-        if (meeting) {
-            const proxyMember = await memberRepo.findOne({
-                where: { community_id: meeting.community_id, name: ILike(data.proxy_name) },
-            });
-            if (proxyMember?.is_aspirant) {
-                throw new Error("Aspirants cannot receive mandates");
-            }
+        if (!meeting) {
+            throw new Error("Meeting not found");
         }
 
-        // Look up enames for granter and proxy so identity is preserved even if names change
-        let granter_ename: string | undefined;
-        let proxy_ename: string | undefined;
+        // 2. Find proxyMember by proxy_member_id
+        const proxyMember = await memberRepo.findOneByOrFail({ id: data.proxy_member_id });
 
-        if (meeting?.community_id) {
-            const granterMember = await memberRepo.findOne({
-                where: { community_id: meeting.community_id, name: ILike(data.granter_name) },
-            });
-            granter_ename = granterMember?.ename ?? undefined;
+        // 3. Throw if proxy is aspirant
+        if (proxyMember.is_aspirant) {
+            throw new Error("Aspirants cannot receive mandates");
         }
 
-        // Proxy must be checked in — grab their ename from the attendee record
-        const proxyAttendee = await attendeeRepo.findOne({
-            where: { meeting_id: meetingId, attendee_name: ILike(data.proxy_name), status: "checked_in" },
+        // 4. Find granterMember by ename (may be null)
+        const granterMember = await memberRepo.findOne({
+            where: { community_id: meeting.community_id, ename: data.granter_ename },
         });
-        proxy_ename = proxyAttendee?.attendee_ename ?? undefined;
 
-        // Hard-delete any existing active mandate from this granter (and its mandate vote)
-        await this.revokeByGranter(meetingId, data.granter_name);
+        // 5. Compute display names
+        const granter_name = granterMember ? appDisplayName(granterMember) : data.granter_ename;
+        const proxy_name = appDisplayName(proxyMember);
+        const proxy_ename = proxyMember.ename ?? undefined;
 
+        // 6. Verify proxy is checked in
+        let proxyCheckedIn: Attendee | null = null;
+        if (proxyMember.ename) {
+            proxyCheckedIn = await attendeeRepo.findOne({
+                where: { meeting_id: meetingId, attendee_ename: proxyMember.ename, status: "checked_in" },
+            });
+        } else {
+            proxyCheckedIn = await attendeeRepo.findOne({
+                where: { meeting_id: meetingId, member_id: proxyMember.id, status: "checked_in" },
+            });
+        }
+        if (!proxyCheckedIn) {
+            throw new Error("Proxy must be checked in to the meeting");
+        }
+
+        // 7. Revoke existing active mandate from this granter
+        await this.revokeByGranterEname(meetingId, data.granter_ename);
+
+        // 8. Create and save mandate
         const mandate = this.repo.create({
             meeting_id: meetingId,
-            granter_name: data.granter_name,
-            granter_ename,
-            proxy_name: data.proxy_name,
+            granter_name,
+            granter_ename: data.granter_ename,
+            proxy_name,
             proxy_ename,
             scope_note: data.scope_note,
             status: "active",
@@ -86,6 +97,15 @@ export class MandateService {
         });
         for (const m of mandates) {
             await this.revoke(m.id);
+        }
+    }
+
+    async revokeByGranterEname(meetingId: string, granterEname: string): Promise<void> {
+        const mandates = await this.repo.find({
+            where: { meeting_id: meetingId, granter_ename: granterEname, status: "active" },
+        });
+        for (const m of mandates) {
+            await this.repo.delete(m.id);
         }
     }
 

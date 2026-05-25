@@ -7,11 +7,13 @@ const svc = new MandateService();
 export class MandateController {
     create = async (req: Request, res: Response) => {
         try {
-            const { granter_name, proxy_name, scope_note } = req.body;
-            if (!granter_name || !proxy_name) {
-                return res.status(400).json({ error: "granter_name and proxy_name are required" });
+            const granter_ename = req.user?.ename;
+            if (!granter_ename) return res.status(401).json({ error: "Authentication required" });
+            const { proxy_member_id, scope_note } = req.body;
+            if (!proxy_member_id) {
+                return res.status(400).json({ error: "proxy_member_id is required" });
             }
-            const mandate = await svc.create(req.params.id, { granter_name, proxy_name, scope_note });
+            const mandate = await svc.create(req.params.id, { granter_ename, proxy_member_id, scope_note });
             sseService.emit(req.params.id, "mandate_updated", { meetingId: req.params.id });
             res.status(201).json(mandate);
         } catch (e: any) {
