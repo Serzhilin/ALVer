@@ -16,30 +16,37 @@ export class Member {
     @Column("uuid")
     community_id!: string;
 
-    /** Computed from first_name + last_name — used for check-in name matching */
-    @Column()
-    name!: string;
+    /** Paperwork name — shown everywhere in the app. Never overwritten by eVault pull. */
+    @Column({ nullable: true })
+    app_first_name!: string | null;
 
     @Column({ nullable: true })
-    first_name!: string;
+    app_last_name!: string | null;
+
+    /** eVault-pulled name — shown only in Members form (admin view). */
+    @Column({ nullable: true })
+    first_name!: string | null;
 
     @Column({ nullable: true })
-    last_name!: string;
+    last_name!: string | null;
+
+    /** Avatar URL from eVault profile. Shown in Members form. */
+    @Column({ nullable: true })
+    avatar_url!: string | null;
 
     @Column({ nullable: true })
-    email!: string;
+    email!: string | null;
 
     @Column({ nullable: true })
-    phone!: string;
+    phone!: string | null;
 
-    /** W3DS eID identity name — links to login */
+    /** W3DS eID identity — nullable. Members without ename are managed manually. */
     @Column({ nullable: true })
-    ename!: string;
+    ename!: string | null;
 
     @Column({ default: false })
     is_aspirant!: boolean;
 
-    /** True for the community facilitator — hidden in general lists */
     @Column({ default: false })
     is_facilitator!: boolean;
 

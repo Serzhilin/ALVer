@@ -57,6 +57,10 @@ export class Vote {
     @Column({ nullable: true })
     signature!: string;
 
+    /** Member ID of voter — used for dedup when voter has no ename. */
+    @Column("uuid", { nullable: true })
+    voter_member_id!: string | null;
+
     @CreateDateColumn()
     created_at!: Date;
 }
