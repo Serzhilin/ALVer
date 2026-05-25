@@ -90,7 +90,19 @@ export class CommunityController {
             if (communityId && !await svc.isFacilitatorOf(ename, community.id)) {
                 return res.status(403).json({ error: "Forbidden" });
             }
-            const member = await svc.createMember(community.id, req.body);
+            const { app_first_name, app_last_name, email, phone, ename: bodyEname, is_aspirant, is_facilitator } = req.body;
+            if (!app_first_name?.trim() || !app_last_name?.trim()) {
+                return res.status(400).json({ error: "app_first_name and app_last_name are required" });
+            }
+            const member = await svc.createMember(community.id, {
+                app_first_name,
+                app_last_name,
+                email,
+                phone,
+                ename: bodyEname?.trim() || undefined,
+                is_aspirant,
+                is_facilitator,
+            });
             res.status(201).json(member);
         } catch (e: any) {
             res.status(400).json({ error: e.message });
@@ -115,13 +127,18 @@ export class CommunityController {
                 return res.status(404).json({ error: "Member not found" });
             }
 
-            const body = { ...req.body };
-            // Prevent admin from removing their own facilitator access
-            if (existing.ename && existing.ename === ename) {
-                delete body.is_facilitator;
-            }
+            const { app_first_name, app_last_name, email, phone, ename: bodyEname, is_aspirant, is_facilitator: bodyIsFacilitator } = req.body;
 
-            const member = await svc.updateMember(req.params.memberId, body);
+            // Prevent admin from removing their own facilitator access
+            const member = await svc.updateMember(req.params.memberId, {
+                app_first_name: app_first_name?.trim() || undefined,
+                app_last_name: app_last_name?.trim() || undefined,
+                email,
+                phone,
+                ename: bodyEname?.trim() || null,
+                is_aspirant,
+                is_facilitator: existing.ename && existing.ename === ename ? undefined : bodyIsFacilitator,
+            });
             res.json(member);
         } catch (e: any) {
             res.status(400).json({ error: e.message });

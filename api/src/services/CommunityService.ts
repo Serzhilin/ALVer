@@ -73,18 +73,12 @@ export class CommunityService {
     async getMembers(communityId: string): Promise<Member[]> {
         return this.memberRepo.find({
             where: { community_id: communityId },
-            order: { name: "ASC" },
+            order: { app_last_name: "ASC" },
         });
     }
 
     async getMemberById(memberId: string): Promise<Member | null> {
         return this.memberRepo.findOne({ where: { id: memberId } });
-    }
-
-    async findMemberByName(communityId: string, name: string): Promise<Member | null> {
-        return this.memberRepo.findOne({
-            where: { community_id: communityId, name },
-        });
     }
 
     async findMemberByEname(communityId: string, ename: string): Promise<Member | null> {
@@ -132,63 +126,49 @@ export class CommunityService {
     }
 
     /** Ensures the facilitator has a member row with is_facilitator=true. Idempotent. */
-    async upsertFacilitatorMember(communityId: string, ename: string, fullName: string): Promise<Member> {
+    async upsertFacilitatorMember(communityId: string, ename: string, appFirst: string, appLast: string): Promise<Member> {
         let member = await this.memberRepo.findOne({ where: { community_id: communityId, ename } });
-        if (member) {
-            if (!member.is_facilitator) {
-                member.is_facilitator = true;
-                member = await this.memberRepo.save(member);
-            }
-            return member;
+        if (!member) {
+            member = this.memberRepo.create({
+                community_id: communityId,
+                ename,
+                app_first_name: appFirst || null,
+                app_last_name: appLast || null,
+                is_facilitator: true,
+            });
+        } else {
+            member.is_facilitator = true;
         }
-        const parts = fullName.trim().split(/\s+/);
-        const last_name = parts.length > 1 ? parts.pop()! : '';
-        const first_name = parts.join(' ');
-        const newMember = this.memberRepo.create({
-            community_id: communityId,
-            ename,
-            name: fullName.trim(),
-            first_name,
-            last_name,
-            is_facilitator: true,
-            is_aspirant: false,
-        });
-        return this.memberRepo.save(newMember);
+        return this.memberRepo.save(member);
     }
 
     async createMember(communityId: string, data: {
-        first_name: string;
-        last_name: string;
+        app_first_name: string;
+        app_last_name: string;
         email?: string;
         phone?: string;
         ename?: string;
         is_aspirant?: boolean;
         is_facilitator?: boolean;
     }): Promise<Member> {
-        if (!data.ename?.trim()) {
-            throw new Error("ename is required — every member must have an eID identity");
-        }
-        const name = `${data.first_name.trim()} ${data.last_name.trim()}`;
         const member = this.memberRepo.create({
             community_id: communityId,
-            name,
-            first_name: data.first_name.trim(),
-            last_name: data.last_name.trim(),
-            email: data.email,
-            phone: data.phone,
-            ename: data.ename,
+            app_first_name: data.app_first_name.trim(),
+            app_last_name: data.app_last_name.trim(),
+            email: data.email || null,
+            phone: data.phone || null,
+            ename: data.ename?.trim() || null,
             is_aspirant: data.is_aspirant ?? false,
             is_facilitator: data.is_facilitator ?? false,
         });
         return this.memberRepo.save(member);
     }
 
-    async updateMember(id: string, data: Partial<Pick<Member, "first_name" | "last_name" | "name" | "email" | "phone" | "ename" | "is_aspirant" | "is_facilitator">>): Promise<Member> {
+    async updateMember(id: string, data: Partial<Pick<Member,
+        "app_first_name" | "app_last_name" | "email" | "phone" | "ename" | "is_aspirant" | "is_facilitator"
+    >>): Promise<Member> {
         const member = await this.memberRepo.findOneByOrFail({ id });
         Object.assign(member, data);
-        if (data.first_name !== undefined || data.last_name !== undefined) {
-            member.name = `${member.first_name?.trim() ?? ""} ${member.last_name?.trim() ?? ""}`.trim();
-        }
         return this.memberRepo.save(member);
     }
 
@@ -197,5 +177,19 @@ export class CommunityService {
         if (member) {
             await this.memberRepo.remove(member);
         }
+    }
+
+    /** All Member rows across all communities for this ename */
+    async findMembersByEname(ename: string): Promise<Member[]> {
+        return this.memberRepo.find({ where: { ename } });
+    }
+
+    /** Update eVault-sourced fields only — never touches app_first_name/app_last_name */
+    async updateMemberEvaultFields(id: string, data: {
+        first_name: string;
+        last_name: string;
+        avatar_url: string | null;
+    }): Promise<void> {
+        await this.memberRepo.update(id, data);
     }
 }
