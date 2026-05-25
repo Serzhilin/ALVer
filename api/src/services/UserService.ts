@@ -28,10 +28,10 @@ export function displayName(user: User): string {
     return user.ename;
 }
 
-/** Fetch firstName/lastName from the user's eVault profile on login */
+/** Fetch firstName/lastName/avatarUrl from the user's eVault profile on login */
 export async function fetchEVaultProfile(
     ename: string
-): Promise<{ first_name: string; last_name: string } | null> {
+): Promise<{ first_name: string; last_name: string; avatar_url?: string } | null> {
     const registryUrl = process.env.PUBLIC_REGISTRY_URL;
     const platformUrl = process.env.VITE_PUBLIC_ALVER_BASE_URL;
     if (!registryUrl || !platformUrl) return null;
@@ -74,6 +74,9 @@ export async function fetchEVaultProfile(
             }
         }
 
+        const avatarUrl: string | undefined =
+            merged.avatarUrl ?? merged.avatar ?? merged.picture ?? undefined;
+
         const displayName: string = merged.displayName ?? merged.name ?? "";
         if (!displayName && !merged.firstName) return null;
 
@@ -81,6 +84,7 @@ export async function fetchEVaultProfile(
         return {
             first_name: merged.firstName ?? parts[0] ?? "",
             last_name: merged.lastName ?? (parts.length > 1 ? parts[parts.length - 1] : ""),
+            avatar_url: avatarUrl,
         };
     } catch {
         return null;

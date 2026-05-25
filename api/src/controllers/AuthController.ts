@@ -5,10 +5,9 @@ import { verifySignature } from "../lib/signature-validator";
 import {
     findOrCreateByEname,
     fetchEVaultProfile,
-    updateUser,
-    displayName,
 } from "../services/UserService";
 import { signToken } from "../middleware/auth";
+import { appDisplayName } from "../lib/member-display";
 
 // In-memory SSE bus: sessionId → waiting desktop browser
 const sessions = new EventEmitter();
@@ -23,13 +22,12 @@ setTimeout(() => {
     setInterval(() => { sessionResults.clear(); sessionReturnTo.clear(); }, 30 * 60 * 1000);
 }, 0);
 
-function serializeUser(user: any) {
+function serializeMember(ename: string, member: import("../database/entities/Member").Member | null) {
     return {
-        id: user.id,
-        ename: user.ename,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        displayName: displayName(user),
+        ename,
+        firstName: member?.app_first_name ?? null,
+        lastName: member?.app_last_name ?? null,
+        displayName: member ? appDisplayName(member) : ename,
     };
 }
 
@@ -100,15 +98,19 @@ export async function epassportLogin(req: Request, res: Response) {
         }
     }
 
-    let user = await findOrCreateByEname(ename);
+    const user = await findOrCreateByEname(ename);
 
-    // Populate name from eVault on first login (or if missing)
-    if (!user.first_name) {
-        const profile = await fetchEVaultProfile(ename);
-        if (profile?.first_name) {
-            user = await updateUser(user.id, {
+    // Pull eVault profile → update Member's eVault name fields (never touches app names)
+    const profile = await fetchEVaultProfile(ename);
+    if (profile) {
+        const { CommunityService } = await import("../services/CommunityService");
+        const cs = new CommunityService();
+        const members = await cs.findMembersByEname(ename);
+        for (const member of members) {
+            await cs.updateMemberEvaultFields(member.id, {
                 first_name: profile.first_name,
                 last_name: profile.last_name,
+                avatar_url: profile.avatar_url ?? null,
             });
         }
     }
@@ -116,7 +118,7 @@ export async function epassportLogin(req: Request, res: Response) {
     const token = signToken({ userId: user.id, ename: user.ename });
     const returnTo = sessionReturnTo.get(session) ?? '/';
     sessionReturnTo.delete(session);
-    const payload = { token, user: serializeUser(user), returnTo };
+    const payload = { token, user: serializeMember(user.ename, null), returnTo };
 
     // Cache for polling fallback
     sessionResults.set(session, payload);
@@ -186,12 +188,9 @@ export async function devLogin(req: Request, res: Response) {
         return;
     }
     const TESTER_ENAME = "tester@dewoonwolk";
-    let user = await findOrCreateByEname(TESTER_ENAME);
-    if (!user.first_name) {
-        user = await updateUser(user.id, { first_name: "Tester", last_name: "van Vergaderen" });
-    }
+    const user = await findOrCreateByEname(TESTER_ENAME);
     const token = signToken({ userId: user.id, ename: user.ename });
-    res.json({ token, user: serializeUser(user) });
+    res.json({ token, user: serializeMember(user.ename, null) });
 }
 
 /** GET /api/auth/me
@@ -199,32 +198,31 @@ export async function devLogin(req: Request, res: Response) {
  *  Accepts optional ?communityId=uuid to scope to a specific community.
  */
 export async function getMe(req: Request, res: Response) {
-    const { userId, ename } = req.user!;
-    const communityId = typeof req.query.communityId === 'string' ? req.query.communityId : null;
-    const { findById } = await import("../services/UserService");
+    const { ename } = req.user!;
+    const communityId = typeof req.query.communityId === "string" ? req.query.communityId : null;
     const { CommunityService } = await import("../services/CommunityService");
-    const user = await findById(userId);
-    if (!user) { res.status(404).json({ error: "User not found" }); return; }
     const cs = new CommunityService();
+
     let community = null;
     let member = null;
+
     if (communityId) {
         community = await cs.findById(communityId);
         if (!community) { res.status(404).json({ error: "Community not found" }); return; }
         member = ename ? await cs.findMemberByEname(community.id, ename) : null;
     } else {
         community = ename ? await cs.findAsFacilitator(ename) : null;
-        if (!community && ename) community = await cs.findByMemberEname(ename);
         member = (community && ename) ? await cs.findMemberByEname(community.id, ename) : null;
     }
-    const isFacilitator = member?.is_facilitator ?? (community != null && community.facilitator_ename === ename);
 
-    // Ensure facilitator always has a member row — create one on first visit if missing
+    const isFacilitator = member?.is_facilitator ??
+        (community != null && community.facilitator_ename === ename);
+
     if (isFacilitator && !member && community && ename) {
-        member = await cs.upsertFacilitatorMember(community.id, ename, displayName(user));
+        member = await cs.upsertFacilitatorMember(community.id, ename, "", "");
     }
 
-    res.json({ ...serializeUser(user), community, member, isFacilitator });
+    res.json({ ...serializeMember(ename ?? "", member), community, member, isFacilitator });
 }
 
 /** GET /api/auth/communities
