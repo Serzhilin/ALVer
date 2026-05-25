@@ -31,6 +31,7 @@ function adaptMeeting(m) {
       id: a.id,
       name: a.attendee_name,
       ename: a.attendee_ename ?? null,
+      member_id: a.member_id ?? null,
       checkedInAt: a.checked_in_at
         ? new Date(a.checked_in_at).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
         : '',
@@ -272,6 +273,11 @@ export function MeetingProvider({ children }) {
     await load(meetingId.current)
   }
 
+  const manualCheckIn = async (memberId) => {
+    await api.manualAdd(meetingId.current, memberId)
+    await load(meetingId.current)
+  }
+
   const preRegister = async (name) => {
     await api.preRegister(meetingId.current, name)
     await load(meetingId.current)
@@ -320,6 +326,7 @@ export function MeetingProvider({ children }) {
       addManualVote,
       deleteVote: deleteVoteAction,
       checkIn,
+      manualCheckIn,
       preRegister,
       addMandate,
       revokeMandate,

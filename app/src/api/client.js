@@ -79,7 +79,7 @@ export const getDecisions = (id) => req('GET', `/meetings/${id}/decisions`)
 export const getAttendees = (id) => req('GET', `/meetings/${id}/attendees`)
 export const preRegister = (id, name) => req('POST', `/meetings/${id}/attendees`, { name })
 export const checkIn = (id, name) => req('POST', `/meetings/${id}/attendees/checkin`, { name })
-export const manualAdd = (id, name, note) => req('POST', `/meetings/${id}/attendees/manual`, { name, note })
+export const manualAdd = (id, memberId, note) => req('POST', `/meetings/${id}/attendees/manual`, { member_id: memberId, note })
 export const deleteAttendee = (meetingId, attendeeId) => req('DELETE', `/meetings/${meetingId}/attendees/${attendeeId}`)
 
 // ── Mandates ──────────────────────────────────────────────────────────────────

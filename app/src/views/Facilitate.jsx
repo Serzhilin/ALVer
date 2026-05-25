@@ -14,7 +14,7 @@ export default function Facilitate() {
     meeting, activePoll, attendeeCount,
     displayMode, screenTheme,
     updatePhase, addPoll, updatePoll, deletePoll, reorderPolls,
-    startPoll, closePoll, addManualVote, deleteVote, checkIn,
+    startPoll, closePoll, addManualVote, deleteVote, checkIn, manualCheckIn,
     addMandate, revokeMandate, removeAttendee,
   } = useMeeting()
   const navigate = useNavigate()
@@ -29,7 +29,7 @@ export default function Facilitate() {
   const [editingPoll, setEditingPoll] = useState(null)
   const [agendaOpen, setAgendaOpen] = useState(false)
 
-  const [selectedMember, setSelectedMember] = useState('')
+  const [selectedMemberId, setSelectedMemberId] = useState('')
   const [memberSearch, setMemberSearch] = useState('')
   const [manualVoteName, setManualVoteName] = useState('')
   const [manualVoteOption, setManualVoteOption] = useState('')
@@ -76,6 +76,8 @@ export default function Facilitate() {
 
   const mid = meeting.id
 
+  const memberDisplayName = (m) => [m.app_first_name, m.app_last_name].filter(Boolean).join(' ') || m.ename || '?'
+
   function getVoteCount(poll) {
     return Object.keys(poll.votes).length + (poll.onBehalfVoters?.size ?? 0)
   }
@@ -85,10 +87,9 @@ export default function Facilitate() {
   }
 
   function handleQuickCheckIn() {
-    const name = selectedMember.trim()
-    if (name) {
-      checkIn(name, true)
-      setSelectedMember('')
+    if (selectedMemberId) {
+      manualCheckIn(selectedMemberId)
+      setSelectedMemberId('')
       setMemberSearch('')
       setShowCheckInModal(false)
     }
@@ -540,7 +541,7 @@ export default function Facilitate() {
                       >
                         <option value="">{t('minutes.notulist_none')}</option>
                         {(members || []).filter(m => m.ename).map(m => (
-                          <option key={m.id} value={m.ename}>{m.name}</option>
+                          <option key={m.id} value={m.ename}>{memberDisplayName(m)}</option>
                         ))}
                       </select>
                       <button
@@ -554,7 +555,7 @@ export default function Facilitate() {
                     </div>
                     {notulistEname && (
                       <div style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)' }}>
-                        {t('minutes.notulist_assigned', { name: (members || []).find(m => m.ename === notulistEname)?.name ?? notulistEname })}
+                        {t('minutes.notulist_assigned', { name: (() => { const m = (members || []).find(m => m.ename === notulistEname); return m ? memberDisplayName(m) : notulistEname })() })}
                       </div>
                     )}
                   </div>
@@ -568,7 +569,7 @@ export default function Facilitate() {
 
       {/* Quick check-in modal — member picker */}
       {showCheckInModal && (
-        <div className="modal-overlay" onClick={() => { setShowCheckInModal(false); setSelectedMember(''); setMemberSearch('') }}>
+        <div className="modal-overlay" onClick={() => { setShowCheckInModal(false); setSelectedMemberId(''); setMemberSearch('') }}>
           <div className="modal" style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
             <h3 style={{ margin: '0 0 16px', fontFamily: 'var(--font-title)', fontSize: '1.1rem' }}>
               {t('facilitate.modal_add_without_app_title')}
@@ -583,27 +584,30 @@ export default function Facilitate() {
                     className="input"
                     autoFocus
                     value={memberSearch}
-                    onChange={e => { setMemberSearch(e.target.value); setSelectedMember('') }}
+                    onChange={e => { setMemberSearch(e.target.value); setSelectedMemberId('') }}
                     placeholder={t('facilitate.member_search_placeholder')}
                   />
                 </div>
                 <div style={{ maxHeight: 240, overflowY: 'auto', border: '1px solid var(--color-sand)', borderRadius: 8, marginBottom: 16 }}>
                   {members
-                    .filter(m => !meeting.checkedIn.some(c => c.name.toLowerCase() === m.name.toLowerCase()))
-                    .filter(m => !memberSearch || m.name.toLowerCase().includes(memberSearch.toLowerCase()))
+                    .filter(m => !meeting.checkedIn.some(c =>
+                      (m.ename && c.ename && c.ename === m.ename) ||
+                      (c.member_id && c.member_id === m.id)
+                    ))
+                    .filter(m => !memberSearch || memberDisplayName(m).toLowerCase().includes(memberSearch.toLowerCase()))
                     .map(m => (
                       <button
                         key={m.id}
-                        onClick={() => setSelectedMember(m.name)}
+                        onClick={() => setSelectedMemberId(m.id)}
                         style={{
-                          width: '100%', padding: '10px 14px', background: selectedMember === m.name ? 'rgba(196,98,45,0.08)' : 'white',
+                          width: '100%', padding: '10px 14px', background: selectedMemberId === m.id ? 'rgba(196,98,45,0.08)' : 'white',
                           border: 'none', borderBottom: '1px solid var(--color-sand)', cursor: 'pointer',
                           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                           fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', color: 'var(--color-charcoal)',
                           textAlign: 'left',
                         }}
                       >
-                        <span>{m.name}</span>
+                        <span>{memberDisplayName(m)}</span>
                         {m.is_aspirant && (
                           <span style={{ fontSize: '0.68rem', background: 'rgba(196,98,45,0.12)', color: 'var(--color-terracotta)', borderRadius: 4, padding: '1px 6px', fontWeight: 600 }}>
                             {t('facilitate.aspirant_badge')}
@@ -627,10 +631,10 @@ export default function Facilitate() {
               </div>
             )}
             <div style={{ display: 'flex', gap: 10 }}>
-              <button className="btn-primary" onClick={handleQuickCheckIn} disabled={!selectedMember.trim()}>
+              <button className="btn-primary" onClick={handleQuickCheckIn} disabled={!selectedMemberId}>
                 {t('common.add')}
               </button>
-              <button className="btn-secondary" onClick={() => { setShowCheckInModal(false); setSelectedMember(''); setMemberSearch('') }}>{t('common.cancel')}</button>
+              <button className="btn-secondary" onClick={() => { setShowCheckInModal(false); setSelectedMemberId(''); setMemberSearch('') }}>{t('common.cancel')}</button>
             </div>
           </div>
         </div>
@@ -730,13 +734,15 @@ export default function Facilitate() {
               {t('facilitate.add_mandate')}
             </h3>
             {(() => {
-              const checkedInNames = new Set(meeting.checkedIn.map(c => c.name.toLowerCase()))
               const alreadyGranted = new Set(meeting.confirmedMandates.map(m => m.from.toLowerCase()))
               // Granter = community members who are absent and haven't already granted
-              const granterOptions = (members || []).filter(m =>
-                !checkedInNames.has(m.name.toLowerCase()) &&
-                !alreadyGranted.has(m.name.toLowerCase())
-              )
+              const granterOptions = (members || []).filter(m => {
+                const alreadyCheckedIn = meeting.checkedIn.some(c =>
+                  (m.ename && c.ename && c.ename === m.ename) ||
+                  (c.member_id && c.member_id === m.id)
+                )
+                return !alreadyCheckedIn && !alreadyGranted.has(m.id)
+              })
               // Proxy = checked-in non-aspirants
               const proxyOptions = meeting.checkedIn.filter(c => !c.isAspirant)
               return (
@@ -746,7 +752,7 @@ export default function Facilitate() {
                     <select className="input" autoFocus value={mandateFrom} onChange={e => setMandateFrom(e.target.value)}>
                       <option value="">— {t('facilitate.granter_placeholder')} —</option>
                       {granterOptions.map(m => (
-                        <option key={m.id} value={m.name}>{m.name}</option>
+                        <option key={m.id} value={m.name ?? m.id}>{memberDisplayName(m)}</option>
                       ))}
                     </select>
                   </div>
