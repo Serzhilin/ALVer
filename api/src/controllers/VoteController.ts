@@ -28,13 +28,14 @@ export class VoteController {
 
     manualVote = async (req: Request, res: Response) => {
         try {
-            const { voter_name, option_id, on_behalf_of_name } = req.body;
+            const { voter_name, option_id, on_behalf_of_name, voter_member_id } = req.body;
             if (!option_id) return res.status(400).json({ error: "option_id is required" });
             const vote = await svc.cast(req.params.pollId, {
                 voter_name: voter_name ?? "Facilitator",
                 option_id,
                 method: "manual",
                 on_behalf_of_name,
+                voter_member_id,
             });
             res.status(201).json(vote);
         } catch (e: any) {

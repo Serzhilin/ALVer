@@ -1,4 +1,5 @@
 import { AppDataSource } from "../database/data-source";
+import { IsNull } from "typeorm";
 import { Vote, VoteMethod } from "../database/entities/Vote";
 import { Poll } from "../database/entities/Poll";
 import { Mandate } from "../database/entities/Mandate";
@@ -16,6 +17,7 @@ export class VoteService {
         method?: VoteMethod;
         on_behalf_of_name?: string;
         voter_ename?: string;
+        voter_member_id?: string;
     }): Promise<Vote> {
         const poll = await this.pollRepo.findOneBy({ id: pollId });
         if (!poll) throw new Error("Poll not found");
@@ -25,18 +27,18 @@ export class VoteService {
         if (!validOption) throw new Error(`Invalid option_id: ${data.option_id}`);
 
         // Verify voter is checked in and not an aspirant (manual votes skip — facilitator is responsible)
+        let checkedInAttendee: Attendee | null = null;
         if (data.method !== "manual") {
             const attendeeRepo = AppDataSource.getRepository(Attendee);
-            let checkedInAttendee: Attendee | null = null;
 
             if (data.voter_ename) {
                 checkedInAttendee = await attendeeRepo.findOne({
                     where: { meeting_id: poll.meeting_id, attendee_ename: data.voter_ename, status: "checked_in" },
                 });
             }
-            if (!checkedInAttendee) {
+            if (!checkedInAttendee && data.voter_member_id) {
                 checkedInAttendee = await attendeeRepo.findOne({
-                    where: { meeting_id: poll.meeting_id, attendee_name: data.voter_name, status: "checked_in" },
+                    where: { meeting_id: poll.meeting_id, member_id: data.voter_member_id, status: "checked_in" },
                 });
             }
             if (!checkedInAttendee) throw new Error("not_checked_in");
@@ -69,23 +71,23 @@ export class VoteService {
             on_behalf_of_ename = mandate.granter_ename ?? undefined;
         }
 
-        // Dedup: ename-first, name fallback
+        // Dedup: ename-first, member_id fallback
         let existing: Vote | null = null;
         if (data.voter_ename) {
             existing = await this.voteRepo.findOne({
                 where: {
                     poll_id: pollId,
                     voter_ename: data.voter_ename,
-                    on_behalf_of_name: data.on_behalf_of_name ?? null as any,
+                    on_behalf_of_name: data.on_behalf_of_name ?? IsNull(),
                 },
             });
         }
-        if (!existing) {
+        if (!existing && data.voter_member_id) {
             existing = await this.voteRepo.findOne({
                 where: {
                     poll_id: pollId,
-                    voter_name: data.voter_name,
-                    on_behalf_of_name: data.on_behalf_of_name ?? null as any,
+                    voter_member_id: data.voter_member_id,
+                    on_behalf_of_name: data.on_behalf_of_name ?? IsNull(),
                 },
             });
         }
@@ -103,6 +105,7 @@ export class VoteService {
             meeting_id: poll.meeting_id,
             voter_name: data.voter_name,
             voter_ename: data.voter_ename,
+            voter_member_id: checkedInAttendee?.member_id ?? data.voter_member_id ?? null,
             option_id: data.option_id,
             cast_at: new Date(),
             method: data.method ?? "app",
