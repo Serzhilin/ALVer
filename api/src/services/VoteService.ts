@@ -201,7 +201,7 @@ export class VoteService {
                 where: {
                     poll_id: pollId,
                     voter_ename: voterEname,
-                    on_behalf_of_name: onBehalfOf ?? null as any,
+                    on_behalf_of_name: onBehalfOf ?? IsNull(),
                 },
             });
             if (byEname) return true;
@@ -210,7 +210,7 @@ export class VoteService {
             where: {
                 poll_id: pollId,
                 voter_name: voterName,
-                on_behalf_of_name: onBehalfOf ?? null as any,
+                on_behalf_of_name: onBehalfOf ?? IsNull(),
             },
         });
         return !!vote;
