@@ -4,37 +4,24 @@ import { AttendeeService } from "../services/AttendeeService";
 const svc = new AttendeeService();
 
 export class AttendeeController {
-    /** Pre-register (before meeting) */
-    preRegister = async (req: Request, res: Response) => {
-        try {
-            const { name } = req.body;
-            if (!name) return res.status(400).json({ error: "name is required" });
-            const attendee = await svc.preRegister(req.params.id, name);
-            res.status(201).json(attendee);
-        } catch (e: any) {
-            res.status(400).json({ error: e.message });
-        }
-    };
-
-    /** Check in via app (participant self-service — requires JWT, ename used for dedup) */
+    /** W3DS self-check-in — requires JWT, ename used for identity */
     checkIn = async (req: Request, res: Response) => {
         try {
-            const { name } = req.body;
-            if (!name) return res.status(400).json({ error: "name is required" });
             const ename = req.user?.ename;
-            const attendee = await svc.checkIn(req.params.id, name, "app", undefined, ename);
+            if (!ename) return res.status(401).json({ error: "Authentication required" });
+            const attendee = await svc.checkInByEname(req.params.id, ename);
             res.json(attendee);
         } catch (e: any) {
             res.status(400).json({ error: e.message });
         }
     };
 
-    /** Facilitator manual add (no app) */
+    /** Facilitator manual check-in — requires member_id in body */
     manualAdd = async (req: Request, res: Response) => {
         try {
-            const { name, note } = req.body;
-            if (!name) return res.status(400).json({ error: "name is required" });
-            const attendee = await svc.checkIn(req.params.id, name, "manual", note);
+            const { member_id, note } = req.body;
+            if (!member_id) return res.status(400).json({ error: "member_id is required" });
+            const attendee = await svc.checkInByMemberId(req.params.id, member_id, note);
             res.status(201).json(attendee);
         } catch (e: any) {
             res.status(400).json({ error: e.message });

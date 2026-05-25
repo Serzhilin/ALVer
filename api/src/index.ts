@@ -124,7 +124,6 @@ app.get("/api/meetings/:id/attendance", requireAuth, async (req, res) => {
 
 // ── Attendees (self check-in requires auth — ename used for dedup) ────────────
 app.get("/api/meetings/:id/attendees", attendee.list);
-app.post("/api/meetings/:id/attendees", attendee.preRegister);
 app.post("/api/meetings/:id/attendees/checkin", requireAuth, attendee.checkIn);
 app.patch("/api/meetings/:id/attendees/:attendeeId", attendee.update);
 app.delete("/api/meetings/:id/attendees/:attendeeId", requireAuth, requireFacilitatorOfMeeting, attendee.delete);
