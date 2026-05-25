@@ -105,7 +105,7 @@ export class MandateService {
             where: { meeting_id: meetingId, granter_ename: granterEname, status: "active" },
         });
         for (const m of mandates) {
-            await this.repo.delete(m.id);
+            await this.revoke(m.id);
         }
     }
 
