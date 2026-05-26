@@ -619,15 +619,8 @@ export default function Facilitate() {
                 </div>
               </>
             ) : (
-              <div style={{ marginBottom: 16 }}>
-                <input
-                  className="input"
-                  autoFocus
-                  value={selectedMember}
-                  onChange={e => setSelectedMember(e.target.value)}
-                  placeholder={t('facilitate.name_placeholder')}
-                  onKeyDown={e => e.key === 'Enter' && handleQuickCheckIn()}
-                />
+              <div style={{ marginBottom: 16, color: 'var(--color-charcoal-light)', fontSize: '0.85rem' }}>
+                {t('settings.members_empty')}
               </div>
             )}
             <div style={{ display: 'flex', gap: 10 }}>
@@ -752,7 +745,7 @@ export default function Facilitate() {
                     <select className="input" autoFocus value={mandateFrom} onChange={e => setMandateFrom(e.target.value)}>
                       <option value="">— {t('facilitate.granter_placeholder')} —</option>
                       {granterOptions.map(m => (
-                        <option key={m.id} value={m.name ?? m.id}>{memberDisplayName(m)}</option>
+                        <option key={m.id} value={memberDisplayName(m)}>{memberDisplayName(m)}</option>
                       ))}
                     </select>
                   </div>
