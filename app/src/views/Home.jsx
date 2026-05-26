@@ -144,9 +144,10 @@ export default function Home() {
 
   // ── Attendee actions ──────────────────────────────────────────────────────
   async function handleIllCome() {
-    const name = user?.member?.name
-      || ((user?.firstName && user?.lastName) ? `${user.firstName} ${user.lastName}` : user?.displayName)
-    if (!name || !currentMeeting) return
+    const name = [user?.member?.app_first_name, user?.member?.app_last_name].filter(s => s?.trim()).join(' ')
+      || user?.displayName
+      || user?.ename
+    if (!name?.trim() || !currentMeeting) return
     setSubmitting(true)
     try {
       await preRegister(name)

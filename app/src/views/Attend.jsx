@@ -42,10 +42,10 @@ export default function Attend() {
     if (!user || !meeting || checkedIn || checkInFired.current) return
     checkInFired.current = true
 
-    // Prefer canonical member name (matches what's stored in DB for this community)
-    // so manual and auto check-in resolve to the same string.
-    const name = user.member?.name
-      || ((user.firstName && user.lastName) ? `${user.firstName} ${user.lastName}` : user.displayName)
+    // Prefer app_first_name/app_last_name, then displayName, then ename.
+    const name = [user.member?.app_first_name, user.member?.app_last_name].filter(s => s?.trim()).join(' ')
+      || user.displayName
+      || user.ename
 
     localStorage.removeItem('alver_my_name')
     setMyName(name)
@@ -58,7 +58,7 @@ export default function Attend() {
     if (found) {
       setCheckedIn(true)
     } else if (meeting.phase === 'open') {
-      checkIn(name)
+      checkIn()
         .then(() => setCheckedIn(true))
         .catch(err => console.warn('Auto check-in failed:', err))
     }
@@ -69,7 +69,7 @@ export default function Attend() {
   // - facilitator manually adds person (checkedIn false → true)
   // - facilitator deletes check-in (checkedIn true → false)
   useEffect(() => {
-    if (!myName || !meeting) return
+    if (!myName?.trim() || !meeting) return
     const found = meeting.checkedIn.find(c =>
       (user?.ename && c.ename && c.ename === user.ename) ||
       c.name.toLowerCase() === myName.toLowerCase()
