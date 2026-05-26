@@ -136,12 +136,12 @@ export default function MeetingFormModal({ meeting, communityId, communityLocati
                 onChange={e => {
                   const selected = facilitators.find(m => m.ename === e.target.value)
                   set('facilitator_ename', e.target.value)
-                  set('facilitator_name', selected?.name ?? '')
+                  set('facilitator_name', [selected?.app_first_name, selected?.app_last_name].filter(s => s?.trim()).join(' ') ?? '')
                 }}
               >
                 <option value="">—</option>
                 {facilitators.map(m => (
-                  <option key={m.id} value={m.ename ?? m.id}>{m.name}</option>
+                  <option key={m.id} value={m.ename ?? m.id}>{[m.app_first_name, m.app_last_name].filter(s => s?.trim()).join(' ') || m.ename}</option>
                 ))}
               </select>
             </div>
