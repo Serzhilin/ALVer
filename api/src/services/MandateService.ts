@@ -91,15 +91,6 @@ export class MandateService {
         await this.repo.delete(mandateId);
     }
 
-    async revokeByGranter(meetingId: string, granterName: string): Promise<void> {
-        const mandates = await this.repo.find({
-            where: { meeting_id: meetingId, granter_name: granterName, status: "active" },
-        });
-        for (const m of mandates) {
-            await this.revoke(m.id);
-        }
-    }
-
     async revokeByGranterEname(meetingId: string, granterEname: string): Promise<void> {
         const mandates = await this.repo.find({
             where: { meeting_id: meetingId, granter_ename: granterEname, status: "active" },
@@ -109,9 +100,4 @@ export class MandateService {
         }
     }
 
-    async getActiveMandateForProxy(meetingId: string, proxyName: string): Promise<Mandate[]> {
-        return this.repo.find({
-            where: { meeting_id: meetingId, proxy_name: proxyName, status: "active" },
-        });
-    }
 }

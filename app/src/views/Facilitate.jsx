@@ -76,7 +76,7 @@ export default function Facilitate() {
 
   const mid = meeting.id
 
-  const memberDisplayName = (m) => [m.app_first_name, m.app_last_name].filter(Boolean).join(' ') || m.ename || '?'
+  const memberDisplayName = (m) => [m.app_first_name, m.app_last_name].filter(s => s?.trim()).join(' ') || m.ename || '?'
 
   function getVoteCount(poll) {
     return Object.keys(poll.votes).length + (poll.onBehalfVoters?.size ?? 0)

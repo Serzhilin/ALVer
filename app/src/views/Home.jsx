@@ -29,7 +29,7 @@ export default function Home() {
   const { t, i18n } = useTranslation()
   const { user, isFacilitator, loading: authLoading, login, logout, communityId, communities, switchCommunity } = useUser()
   const { community, members } = useCommunity() || {}
-  const { meeting: ctxMeeting, setMeetingId, preRegister, addMandate, removeAttendee, revokeMandate } = useMeeting()
+  const { meeting: ctxMeeting, setMeetingId, addMandate, removeAttendee, revokeMandate } = useMeeting()
   const facilitatorMembers = (members || []).filter(m => m.is_facilitator)
   const dateLocale = i18n.language === 'nl' ? 'nl-NL' : 'en-GB'
 
@@ -143,20 +143,14 @@ export default function Home() {
   }
 
   // ── Attendee actions ──────────────────────────────────────────────────────
-  async function handleIllCome() {
+  function handleIllCome() {
     const name = [user?.member?.app_first_name, user?.member?.app_last_name].filter(s => s?.trim()).join(' ')
       || user?.displayName
       || user?.ename
     if (!name?.trim() || !currentMeeting) return
-    setSubmitting(true)
-    try {
-      await preRegister(name)
-      const data = { type: 'attend', name }
-      localStorage.setItem(`alver_checkin_${currentMeeting.id}`, JSON.stringify(data))
-      setLocalPreReg(data)
-    } finally {
-      setSubmitting(false)
-    }
+    const data = { type: 'attend', name }
+    localStorage.setItem(`alver_checkin_${currentMeeting.id}`, JSON.stringify(data))
+    setLocalPreReg(data)
   }
 
   async function handleMandateSubmit() {

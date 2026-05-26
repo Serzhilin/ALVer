@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { MeetingService } from "../services/MeetingService";
 import { CommunityService } from "../services/CommunityService";
 import { sseService } from "../services/SSEService";
+import { appDisplayName } from "../lib/member-display";
 
 const svc = new MeetingService();
 const commSvc = new CommunityService();
@@ -85,7 +86,7 @@ export class MeetingController {
             const meeting = await svc.findById(req.params.id);
             if (!meeting) return res.status(404).json({ error: "Meeting not found" });
             const members = await commSvc.getMembers(meeting.community_id);
-            const regular = members.filter(m => !m.is_aspirant).map(m => ({ id: m.id, name: m.name }));
+            const regular = members.filter(m => !m.is_aspirant).map(m => ({ id: m.id, name: appDisplayName(m) }));
             res.json(regular);
         } catch (e: any) {
             res.status(500).json({ error: e.message });

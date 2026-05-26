@@ -4,6 +4,7 @@ import { Attendee } from "../database/entities/Attendee";
 import { Mandate } from "../database/entities/Mandate";
 import { Member } from "../database/entities/Member";
 import { Meeting } from "../database/entities/Meeting";
+import { appDisplayName } from "../lib/member-display";
 
 export class AttendanceService {
     private repo = AppDataSource.getRepository(MeetingAttendanceRecord);
@@ -43,7 +44,7 @@ export class AttendanceService {
 
         for (const member of members) {
             const ename = member.ename?.toLowerCase();
-            const nameLower = member.name.toLowerCase();
+            const nameLower = appDisplayName(member).toLowerCase();
 
             const isPresent =
                 (ename ? checkedInEnames.has(ename) : false) ||
@@ -54,7 +55,7 @@ export class AttendanceService {
                     meeting_id: meetingId,
                     community_id: meeting.community_id,
                     member_ename: member.ename,
-                    member_name: member.name,
+                    member_name: appDisplayName(member),
                     is_aspirant: member.is_aspirant,
                     status: "attended",
                     proxy_ename: null!,
@@ -72,7 +73,7 @@ export class AttendanceService {
                     meeting_id: meetingId,
                     community_id: meeting.community_id,
                     member_ename: member.ename,
-                    member_name: member.name,
+                    member_name: appDisplayName(member),
                     is_aspirant: member.is_aspirant,
                     status: "mandated",
                     proxy_ename: mandate.proxy_ename,
@@ -83,7 +84,7 @@ export class AttendanceService {
                     meeting_id: meetingId,
                     community_id: meeting.community_id,
                     member_ename: member.ename,
-                    member_name: member.name,
+                    member_name: appDisplayName(member),
                     is_aspirant: member.is_aspirant,
                     status: "absent",
                     proxy_ename: null!,

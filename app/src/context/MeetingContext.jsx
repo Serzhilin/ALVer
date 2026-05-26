@@ -264,22 +264,13 @@ export function MeetingProvider({ children }) {
     await load(meetingId.current)
   }
 
-  const checkIn = async (name, manual = false) => {
-    if (manual) {
-      await api.manualAdd(meetingId.current, name)
-    } else {
-      await api.checkIn(meetingId.current, name)
-    }
+  const checkIn = async () => {
+    await api.checkIn(meetingId.current)
     await load(meetingId.current)
   }
 
   const manualCheckIn = async (memberId) => {
     await api.manualAdd(meetingId.current, memberId)
-    await load(meetingId.current)
-  }
-
-  const preRegister = async (name) => {
-    await api.preRegister(meetingId.current, name)
     await load(meetingId.current)
   }
 
@@ -326,7 +317,6 @@ export function MeetingProvider({ children }) {
       deleteVote: deleteVoteAction,
       checkIn,
       manualCheckIn,
-      preRegister,
       addMandate,
       revokeMandate,
       removeAttendee,
