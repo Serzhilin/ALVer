@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useUser } from '../context/UserContext'
 
 /**
  * Full-screen community selection screen.
@@ -13,6 +14,7 @@ import { useTranslation } from 'react-i18next'
 export default function CommunityPicker({ communities, onSelect, isFacilitatorSession = false }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { logout } = useUser()
 
   // Error state: facilitator login but no facilitator communities
   if (isFacilitatorSession && communities.length === 0) {
@@ -38,7 +40,7 @@ export default function CommunityPicker({ communities, onSelect, isFacilitatorSe
           {t('community_picker.no_facilitator_communities')}
         </h1>
         <button
-          onClick={() => navigate('/')}
+          onClick={() => { logout(); navigate('/') }}
           style={{
             marginTop: 8,
             background: 'none',
