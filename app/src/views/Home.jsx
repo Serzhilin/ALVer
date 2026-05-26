@@ -43,7 +43,7 @@ export default function Home() {
   // ── Attendee: local state ─────────────────────────────────────────────────
   const [localPreReg, setLocalPreReg] = useState(null)
   const [attendanceMode, setAttendanceMode] = useState(null) // null | 'mandate'
-  const [proxyName, setProxyName] = useState('')
+  const [proxyMemberId, setProxyMemberId] = useState('')
   const [mandateNote, setMandateNote] = useState('')
   const [agendaOpen, setAgendaOpen] = useState(false)
   const [pollsOpen, setPollsOpen] = useState(false)
@@ -159,18 +159,22 @@ export default function Home() {
   }
 
   async function handleMandateSubmit() {
-    const name = user?.member?.name
-      || ((user?.firstName && user?.lastName) ? `${user.firstName} ${user.lastName}` : user?.displayName)
-    if (!name || !proxyName || !currentMeeting) return
+    if (!proxyMemberId || !currentMeeting) return
     setSubmitting(true)
     setMandateError(null)
     try {
-      await addMandate(name, proxyName, mandateNote)
-      const data = { type: 'mandate', name, proxy: proxyName }
+      await addMandate(proxyMemberId, mandateNote)
+      // localStorage display — use app names or displayName
+      const displayName = user?.displayName || user?.ename || '?'
+      const proxyMember = meetingMembersList.find(m => m.id === proxyMemberId)
+      const proxyDisplay = proxyMember
+        ? ([proxyMember.app_first_name, proxyMember.app_last_name].filter(Boolean).join(' ') || proxyMember.ename || '?')
+        : proxyMemberId
+      const data = { type: 'mandate', name: displayName, proxy: proxyDisplay }
       localStorage.setItem(`alver_checkin_${currentMeeting.id}`, JSON.stringify(data))
       setLocalPreReg(data)
       setAttendanceMode(null)
-      setProxyName('')
+      setProxyMemberId('')
       setMandateNote('')
     } catch (e) {
       setMandateError(e.message || 'Failed to submit mandate')
@@ -202,7 +206,7 @@ export default function Home() {
     localStorage.removeItem(`alver_checkin_${currentMeeting.id}`)
     setLocalPreReg(null)
     setAttendanceMode(null)
-    setProxyName('')
+    setProxyMemberId('')
     setMandateNote('')
   }
 
@@ -373,14 +377,20 @@ export default function Home() {
                       <p style={{ margin: 0, fontSize: '0.83rem', color: 'var(--color-charcoal-light)' }}>{t('register.give_mandate_hint')}</p>
                       <select
                         className="input"
-                        value={proxyName}
-                        onChange={e => setProxyName(e.target.value)}
+                        value={proxyMemberId}
+                        onChange={e => setProxyMemberId(e.target.value)}
                         autoFocus
                       >
                         <option value="">{t('register.proxy_placeholder')}</option>
-                        {meetingMembersList.map(m => (
-                          <option key={m.id} value={m.name}>{m.name}</option>
-                        ))}
+                        {meetingMembersList
+                          .filter(m => m.id !== user?.member?.id)
+                          .map(m => {
+                            const displayName = [m.app_first_name, m.app_last_name].filter(Boolean).join(' ') || m.ename || '?'
+                            return (
+                              <option key={m.id} value={m.id}>{displayName}</option>
+                            )
+                          })
+                        }
                       </select>
                       <input
                         className="input"
@@ -395,12 +405,12 @@ export default function Home() {
                         <button
                           className="btn-primary"
                           style={{ flex: 1, justifyContent: 'center' }}
-                          disabled={!proxyName || submitting}
+                          disabled={!proxyMemberId || submitting}
                           onClick={handleMandateSubmit}
                         >
                           {submitting ? t('common.loading') : t('register.sign_confirm')}
                         </button>
-                        <button className="btn-secondary" onClick={() => { setAttendanceMode(null); setProxyName(''); setMandateNote(''); setMandateError(null) }}>
+                        <button className="btn-secondary" onClick={() => { setAttendanceMode(null); setProxyMemberId(''); setMandateNote(''); setMandateError(null) }}>
                           {t('common.cancel')}
                         </button>
                       </div>

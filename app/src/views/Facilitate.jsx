@@ -113,8 +113,8 @@ export default function Facilitate() {
   }
 
   function handleAddMandate() {
-    if (mandateFrom.trim() && mandateTo.trim()) {
-      addMandate(mandateFrom.trim(), mandateTo.trim(), mandateNote.trim())
+    if (mandateTo.trim()) {
+      addMandate(mandateTo.trim(), mandateNote.trim())
       setMandateFrom('')
       setMandateTo('')
       setMandateNote('')
@@ -755,7 +755,7 @@ export default function Facilitate() {
                     <select className="input" value={mandateTo} onChange={e => setMandateTo(e.target.value)}>
                       <option value="">— {t('facilitate.proxy_placeholder')} —</option>
                       {proxyOptions.map(c => (
-                        <option key={c.id} value={c.name}>{c.name}</option>
+                        <option key={c.id} value={c.member_id ?? c.id}>{c.name}</option>
                       ))}
                     </select>
                   </div>
@@ -767,7 +767,7 @@ export default function Facilitate() {
               )
             })()}
             <div style={{ display: 'flex', gap: 10 }}>
-              <button className="btn-primary" onClick={handleAddMandate} disabled={!mandateFrom.trim() || !mandateTo.trim()}>
+              <button className="btn-primary" onClick={handleAddMandate} disabled={!mandateTo.trim()}>
                 {t('common.add')}
               </button>
               <button className="btn-secondary" onClick={() => setShowMandateModal(false)}>{t('common.cancel')}</button>
