@@ -1,8 +1,5 @@
 # ALVer Bug Tracking
 
-
-after finish of each meeting all peeps not checked in and not mandated are marked as  Afwezig.
-
 General:
 
 ideally i wanna have link opener in eID...
