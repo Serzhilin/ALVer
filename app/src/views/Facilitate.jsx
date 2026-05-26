@@ -203,21 +203,23 @@ export default function Facilitate() {
             >
               {t('facilitate.open_display')}
             </a>
-            <button
-              onClick={() => apiSetScreenTheme(meeting.id, screenTheme === 'day' ? 'night' : 'day').catch(console.error)}
-              style={{
-                background: 'transparent',
-                border: '1px solid var(--color-charcoal-light)',
-                color: 'var(--color-charcoal)',
-                borderRadius: 8,
-                padding: '9px 20px',
-                fontSize: '0.9rem',
-                fontWeight: 500,
-                cursor: 'pointer',
-              }}
-            >
-              {screenTheme === 'day' ? t('facilitate.screen_theme_night') : t('facilitate.screen_theme_day')}
-            </button>
+            {meeting.phase === 'in_session' && (
+              <button
+                onClick={() => apiSetScreenTheme(meeting.id, screenTheme === 'day' ? 'night' : 'day').catch(console.error)}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid var(--color-charcoal-light)',
+                  color: 'var(--color-charcoal)',
+                  borderRadius: 8,
+                  padding: '9px 20px',
+                  fontSize: '0.9rem',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                }}
+              >
+                {screenTheme === 'day' ? t('facilitate.screen_theme_night') : t('facilitate.screen_theme_day')}
+              </button>
+            )}
             {meeting.phase === 'in_session' && !confirmCloseMeeting && (
               <button className="btn-danger" onClick={() => setConfirmCloseMeeting(true)}>
                 {t('facilitate.close_meeting')}
