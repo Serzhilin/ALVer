@@ -2,10 +2,7 @@ import { Request, Response } from "express";
 import { EventEmitter } from "events";
 import { v4 as uuidv4 } from "uuid";
 import { verifySignature } from "../lib/signature-validator";
-import {
-    findOrCreateByEname,
-    fetchEVaultProfile,
-} from "../services/UserService";
+import { fetchEVaultProfile } from "../lib/evault";
 import { signToken } from "../middleware/auth";
 import { appDisplayName } from "../lib/member-display";
 
@@ -98,8 +95,6 @@ export async function epassportLogin(req: Request, res: Response) {
         }
     }
 
-    const user = await findOrCreateByEname(ename);
-
     // Pull eVault profile → update Member's eVault name fields (never touches app names)
     const profile = await fetchEVaultProfile(ename);
     if (profile) {
@@ -115,10 +110,10 @@ export async function epassportLogin(req: Request, res: Response) {
         }
     }
 
-    const token = signToken({ userId: user.id, ename: user.ename });
+    const token = signToken({ ename });
     const returnTo = sessionReturnTo.get(session) ?? '/';
     sessionReturnTo.delete(session);
-    const payload = { token, user: serializeMember(user.ename, null), returnTo };
+    const payload = { token, user: serializeMember(ename, null), returnTo };
 
     // Cache for polling fallback
     sessionResults.set(session, payload);
@@ -188,9 +183,8 @@ export async function devLogin(req: Request, res: Response) {
         return;
     }
     const TESTER_ENAME = "tester@dewoonwolk";
-    const user = await findOrCreateByEname(TESTER_ENAME);
-    const token = signToken({ userId: user.id, ename: user.ename });
-    res.json({ token, user: serializeMember(user.ename, null) });
+    const token = signToken({ ename: TESTER_ENAME });
+    res.json({ token, user: serializeMember(TESTER_ENAME, null) });
 }
 
 /** GET /api/auth/me

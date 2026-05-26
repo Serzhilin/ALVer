@@ -1,33 +1,3 @@
-import { AppDataSource } from "../database/data-source";
-import { User } from "../database/entities/User";
-
-const repo = () => AppDataSource.getRepository(User);
-
-export async function findOrCreateByEname(ename: string): Promise<User> {
-    const existing = await repo().findOne({ where: { ename } });
-    if (existing) return existing;
-    return repo().save(repo().create({ ename }));
-}
-
-export async function findById(id: string): Promise<User | null> {
-    return repo().findOne({ where: { id } });
-}
-
-export async function updateUser(id: string, data: Partial<Pick<User, "first_name" | "last_name">>): Promise<User> {
-    const user = await repo().findOneOrFail({ where: { id } });
-    Object.assign(user, data);
-    return repo().save(user);
-}
-
-/** Format display name: "Sara Visser" or fall back to ename */
-export function displayName(user: User): string {
-    if (user.first_name && user.last_name) {
-        return `${user.first_name} ${user.last_name}`;
-    }
-    if (user.first_name) return user.first_name;
-    return user.ename;
-}
-
 /** Fetch firstName/lastName/avatarUrl from the user's eVault profile on login */
 export async function fetchEVaultProfile(
     ename: string
@@ -66,7 +36,6 @@ export async function fetchEVaultProfile(
         const envelopes: any[] = gqlData?.data?.findMetaEnvelopesByOntology ?? [];
         if (envelopes.length === 0) return null;
 
-        // Merge all envelopes oldest→newest — later writes win per field
         const merged: Record<string, any> = {};
         for (const env of envelopes) {
             for (const [k, v] of Object.entries(env.parsed ?? {})) {
