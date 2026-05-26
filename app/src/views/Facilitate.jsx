@@ -727,14 +727,15 @@ export default function Facilitate() {
               {t('facilitate.add_mandate')}
             </h3>
             {(() => {
-              const alreadyGranted = new Set(meeting.confirmedMandates.map(m => m.from.toLowerCase()))
+              const alreadyGrantedEnames = new Set(meeting.confirmedMandates.filter(m => m.fromEname).map(m => m.fromEname.toLowerCase()))
               // Granter = community members who are absent and haven't already granted
               const granterOptions = (members || []).filter(m => {
                 const alreadyCheckedIn = meeting.checkedIn.some(c =>
                   (m.ename && c.ename && c.ename === m.ename) ||
                   (c.member_id && c.member_id === m.id)
                 )
-                return !alreadyCheckedIn && !alreadyGranted.has(m.id)
+                const alreadyGranted = m.ename && alreadyGrantedEnames.has(m.ename.toLowerCase())
+                return !alreadyCheckedIn && !alreadyGranted
               })
               // Proxy = checked-in non-aspirants
               const proxyOptions = meeting.checkedIn.filter(c => !c.isAspirant)
