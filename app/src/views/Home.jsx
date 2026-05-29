@@ -84,7 +84,7 @@ export default function Home() {
 
   // DB truth: if server says we're checked in, navigate to Attend — regardless of localStorage
   useEffect(() => {
-    if (!ctxMeeting || !user?.ename || isFacilitator) return
+    if (!ctxMeeting || !user?.ename || isFacilitator || !community?.slug) return
     const myEntry = ctxMeeting.checkedIn.find(c =>
       (c.ename && c.ename === user.ename) ||
       (c.member_id && user?.member?.id && c.member_id === user.member.id)
@@ -92,7 +92,7 @@ export default function Home() {
     if (myEntry) {
       navigate(`/${community?.slug}/meeting/${ctxMeeting.id}/attend`, { replace: true })
     }
-  }, [ctxMeeting, user?.ename, user?.member?.id, isFacilitator])
+  }, [ctxMeeting, user?.ename, user?.member?.id, isFacilitator, community?.slug])
 
   // Load members when mandate form opens
   useEffect(() => {
@@ -154,14 +154,14 @@ export default function Home() {
     setSubmitting(true)
     try {
       await preRegister()
+      const data = { type: 'attend', name }
+      localStorage.setItem(`alver_checkin_${currentMeeting.id}`, JSON.stringify(data))
+      setLocalPreReg(data)
     } catch (e) {
       console.error('preRegister failed', e)
     } finally {
       setSubmitting(false)
     }
-    const data = { type: 'attend', name }
-    localStorage.setItem(`alver_checkin_${currentMeeting.id}`, JSON.stringify(data))
-    setLocalPreReg(data)
   }
 
   async function handleMandateSubmit() {
@@ -214,6 +214,11 @@ export default function Home() {
     }
     if (localPreReg?.type === 'mandate' && localPreReg.name) {
       await revokeMandate(localPreReg.name).catch(() => {})
+    }
+    if (localPreReg?.type === 'decline' && ctxMeeting) {
+      const myEname = user?.ename
+      const declined = ctxMeeting.declines.find(d => myEname && d.ename && d.ename === myEname)
+      if (declined) await removeAttendee(declined.id).catch(() => {})
     }
     localStorage.removeItem(`alver_checkin_${currentMeeting.id}`)
     setLocalPreReg(null)

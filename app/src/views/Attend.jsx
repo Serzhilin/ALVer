@@ -25,13 +25,15 @@ export default function Attend() {
   // Auto-check-in for open phase (QR scan flow).
   // in_session: locked screen shown — facilitator must add manually.
   useEffect(() => {
-    if (!user || !meeting || checkInFired.current) return
+    if (!user || !meeting) return
     const alreadyIn = meeting.checkedIn.find(c =>
       (user.ename && c.ename && c.ename === user.ename) ||
       (c.member_id && user.member?.id && c.member_id === user.member.id)
     )
-    if (alreadyIn) return
+    // Reset guard when confirmed present — allows re-checkin if facilitator removes member
+    if (alreadyIn) { checkInFired.current = false; return }
     if (meeting.phase !== 'open') return
+    if (checkInFired.current) return
     checkInFired.current = true
     checkIn().catch(err => console.warn('Auto check-in failed:', err))
   }, [user?.ename, meeting?.id, meeting?.checkedIn?.length])

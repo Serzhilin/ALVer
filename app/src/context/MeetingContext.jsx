@@ -58,6 +58,7 @@ function adaptMeeting(m) {
       id: a.id,
       name: a.attendee_name,
       ename: a.attendee_ename ?? null,
+      member_id: a.member_id ?? null,
     })),
     polls: (m.polls || []).map(adaptPoll),
     activePollId: activePoll?.id || null,

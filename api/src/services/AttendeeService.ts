@@ -127,7 +127,7 @@ export class AttendeeService {
     async declineByEname(meetingId: string, ename: string): Promise<Attendee> {
         const meeting = await this.meetingRepo.findOneBy({ id: meetingId });
         if (!meeting) throw new Error("Meeting not found");
-        if (meeting.status === "archived") throw new Error("Meeting is archived");
+        if (meeting.status === "archived" || meeting.status === "draft") throw new Error("Meeting is not available");
 
         const member = meeting.community_id
             ? await this.memberRepo.findOne({ where: { community_id: meeting.community_id, ename } })
@@ -141,26 +141,32 @@ export class AttendeeService {
         if (attendee) {
             if (attendee.status === "checked_in") return attendee;
             await this.repo.update(attendee.id, { status: "declined", attendee_name: name });
-            return this.repo.findOneByOrFail({ id: attendee.id });
+            attendee = await this.repo.findOneByOrFail({ id: attendee.id });
+        } else {
+            attendee = this.repo.create({
+                meeting_id: meetingId,
+                member_id: member?.id ?? undefined,
+                attendee_name: name,
+                attendee_ename: ename,
+                is_aspirant: member?.is_aspirant ?? false,
+                status: "declined",
+                method: "app",
+            });
+            attendee = await this.repo.save(attendee);
         }
 
-        attendee = this.repo.create({
-            meeting_id: meetingId,
-            member_id: member?.id ?? undefined,
-            attendee_name: name,
-            attendee_ename: ename,
-            is_aspirant: member?.is_aspirant ?? false,
-            status: "declined",
-            method: "app",
+        sseService.emit(meetingId, "attendee_declined", {
+            meetingId,
+            attendee: { id: attendee.id, name: attendee.attendee_name },
         });
-        return this.repo.save(attendee);
+        return attendee;
     }
 
     /** Member pre-registers ("I'll come") — creates status: expected, won't downgrade checked_in */
     async preRegisterByEname(meetingId: string, ename: string): Promise<Attendee> {
         const meeting = await this.meetingRepo.findOneBy({ id: meetingId });
         if (!meeting) throw new Error("Meeting not found");
-        if (meeting.status === "archived") throw new Error("Meeting is archived");
+        if (meeting.status === "archived" || meeting.status === "draft") throw new Error("Meeting is not available");
 
         const member = meeting.community_id
             ? await this.memberRepo.findOne({ where: { community_id: meeting.community_id, ename } })
@@ -173,20 +179,26 @@ export class AttendeeService {
         let attendee = await this.repo.findOne({ where: { meeting_id: meetingId, attendee_ename: ename } });
         if (attendee) {
             if (attendee.status === "checked_in") return attendee;
-            await this.repo.update(attendee.id, { attendee_name: name, member_id: member?.id ?? attendee.member_id });
-            return this.repo.findOneByOrFail({ id: attendee.id });
+            await this.repo.update(attendee.id, { status: "expected", attendee_name: name, member_id: member?.id ?? attendee.member_id });
+            attendee = await this.repo.findOneByOrFail({ id: attendee.id });
+        } else {
+            attendee = this.repo.create({
+                meeting_id: meetingId,
+                member_id: member?.id ?? undefined,
+                attendee_name: name,
+                attendee_ename: ename,
+                is_aspirant: member?.is_aspirant ?? false,
+                status: "expected",
+                method: "app",
+            });
+            attendee = await this.repo.save(attendee);
         }
 
-        attendee = this.repo.create({
-            meeting_id: meetingId,
-            member_id: member?.id ?? undefined,
-            attendee_name: name,
-            attendee_ename: ename,
-            is_aspirant: member?.is_aspirant ?? false,
-            status: "expected",
-            method: "app",
+        sseService.emit(meetingId, "attendee_preregistered", {
+            meetingId,
+            attendee: { id: attendee.id, name: attendee.attendee_name },
         });
-        return this.repo.save(attendee);
+        return attendee;
     }
 
     async listForMeeting(meetingId: string): Promise<Attendee[]> {
