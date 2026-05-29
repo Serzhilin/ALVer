@@ -123,6 +123,39 @@ export class AttendeeService {
         return attendee;
     }
 
+    /** Member declines ("can't come") — creates/updates status: declined, won't downgrade checked_in */
+    async declineByEname(meetingId: string, ename: string): Promise<Attendee> {
+        const meeting = await this.meetingRepo.findOneBy({ id: meetingId });
+        if (!meeting) throw new Error("Meeting not found");
+        if (meeting.status === "archived") throw new Error("Meeting is archived");
+
+        const member = meeting.community_id
+            ? await this.memberRepo.findOne({ where: { community_id: meeting.community_id, ename } })
+            : null;
+
+        if (meeting.community_id && !member) throw new Error("not_a_member");
+
+        const name = member ? appDisplayName(member) : ename;
+
+        let attendee = await this.repo.findOne({ where: { meeting_id: meetingId, attendee_ename: ename } });
+        if (attendee) {
+            if (attendee.status === "checked_in") return attendee;
+            await this.repo.update(attendee.id, { status: "declined", attendee_name: name });
+            return this.repo.findOneByOrFail({ id: attendee.id });
+        }
+
+        attendee = this.repo.create({
+            meeting_id: meetingId,
+            member_id: member?.id ?? undefined,
+            attendee_name: name,
+            attendee_ename: ename,
+            is_aspirant: member?.is_aspirant ?? false,
+            status: "declined",
+            method: "app",
+        });
+        return this.repo.save(attendee);
+    }
+
     /** Member pre-registers ("I'll come") — creates status: expected, won't downgrade checked_in */
     async preRegisterByEname(meetingId: string, ename: string): Promise<Attendee> {
         const meeting = await this.meetingRepo.findOneBy({ id: meetingId });

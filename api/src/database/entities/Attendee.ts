@@ -4,7 +4,7 @@ import {
 } from "typeorm";
 import { Meeting } from "./Meeting";
 
-export type AttendeeStatus = "expected" | "checked_in" | "absent";
+export type AttendeeStatus = "expected" | "checked_in" | "absent" | "declined";
 export type AttendeeMethod = "app" | "manual";
 
 @Entity("attendees")
@@ -40,7 +40,7 @@ export class Attendee {
 
     @Column({
         type: "enum",
-        enum: ["expected", "checked_in", "absent"],
+        enum: ["expected", "checked_in", "absent", "declined"],
         default: "expected",
     })
     status!: AttendeeStatus;

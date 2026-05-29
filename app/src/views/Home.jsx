@@ -29,7 +29,7 @@ export default function Home() {
   const { t, i18n } = useTranslation()
   const { user, isFacilitator, loading: authLoading, login, logout, communityId, communities, switchCommunity } = useUser()
   const { community, members } = useCommunity() || {}
-  const { meeting: ctxMeeting, setMeetingId, preRegister, addMandate, removeAttendee, revokeMandate } = useMeeting()
+  const { meeting: ctxMeeting, setMeetingId, preRegister, decline, addMandate, removeAttendee, revokeMandate } = useMeeting()
   const facilitatorMembers = (members || []).filter(m => m.is_facilitator)
   const dateLocale = i18n.language === 'nl' ? 'nl-NL' : 'en-GB'
 
@@ -186,10 +186,16 @@ export default function Home() {
     }
   }
 
-  function handleCannotCome() {
+  async function handleCannotCome() {
     if (!currentMeeting) return
-    localStorage.setItem(`alver_checkin_${currentMeeting.id}`, JSON.stringify({ type: 'decline' }))
-    setLocalPreReg({ type: 'decline' })
+    try {
+      await decline()
+    } catch (e) {
+      console.error('decline failed', e)
+    }
+    const data = { type: 'decline' }
+    localStorage.setItem(`alver_checkin_${currentMeeting.id}`, JSON.stringify(data))
+    setLocalPreReg(data)
   }
 
   async function handleModify() {

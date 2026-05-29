@@ -54,6 +54,11 @@ function adaptMeeting(m) {
       name: a.attendee_name,
       ename: a.attendee_ename ?? null,
     })),
+    declines: (m.attendees || []).filter(a => a.status === 'declined').map(a => ({
+      id: a.id,
+      name: a.attendee_name,
+      ename: a.attendee_ename ?? null,
+    })),
     polls: (m.polls || []).map(adaptPoll),
     activePollId: activePoll?.id || null,
     minutes_html: m.minutes_html ?? null,
@@ -269,6 +274,11 @@ export function MeetingProvider({ children }) {
     await load(meetingId.current)
   }
 
+  const decline = async () => {
+    await api.declineAttendance(meetingId.current)
+    await load(meetingId.current)
+  }
+
   const checkIn = async () => {
     await api.checkIn(meetingId.current)
     await load(meetingId.current)
@@ -322,6 +332,7 @@ export function MeetingProvider({ children }) {
       addManualVote,
       deleteVote: deleteVoteAction,
       preRegister,
+      decline,
       checkIn,
       manualCheckIn,
       addMandate,

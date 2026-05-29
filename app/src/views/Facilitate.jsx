@@ -278,6 +278,22 @@ export default function Facilitate() {
                 )
               })()}
 
+              {/* Declined */}
+              {meeting.declines?.length > 0 && (
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span>{t('facilitate.declined') || 'Afgemeld'}</span>
+                    <span className="badge badge-gray">{meeting.declines.length}</span>
+                  </div>
+                  {meeting.declines.map(d => (
+                    <div key={d.id} style={{ display: 'flex', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid var(--color-sand)' }}>
+                      <span style={{ fontSize: '0.88rem', color: 'var(--color-charcoal-light)', textDecoration: 'line-through' }}>{d.name}</span>
+                    </div>
+                  ))}
+                  <div style={{ height: 12 }} />
+                </div>
+              )}
+
               {/* Checked in */}
               <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span>{t('facilitate.checked_in_label')}</span>
