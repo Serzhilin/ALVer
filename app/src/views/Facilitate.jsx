@@ -114,7 +114,7 @@ export default function Facilitate() {
 
   function handleAddMandate() {
     if (mandateTo.trim()) {
-      addMandate(mandateTo.trim(), mandateNote.trim())
+      addMandate(mandateTo.trim(), mandateNote.trim(), mandateFrom.trim())
       setMandateFrom('')
       setMandateTo('')
       setMandateNote('')

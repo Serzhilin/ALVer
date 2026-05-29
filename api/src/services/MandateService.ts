@@ -12,6 +12,7 @@ export class MandateService {
         granter_ename: string;
         proxy_member_id: string;
         scope_note?: string;
+        granter_member_id?: string;
     }): Promise<Mandate> {
         const meetingRepo = AppDataSource.getRepository(Meeting);
         const memberRepo = AppDataSource.getRepository(Member);
@@ -31,10 +32,10 @@ export class MandateService {
             throw new Error("Aspirants cannot receive mandates");
         }
 
-        // 4. Find granterMember by ename (may be null)
-        const granterMember = await memberRepo.findOne({
-            where: { community_id: meeting.community_id, ename: data.granter_ename },
-        });
+        // 4. Find granterMember — by explicit member_id (facilitator flow) or by ename (self-service)
+        const granterMember = data.granter_member_id
+            ? await memberRepo.findOneBy({ id: data.granter_member_id })
+            : await memberRepo.findOne({ where: { community_id: meeting.community_id, ename: data.granter_ename } });
 
         // 5. Compute display names
         const granter_name = granterMember ? appDisplayName(granterMember) : data.granter_ename;

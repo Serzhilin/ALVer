@@ -279,10 +279,11 @@ export function MeetingProvider({ children }) {
     await load(meetingId.current)
   }
 
-  const addMandate = async (proxyMemberId, note = '') => {
+  const addMandate = async (proxyMemberId, note = '', granterMemberId = '') => {
     await api.createMandate(meetingId.current, {
       proxy_member_id: proxyMemberId,
       scope_note: note,
+      ...(granterMemberId ? { granter_member_id: granterMemberId } : {}),
     })
     await load(meetingId.current)
   }
