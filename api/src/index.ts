@@ -94,6 +94,7 @@ app.post("/api/meetings/:id/reopen", requireAuth, requireFacilitatorOfMeeting, m
 app.patch("/api/meetings/:id/display-mode",    requireAuth, requireFacilitatorOfMeeting, meeting.setDisplayMode);
 app.patch("/api/meetings/:id/screen-theme",    requireAuth, requireFacilitatorOfMeeting, meeting.setScreenTheme);
 app.patch("/api/meetings/:id/screen-language", requireAuth, requireFacilitatorOfMeeting, meeting.setScreenLanguage);
+app.post("/api/meetings/:id/attendees/preregister", requireAuth, attendee.preRegister);
 app.post("/api/meetings/:id/attendees/manual", requireAuth, requireFacilitatorOfMeeting, attendee.manualAdd);
 app.post("/api/meetings/:id/mandates", requireAuth, requireFacilitatorOfMeeting, mandate.create);
 app.patch("/api/meetings/:id/mandates/:mandateId/revoke", requireAuth, requireFacilitatorOfMeeting, mandate.revoke);

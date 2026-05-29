@@ -77,6 +77,7 @@ export const getDecisions = (id) => req('GET', `/meetings/${id}/decisions`)
 
 // ── Attendees ─────────────────────────────────────────────────────────────────
 export const getAttendees = (id) => req('GET', `/meetings/${id}/attendees`)
+export const preRegister = (id) => req('POST', `/meetings/${id}/attendees/preregister`, {})
 export const checkIn = (id) => req('POST', `/meetings/${id}/attendees/checkin`, {})
 export const manualAdd = (id, memberId, note) => req('POST', `/meetings/${id}/attendees/manual`, { member_id: memberId, note })
 export const deleteAttendee = (meetingId, attendeeId) => req('DELETE', `/meetings/${meetingId}/attendees/${attendeeId}`)

@@ -4,6 +4,18 @@ import { AttendeeService } from "../services/AttendeeService";
 const svc = new AttendeeService();
 
 export class AttendeeController {
+    /** Member pre-registration ("I'll come") — status: expected */
+    preRegister = async (req: Request, res: Response) => {
+        try {
+            const ename = req.user?.ename;
+            if (!ename) return res.status(401).json({ error: "Authentication required" });
+            const attendee = await svc.preRegisterByEname(req.params.id, ename);
+            res.json(attendee);
+        } catch (e: any) {
+            res.status(400).json({ error: e.message });
+        }
+    };
+
     /** W3DS self-check-in — requires JWT, ename used for identity */
     checkIn = async (req: Request, res: Response) => {
         try {

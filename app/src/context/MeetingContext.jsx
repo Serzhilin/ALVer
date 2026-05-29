@@ -264,6 +264,11 @@ export function MeetingProvider({ children }) {
     await load(meetingId.current)
   }
 
+  const preRegister = async () => {
+    await api.preRegister(meetingId.current)
+    await load(meetingId.current)
+  }
+
   const checkIn = async () => {
     await api.checkIn(meetingId.current)
     await load(meetingId.current)
@@ -315,6 +320,7 @@ export function MeetingProvider({ children }) {
       castVote: castVoteAction,
       addManualVote,
       deleteVote: deleteVoteAction,
+      preRegister,
       checkIn,
       manualCheckIn,
       addMandate,
