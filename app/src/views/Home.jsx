@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Navigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { getAllMeetings, transitionStatus, getMeetingMembers } from '../api/client'
 import { useUser } from '../context/UserContext'
@@ -82,7 +82,7 @@ export default function Home() {
     } catch { setLocalPreReg(null) }
   }, [currentMeeting?.id])
 
-  // Reactive: detect if facilitator checked us in (or removed us) — SSE already reloads ctxMeeting
+  // DB truth: if server says we're checked in, navigate to Attend — regardless of localStorage
   useEffect(() => {
     if (!ctxMeeting || !user?.ename || isFacilitator) return
     const myEntry = ctxMeeting.checkedIn.find(c =>
@@ -90,16 +90,7 @@ export default function Home() {
       (c.member_id && user?.member?.id && c.member_id === user.member.id)
     )
     if (myEntry) {
-      localStorage.setItem('alver_my_name', myEntry.name)
-      localStorage.setItem('alver_attend_meeting_id', ctxMeeting.id)
       navigate(`/${community?.slug}/meeting/${ctxMeeting.id}/attend`, { replace: true })
-    } else {
-      // Facilitator removed us — clear checkin keys for this meeting
-      const stored = localStorage.getItem('alver_attend_meeting_id')
-      if (stored === ctxMeeting.id) {
-        localStorage.removeItem('alver_my_name')
-        localStorage.removeItem('alver_attend_meeting_id')
-      }
     }
   }, [ctxMeeting, user?.ename, user?.member?.id, isFacilitator])
 
@@ -119,22 +110,13 @@ export default function Home() {
     )
   }
 
-  // ── Redirect checked-in attendee back to their meeting ────────────────────
-  const checkedInName = localStorage.getItem('alver_my_name')
-  const storedMeetingId = localStorage.getItem('alver_attend_meeting_id')
-  const redirectMeetingId = storedMeetingId || currentMeeting?.id
-  if (!isFacilitator && checkedInName) {
-    // If we don't have a meeting ID yet, wait for meetings to load before deciding
-    if (!redirectMeetingId && meetingsLoading) {
-      return (
-        <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ color: 'var(--color-charcoal-light)' }}>{t('common.loading')}</span>
-        </div>
-      )
-    }
-    if (redirectMeetingId) {
-      return <Navigate to={`/${community?.slug}/meeting/${redirectMeetingId}/attend`} replace />
-    }
+  // ── Wait for DB check before rendering attendee UI (prevents stale-localStorage flash) ─────
+  if (!isFacilitator && user && currentMeeting && !ctxMeeting) {
+    return (
+      <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ color: 'var(--color-charcoal-light)' }}>{t('common.loading')}</span>
+      </div>
+    )
   }
 
   // ── Not logged in ─────────────────────────────────────────────────────────

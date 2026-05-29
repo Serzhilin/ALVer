@@ -17,71 +17,24 @@ export default function Attend() {
   const { user, login, logout } = useUser()
   const { community } = useCommunity() || {}
 
-  useEffect(() => {
-    setMeetingId(id)
-    localStorage.setItem('alver_attend_meeting_id', id)
-  }, [id])
+  useEffect(() => { setMeetingId(id) }, [id])
 
-
-  useEffect(() => {
-    if (meeting?.phase === 'archived') {
-      localStorage.removeItem('alver_my_name')
-      localStorage.removeItem('alver_attend_meeting_id')
-    }
-  }, [meeting?.phase])
-
-  const [myName, setMyName] = useState(() => localStorage.getItem('alver_my_name') || '')
-  const [checkedIn, setCheckedIn] = useState(false)
   const [votedPolls, setVotedPolls] = useState({})
   const checkInFired = useRef(false)
 
-  // Resolve name from eID and check in if appropriate.
-  // open phase: QR on display screen → scan → auto-check-in.
-  // in_session: no auto-check-in — facilitator must add manually (locked screen shown).
+  // Auto-check-in for open phase (QR scan flow).
+  // in_session: locked screen shown — facilitator must add manually.
   useEffect(() => {
-    if (!user || !meeting || checkedIn || checkInFired.current) return
-    checkInFired.current = true
-
-    // Prefer app_first_name/app_last_name, then displayName, then ename.
-    const name = [user.member?.app_first_name, user.member?.app_last_name].filter(s => s?.trim()).join(' ')
-      || user.displayName
-      || user.ename
-
-    localStorage.removeItem('alver_my_name')
-    setMyName(name)
-
-    // Match by ename first (survives any name spelling difference), then by name
-    const found = meeting.checkedIn.find(c =>
+    if (!user || !meeting || checkInFired.current) return
+    const alreadyIn = meeting.checkedIn.find(c =>
       (user.ename && c.ename && c.ename === user.ename) ||
-      c.name.toLowerCase() === name.toLowerCase()
+      (c.member_id && user.member?.id && c.member_id === user.member.id)
     )
-    if (found) {
-      setCheckedIn(true)
-    } else if (meeting.phase === 'open') {
-      checkIn()
-        .then(() => setCheckedIn(true))
-        .catch(err => console.warn('Auto check-in failed:', err))
-    }
-    // in_session: checkedIn stays false → locked screen or caught by second effect after manual add
-  }, [user?.ename, meeting?.id])
-
-  // Sync checkedIn state with live meeting data — handles both:
-  // - facilitator manually adds person (checkedIn false → true)
-  // - facilitator deletes check-in (checkedIn true → false)
-  useEffect(() => {
-    if (!myName?.trim() || !meeting) return
-    const found = meeting.checkedIn.find(c =>
-      (user?.ename && c.ename && c.ename === user.ename) ||
-      c.name.toLowerCase() === myName.toLowerCase()
-    )
-    if (found && !checkedIn) {
-      setCheckedIn(true)
-    } else if (!found && checkedIn) {
-      // Facilitator removed this person — reset so they see the correct locked/waiting screen
-      setCheckedIn(false)
-      checkInFired.current = false  // allow re-auto-checkin if meeting is still open
-    }
-  }, [meeting?.checkedIn?.length, myName])
+    if (alreadyIn) return
+    if (meeting.phase !== 'open') return
+    checkInFired.current = true
+    checkIn().catch(err => console.warn('Auto check-in failed:', err))
+  }, [user?.ename, meeting?.id, meeting?.checkedIn?.length])
 
   function handleVote(pollId, option, isMandate = false) {
     // Set optimistic local state immediately — disables buttons before re-render
@@ -100,17 +53,21 @@ export default function Attend() {
     )
   }
 
-  // My mandate and member info (safe: meeting is loaded)
-  // Match mandate by ename first (survives name spelling differences), then by name
-  const myMandate = myName ? meeting.confirmedMandates.find(m =>
-    (user?.ename && m.toEname && m.toEname === user.ename) ||
-    m.to.toLowerCase() === myName.toLowerCase()
+  // Derive identity from DB (meeting.checkedIn is source of truth)
+  const myAttendee = user ? meeting.checkedIn.find(c =>
+    (user.ename && c.ename && c.ename === user.ename) ||
+    (c.member_id && user.member?.id && c.member_id === user.member.id)
   ) : null
-  const myAttendee = myName ? meeting.checkedIn.find(c =>
-    (user?.ename && c.ename && c.ename === user.ename) ||
-    c.name.toLowerCase() === myName.toLowerCase()
-  ) : null
+  const checkedIn = !!myAttendee
+  const myName = myAttendee?.name ||
+    [user?.member?.app_first_name, user?.member?.app_last_name].filter(s => s?.trim()).join(' ') ||
+    user?.displayName || user?.ename || ''
   const amAspirant = myAttendee?.isAspirant || false
+
+  const myMandate = user ? meeting.confirmedMandates.find(m =>
+    (user.ename && m.toEname && m.toEname === user.ename) ||
+    (myName && m.to.toLowerCase() === myName.toLowerCase())
+  ) : null
 
   const isInSession = meeting.phase === 'in_session'
   const isClosed = meeting.phase === 'archived'
