@@ -82,6 +82,27 @@ export default function Home() {
     } catch { setLocalPreReg(null) }
   }, [currentMeeting?.id])
 
+  // Reactive: detect if facilitator checked us in (or removed us) — SSE already reloads ctxMeeting
+  useEffect(() => {
+    if (!ctxMeeting || !user?.ename || isFacilitator) return
+    const myEntry = ctxMeeting.checkedIn.find(c =>
+      (c.ename && c.ename === user.ename) ||
+      (c.member_id && user?.member?.id && c.member_id === user.member.id)
+    )
+    if (myEntry) {
+      localStorage.setItem('alver_my_name', myEntry.name)
+      localStorage.setItem('alver_attend_meeting_id', ctxMeeting.id)
+      navigate(`/${community?.slug}/meeting/${ctxMeeting.id}/attend`, { replace: true })
+    } else {
+      // Facilitator removed us — clear checkin keys for this meeting
+      const stored = localStorage.getItem('alver_attend_meeting_id')
+      if (stored === ctxMeeting.id) {
+        localStorage.removeItem('alver_my_name')
+        localStorage.removeItem('alver_attend_meeting_id')
+      }
+    }
+  }, [ctxMeeting, user?.ename, user?.member?.id, isFacilitator])
+
   // Load members when mandate form opens
   useEffect(() => {
     if (currentMeeting && attendanceMode === 'mandate') {
