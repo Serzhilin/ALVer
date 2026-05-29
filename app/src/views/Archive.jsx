@@ -6,6 +6,9 @@ import { useTranslation } from 'react-i18next'
 import FacilitatorHeader from '../components/FacilitatorHeader'
 import AgendaHtml from '../components/AgendaHtml'
 import MinutesEditor from '../components/MinutesEditor'
+import * as api from '../api/client'
+
+const SUPERADMIN_ENAME = '@9dafa031-4118-564c-bfa6-5917ddc8ab88'
 
 export default function Archive() {
   const { id } = useParams()
@@ -240,6 +243,20 @@ export default function Archive() {
                 )}
               </>
             )}
+          </div>
+        )}
+        {user?.ename === SUPERADMIN_ENAME && (
+          <div style={{ marginTop: 40, textAlign: 'right' }}>
+            <button
+              className="btn-danger"
+              onClick={async () => {
+                if (!window.confirm(`Delete "${meeting.name}"? This cannot be undone.`)) return
+                await api.deleteMeeting(id)
+                navigate(-1)
+              }}
+            >
+              Delete meeting
+            </button>
           </div>
         )}
       </div>
