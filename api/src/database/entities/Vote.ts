@@ -37,6 +37,12 @@ export class Vote {
     @Column()
     option_id!: string;
 
+    @Column({ type: "jsonb", nullable: true })
+    vote_data!: Record<string, unknown> | null;
+
+    @Column({ type: "varchar", nullable: true })
+    voter_meta_envelope_id!: string | null;
+
     @Column({ type: "timestamptz" })
     cast_at!: Date;
 

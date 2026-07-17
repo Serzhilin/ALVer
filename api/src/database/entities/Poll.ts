@@ -37,6 +37,12 @@ export class Poll {
     @Column({ type: "jsonb" })
     vote_options!: VoteOption[];
 
+    @Column({ type: "text", array: true, nullable: true })
+    option_labels!: string[] | null;
+
+    @Column({ type: "varchar", nullable: true })
+    created_by_meta_envelope_id!: string | null;
+
     @Column({
         type: "enum",
         enum: ["prepared", "active", "closed"],
