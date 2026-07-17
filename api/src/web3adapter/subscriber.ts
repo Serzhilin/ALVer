@@ -23,6 +23,49 @@ export const adapter = new Web3Adapter({
 // Attendees + Mandates are embedded in the Meeting CalendarEvent envelope.
 // Decisions are embedded in the Poll envelope.
 // Members trigger a Community GroupManifest re-sync when ename is linked.
+
+// ── eVault rate limiter + retry ───────────────────────────────────────────────
+const MAX_CONCURRENT_EVAULT_OPS = 3;
+let _activeOps = 0;
+const _waitQueue: Array<() => void> = [];
+
+function acquireSemaphore(): Promise<void> {
+    return new Promise(resolve => {
+        if (_activeOps < MAX_CONCURRENT_EVAULT_OPS) { _activeOps++; resolve(); }
+        else _waitQueue.push(() => { _activeOps++; resolve(); });
+    });
+}
+function releaseSemaphore(): void {
+    _activeOps--;
+    const next = _waitQueue.shift();
+    if (next) next();
+}
+
+async function withEvaultRetry<T>(fn: () => Promise<T>, context: string): Promise<T> {
+    await acquireSemaphore();
+    try {
+        const MAX_RETRIES = 3;
+        for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                return await fn();
+            } catch (err) {
+                const msg = err instanceof Error ? err.message : String(err);
+                // Auth / not-found errors won't succeed on retry — bail immediately
+                if (msg.includes("401") || msg.includes("403") || msg.includes("404")) throw err;
+                if (attempt === MAX_RETRIES) throw err;
+                // Rate-limit: use 30 s fixed delay (Retry-After header not exposed through adapter)
+                const isRateLimit = msg.includes("429") || msg.toLowerCase().includes("too many");
+                const delay = isRateLimit ? 30_000 : 1000 * 2 ** (attempt - 1);
+                console.warn(`[W3DS] ${context} attempt ${attempt} failed${isRateLimit ? " (rate-limited)" : ""}, retrying in ${delay}ms`);
+                await new Promise(r => setTimeout(r, delay));
+            }
+        }
+        throw new Error("unreachable");
+    } finally {
+        releaseSemaphore();
+    }
+}
+
 const PARENT_TRIGGER_MAP: Record<string, {
     parentTable: string;
     parentEntity: string;
@@ -34,6 +77,9 @@ const PARENT_TRIGGER_MAP: Record<string, {
     members:   { parentTable: "communities", parentEntity: "Community", fk: "community_id" },
 };
 
+// Tables that are imported read-only from eVault and must never be synced back outbound.
+const READ_ONLY_TABLES = new Set(["communities"]);
+
 @EventSubscriber()
 export class AlverSubscriber implements EntitySubscriberInterface {
 
@@ -44,11 +90,16 @@ export class AlverSubscriber implements EntitySubscriberInterface {
         if (!entityId) return;
 
         const parentTrigger = PARENT_TRIGGER_MAP[tableName];
+        // Read-only tables are never pushed outbound from ALVer.
+        if (!parentTrigger && READ_ONLY_TABLES.has(tableName)) return;
 
         setTimeout(async () => {
             try {
                 if (parentTrigger) {
-                    await this.syncParent(event.entity, parentTrigger);
+                    await withEvaultRetry(
+                        () => this.syncParent(event.entity, parentTrigger),
+                        `syncParent(insert ${tableName})`
+                    );
                 } else {
                     const globalId = await adapter.mappingDb.getGlobalId(entityId) ?? "";
                     if (adapter.lockedIds.includes(globalId) || adapter.lockedIds.includes(entityId)) return;
@@ -56,7 +107,10 @@ export class AlverSubscriber implements EntitySubscriberInterface {
                     const enriched = await this.loadAndEnrich(entityId, tableName, entityTarget);
                     if (!enriched) return;
 
-                    await adapter.handleChange({ data: enriched, tableName });
+                    await withEvaultRetry(
+                        () => adapter.handleChange({ data: enriched, tableName }),
+                        `handleChange(insert ${tableName})`
+                    );
                 }
             } catch (err) {
                 console.error(`[W3DS] Sync failed (insert) for ${tableName}:`, err);
@@ -71,6 +125,8 @@ export class AlverSubscriber implements EntitySubscriberInterface {
         if (!entityId) return;
 
         const parentTrigger = PARENT_TRIGGER_MAP[tableName];
+        // Read-only tables are never pushed outbound from ALVer.
+        if (!parentTrigger && READ_ONLY_TABLES.has(tableName)) return;
 
         setTimeout(async () => {
             try {
@@ -79,7 +135,10 @@ export class AlverSubscriber implements EntitySubscriberInterface {
                     const repo = AppDataSource.getRepository(entityTarget);
                     const child = await repo.findOne({ where: { id: entityId } });
                     if (!child) return;
-                    await this.syncParent(child, parentTrigger);
+                    await withEvaultRetry(
+                        () => this.syncParent(child, parentTrigger),
+                        `syncParent(update ${tableName})`
+                    );
                 } else {
                     const globalId = await adapter.mappingDb.getGlobalId(entityId) ?? "";
                     if (adapter.lockedIds.includes(globalId) || adapter.lockedIds.includes(entityId)) return;
@@ -87,7 +146,10 @@ export class AlverSubscriber implements EntitySubscriberInterface {
                     const enriched = await this.loadAndEnrich(entityId, tableName, entityTarget);
                     if (!enriched) return;
 
-                    await adapter.handleChange({ data: enriched, tableName });
+                    await withEvaultRetry(
+                        () => adapter.handleChange({ data: enriched, tableName }),
+                        `handleChange(update ${tableName})`
+                    );
                 }
             } catch (err) {
                 console.error(`[W3DS] Sync failed (update) for ${tableName}:`, err);
@@ -101,15 +163,49 @@ export class AlverSubscriber implements EntitySubscriberInterface {
         // databaseEntity is always populated by TypeORM; entity may be undefined
         // for cascade-triggered removes where no instance was loaded.
         const entityForSync = event.entity ?? event.databaseEntity;
-        if (!parentTrigger || !entityForSync) return;
+        if (!entityForSync) return;
+        // Read-only tables are never pushed outbound from ALVer.
+        if (!parentTrigger && READ_ONLY_TABLES.has(tableName)) return;
 
-        setTimeout(async () => {
-            try {
-                await this.syncParent(entityForSync, parentTrigger);
-            } catch (err) {
-                console.error(`[W3DS] Sync failed (remove) for ${tableName}:`, err);
-            }
-        }, 3_000);
+        if (parentTrigger) {
+            setTimeout(async () => {
+                try {
+                    await withEvaultRetry(
+                        () => this.syncParent(entityForSync, parentTrigger),
+                        `syncParent(remove ${tableName})`
+                    );
+                } catch (err) {
+                    console.error(`[W3DS] Sync failed (remove) for ${tableName}:`, err);
+                }
+            }, 3_000);
+        } else {
+            // Top-level entity deleted: remove its eVault envelope.
+            // eVault is source of truth — failures must be loud, not silent.
+            const entityId = entityForSync.id;
+            if (!entityId) return;
+
+            setTimeout(async () => {
+                try {
+                    const globalId = await adapter.mappingDb.getGlobalId(entityId);
+                    if (!globalId) return; // never synced to eVault
+
+                    const ownerEname = await this.resolveOwnerEname(tableName, entityForSync);
+                    if (!ownerEname) {
+                        console.warn(`[W3DS] Cannot resolve owner ename for ${tableName} ${entityId} — skipping eVault delete`);
+                        return;
+                    }
+
+                    await withEvaultRetry(
+                        () => this.removeEnvelopeFromEvault(ownerEname, globalId),
+                        `removeEnvelope(${tableName})`
+                    );
+                    console.log(`[W3DS] Deleted eVault envelope ${globalId} for ${tableName} ${entityId}`);
+                } catch (err) {
+                    console.error(`[W3DS] eVault delete failed for ${tableName} ${entityId}:`, err);
+                    throw err;
+                }
+            }, 0);
+        }
     }
 
     // Loads a parent entity and re-syncs it when a child entity changes.
@@ -132,7 +228,30 @@ export class AlverSubscriber implements EntitySubscriberInterface {
 
         const plain = this.toPlain(parent);
         const enriched = await this.enrichEntity(plain, trigger.parentTable);
-        await adapter.handleChange({ data: enriched, tableName: trigger.parentTable });
+        // Skip outbound eVault sync for read-only parent tables (e.g. communities).
+        if (!READ_ONLY_TABLES.has(trigger.parentTable)) {
+            await adapter.handleChange({ data: enriched, tableName: trigger.parentTable });
+        }
+
+        // Gap 6: Reference fan-out — when a member with an ename is added/updated,
+        // write a reference envelope on their vault so they can discover the community.
+        if (trigger.parentTable === "communities" && childEntity.ename) {
+            const memberEname: string = childEntity.ename;
+            const communityW3id: string | undefined = parent.ename;
+            const communityEnvelopeId = await adapter.mappingDb.getGlobalId(parentId);
+            if (communityW3id && communityEnvelopeId) {
+                const normalizedMemberEname = memberEname.startsWith("@") ? memberEname : `@${memberEname}`;
+                try {
+                    await adapter.evaultClient.storeReference(
+                        `${communityW3id}/${communityEnvelopeId}`,
+                        memberEname,
+                        [normalizedMemberEname]   // member-only ACL — matches Meshenger pattern
+                    );
+                } catch (err) {
+                    console.warn(`[W3DS] Reference fan-out failed for member ${memberEname}:`, err);
+                }
+            }
+        }
     }
 
     // Reloads entity from DB with all relations, then enriches with computed fields.
@@ -179,51 +298,86 @@ export class AlverSubscriber implements EntitySubscriberInterface {
                 plain.endDateTime   = plain.end_time
                     ? `${plain.date}T${plain.end_time}:00`
                     : plain.startDateTime;
-                plain.attendees = (plain.attendees ?? []).map((a: any) => ({
-                    name:        a.attendee_name,
-                    ename:       a.attendee_ename ?? null,
-                    status:      a.status,
-                    checkedInAt: a.checked_in_at ?? null,
-                    method:      a.method,
-                    isAspirant:  a.is_aspirant ?? false,
-                }));
-                plain.mandates = (plain.mandates ?? []).map((m: any) => ({
-                    granterName:  m.granter_name,
-                    granterEname: m.granter_ename ?? null,
-                    proxyName:    m.proxy_name,
-                    proxyEname:   m.proxy_ename ?? null,
-                    scopeNote:    m.scope_note ?? null,
-                    status:       m.status,
-                    grantedAt:    m.granted_at ?? null,
-                    revokedAt:    m.revoked_at ?? null,
-                }));
                 break;
             }
             case "polls": {
                 plain.options      = (plain.vote_options ?? []).map((o: any) => o.label);
                 plain.mode         = "normal";
                 plain.votingWeight = "1p1v";
-                // String-based repository lookup avoids circular import (Decision → Poll → Meeting).
-                const decision = await AppDataSource.getRepository("Decision").findOne({
-                    where: { poll_id: plain.id },
-                } as any) as any;
-                plain.decision = decision ? {
-                    result:               decision.result,
-                    breakdown:            decision.breakdown,
-                    totalVotes:           decision.total_votes,
-                    closedAt:             decision.closed_at instanceof Date
-                        ? decision.closed_at.toISOString()
-                        : decision.closed_at,
-                    facilitatorSignature: decision.facilitator_signature ?? null,
-                } : null;
                 break;
             }
             case "votes": {
-                plain.data = { mode: "normal", data: [plain.option_id] };
+                plain.data = { mode: "normal", options: [plain.option_id] };
                 break;
             }
         }
         return plain;
+    }
+
+    // Resolves the owner eVault ename for a top-level entity based on its FK fields.
+    private async resolveOwnerEname(tableName: string, entity: any): Promise<string | null> {
+        switch (tableName) {
+            case "communities":
+                return entity.ename ?? null;
+            case "meetings": {
+                if (!entity.community_id) return null;
+                const community = await AppDataSource.getRepository("Community")
+                    .findOne({ where: { id: entity.community_id } });
+                return (community as any)?.ename ?? null;
+            }
+            case "polls": {
+                if (!entity.meeting_id) return null;
+                const meeting = await AppDataSource.getRepository("Meeting")
+                    .findOne({ where: { id: entity.meeting_id }, relations: ["community"] });
+                return (meeting as any)?.community?.ename ?? null;
+            }
+            case "votes": {
+                if (!entity.poll_id) return null;
+                const poll = await AppDataSource.getRepository("Poll")
+                    .findOne({ where: { id: entity.poll_id }, relations: ["meeting", "meeting.community"] });
+                return (poll as any)?.meeting?.community?.ename ?? null;
+            }
+            default:
+                return null;
+        }
+    }
+
+    // Direct GraphQL delete — the Web3 Adapter's evaultClient has no removeEnvelope method.
+    // Uses DEVELOPER_API_KEY (static, no per-request token exchange needed).
+    private async removeEnvelopeFromEvault(ownerEname: string, envelopeId: string): Promise<void> {
+        const registryUrl = process.env.PUBLIC_REGISTRY_URL!;
+        const developerApiKey = process.env.DEVELOPER_API_KEY ?? "";
+        const normalized = ownerEname.startsWith("@") ? ownerEname : `@${ownerEname}`;
+
+        const resolveRes = await fetch(`${registryUrl}/resolve?w3id=${encodeURIComponent(normalized)}`);
+        if (!resolveRes.ok) throw new Error(`Registry resolve failed for ${normalized}: ${resolveRes.status}`);
+        const { uri } = await resolveRes.json() as { uri: string };
+
+        const headers: Record<string, string> = {
+            "Content-Type": "application/json",
+            "X-ENAME": normalized,
+        };
+        if (developerApiKey) headers["Authorization"] = `Bearer ${developerApiKey}`;
+
+        const res = await fetch(new URL("/graphql", uri).toString(), {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+                query: `mutation RemoveMetaEnvelope($id: ID!) {
+                    removeMetaEnvelope(id: $id) {
+                        deletedId success errors { message code }
+                    }
+                }`,
+                variables: { id: envelopeId },
+            }),
+        });
+        if (!res.ok) throw new Error(`eVault delete HTTP ${res.status} for ${envelopeId}`);
+        const result = await res.json() as any;
+        const op = result?.data?.removeMetaEnvelope;
+        if (!op?.success) {
+            const msg = op?.errors?.[0]?.message ?? "unknown";
+            throw new Error(`removeMetaEnvelope failed: ${msg}`);
+        }
     }
 
     private toPlain(entity: any): any {
