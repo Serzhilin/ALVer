@@ -1,15 +1,10 @@
 {
   "tableName": "votes",
   "schemaId": "660e8400-e29b-41d4-a716-446655440101",
-  "ownerEnamePath": "communities(poll.meeting.community.ename)",
+  "ownerEnamePath": "poll.meeting.community.ename",
   "localToUniversalMap": {
-    "id": "id",
-    "poll": "polls(poll_id),poll",
-    "voter_ename": "voterId",
-    "data": "data",
-    "method": "method",
-    "on_behalf_of_ename": "onBehalfOfEname",
-    "on_behalf_of_name": "onBehalfOfName",
-    "cast_at": "createdAt"
+    "poll_id": "pollId",
+    "vote_data": "data",
+    "voter_meta_envelope_id": "userId"
   }
 }

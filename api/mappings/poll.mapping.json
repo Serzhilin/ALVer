@@ -1,20 +1,11 @@
 {
   "tableName": "polls",
   "schemaId": "660e8400-e29b-41d4-a716-446655440100",
-  "ownerEnamePath": "communities(meeting.community.ename)",
+  "ownerEnamePath": "meeting.community.ename",
   "localToUniversalMap": {
-    "id": "id",
     "motion_text": "title",
-    "options": "options",
-    "mode": "mode",
-    "votingWeight": "votingWeight",
-    "meeting": "communities(meeting.community_id),group",
+    "option_labels": "options",
     "closed_at": "deadline",
-    "status": "status",
-    "meeting_id": "meetingId",
-    "facilitator_ename": "facilitatorEname",
-    "decision": "decision",
-    "created_at": "createdAt",
-    "updated_at": "updatedAt"
+    "created_by_meta_envelope_id": "creatorId"
   }
 }
