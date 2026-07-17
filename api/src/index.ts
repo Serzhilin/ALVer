@@ -16,12 +16,14 @@ import { VoteController } from "./controllers/VoteController";
 import { WebhookController } from "./controllers/WebhookController";
 import { CommunityController } from "./controllers/CommunityController";
 import { getOffer, epassportLogin, sseAuthStream, getSessionResult, getMe, getMyCommunities, devLogin } from "./controllers/AuthController";
-import { listCommunities, createCommunity, deleteCommunity } from "./controllers/AdminController";
+import { listCommunities, deleteCommunity } from "./controllers/AdminController";
+import { resolveW3id, linkCommunity } from "./services/CommunityService";
 import { requireAuth, optionalAuth } from "./middleware/auth";
 import { requireFacilitatorOfMeeting } from "./middleware/requireFacilitatorOfMeeting";
 import { requireAdmin } from "./middleware/adminAuth";
 import { MinutesController } from "./controllers/MinutesController";
 import { requireNotulisOrFacilitator } from "./middleware/requireNotulisOrFacilitator";
+import { startPolling } from "./services/AaaSService";
 
 config({ path: path.resolve(__dirname, "../../.env") });
 
@@ -70,6 +72,44 @@ app.get("/api/auth/sessions/:id", sseAuthStream);
 app.get("/api/auth/sessions/:id/result", getSessionResult);
 app.get("/api/auth/me", requireAuth, getMe);
 app.get("/api/auth/communities", requireAuth, getMyCommunities);
+
+// ── Community linking (W3DS) ──────────────────────────────────────────────────
+const W3ID_ERROR_STATUS: Record<string, number> = {
+    w3id_not_found: 404,
+    group_not_found: 404,
+    not_admin: 403,
+    w3id_already_linked: 409,
+    slug_taken: 409,
+    actor_has_no_ename: 400,
+};
+
+app.get("/api/communities/resolve", requireAuth, async (req, res) => {
+    const w3id = req.query.w3id as string;
+    if (!w3id) { res.status(400).json({ error: "w3id required" }); return; }
+    const ename = req.user?.ename;
+    if (!ename) { res.status(400).json({ error: "actor_has_no_ename" }); return; }
+    try {
+        const result = await resolveW3id(w3id, ename);
+        res.json(result);
+    } catch (err: any) {
+        const status = W3ID_ERROR_STATUS[err.message] ?? 500;
+        res.status(status).json({ error: err.message });
+    }
+});
+
+app.post("/api/communities/link", requireAuth, async (req, res) => {
+    const { w3id, slug } = req.body ?? {};
+    if (!w3id || !slug) { res.status(400).json({ error: "w3id and slug required" }); return; }
+    const ename = req.user?.ename;
+    if (!ename) { res.status(400).json({ error: "actor_has_no_ename" }); return; }
+    try {
+        const community = await linkCommunity({ w3id, slug }, ename);
+        res.status(201).json(community);
+    } catch (err: any) {
+        const status = W3ID_ERROR_STATUS[err.message] ?? 500;
+        res.status(status).json({ error: err.message });
+    }
+});
 
 // ── Community ─────────────────────────────────────────────────────────────────
 app.get("/api/community/branding", community.getBranding);          // public
@@ -154,11 +194,46 @@ app.post("/api/log/client-error", (req, res) => {
 
 // ── Admin ─────────────────────────────────────────────────────────────────────
 app.get("/api/admin/communities", requireAuth, requireAdmin, listCommunities);
-app.post("/api/admin/communities", requireAuth, requireAdmin, createCommunity);
 app.delete("/api/admin/communities/:id", requireAuth, requireAdmin, deleteCommunity);
 
 // ── W3DS Webhook ─────────────────────────────────────────────────────────────
 app.post("/api/webhook", webhook.handleWebhook);
+
+// ── W3DS Platform Self-Description ───────────────────────────────────────────
+app.get("/.well-known/w3ds-platform.json", (_req, res) => {
+    res.json({
+        name: "ALVer",
+        description: "Cooperative meeting and voting platform",
+        platform: process.env.VITE_PUBLIC_ALVER_BASE_URL ?? "",
+        ontologies: [
+            {
+                name: "CalendarEvent",
+                schemaId: "880e8400-e29b-41d4-a716-446655440099",
+                tableName: "meetings",
+                fields: { title: "name", start: "startDateTime", end: "endDateTime" },
+            },
+            {
+                name: "Poll",
+                schemaId: "660e8400-e29b-41d4-a716-446655440100",
+                tableName: "polls",
+                fields: { title: "motion_text", options: "vote_options[].label", mode: "normal", deadline: "closed_at" },
+            },
+            {
+                name: "Vote",
+                schemaId: "660e8400-e29b-41d4-a716-446655440101",
+                tableName: "votes",
+                fields: { pollId: "poll_id", voterId: "voter_ename", data: "{ mode, options: [option_id] }" },
+            },
+            {
+                name: "Community",
+                schemaId: "550e8400-e29b-41d4-a716-446655440003",
+                tableName: "communities",
+                fields: { name: "name", eName: "ename", owner: "facilitator_ename", avatar: "logo_url" },
+            },
+        ],
+        webhookUrl: `${process.env.VITE_PUBLIC_ALVER_BASE_URL ?? ""}/api/webhook`,
+    });
+});
 
 // ── Serve React frontend (production only) ────────────────────────────────────
 // In the Docker image, app/dist is copied to <api-root>/client/
@@ -188,7 +263,10 @@ AppDataSource.initialize()
         if (ran.length > 0) {
             logger.info({ migrations: ran.map(m => m.name) }, "migrations applied");
         }
-        app.listen(port, () => logger.info({ port }, "ALVer API started"));
+        app.listen(port, () => {
+            logger.info({ port }, "ALVer API started");
+            startPolling();
+        });
     })
     .catch((err) => {
         logger.fatal({ err }, "database connection failed");
