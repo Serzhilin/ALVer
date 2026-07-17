@@ -158,3 +158,30 @@ export const adminDeleteCommunity = (id) => req('DELETE', `/admin/communities/${
 export const assignNotulist = (id, notulist_ename) => req('PATCH', `/meetings/${id}/notulist`, { notulist_ename })
 export const saveMinutes = (id, html) => req('PATCH', `/meetings/${id}/minutes`, { html })
 export const publishMinutes = (id) => req('PATCH', `/meetings/${id}/minutes/publish`, {})
+
+// ── Community Linking ─────────────────────────────────────────────────────────
+export async function resolveCommunityW3id(w3id) {
+  const token = localStorage.getItem('alver_token')
+  const res = await fetch(`/api/communities/resolve?w3id=${encodeURIComponent(w3id)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw Object.assign(new Error(body.error || `HTTP ${res.status}`), { status: res.status })
+  }
+  return res.json()
+}
+
+export async function linkCommunityW3id({ w3id, slug }) {
+  const token = localStorage.getItem('alver_token')
+  const res = await fetch('/api/communities/link', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ w3id, slug }),
+  })
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw Object.assign(new Error(body.error || `HTTP ${res.status}`), { status: res.status })
+  }
+  return res.json()
+}

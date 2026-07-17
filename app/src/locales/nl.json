@@ -351,6 +351,27 @@
     "role_member": "Lid",
     "switch_btn": "Wissel van gemeenschap"
   },
+  "community_link": {
+    "title": "Gemeenschap koppelen",
+    "description": "Voer de W3DS-identiteit van je gemeenschap in.",
+    "w3id_label": "Gemeenschap W3ID",
+    "resolve_btn": "Doorgaan",
+    "resolving": "Controleren…",
+    "review_title": "Gemeenschap bekijken",
+    "slug_label": "URL-slug",
+    "slug_hint": "Gebruikt in URLs. Alleen letters, cijfers en koppeltekens.",
+    "link_btn": "Gemeenschap koppelen",
+    "linking": "Koppelen…",
+    "success_title": "Gemeenschap gekoppeld!",
+    "success_description": "Je bent nu de eerste facilitator van deze gemeenschap in ALVer.",
+    "enter_btn": "Gemeenschap betreden",
+    "error_w3id_not_found": "Gemeenschap niet gevonden op het W3DS-netwerk.",
+    "error_group_not_found": "Geen gemeenschapsenvelop gevonden. Maak deze eerst aan in Onboarding.",
+    "error_not_admin": "Je bent geen eigenaar of beheerder van deze gemeenschap.",
+    "error_already_linked": "Deze gemeenschap is al gekoppeld aan ALVer.",
+    "error_slug_taken": "Deze slug is al in gebruik. Kies een andere.",
+    "error_generic": "Er is iets misgegaan. Probeer opnieuw."
+  },
   "admin": {
     "title": "ALVer Admin",
     "login_hint": "Log in met je eID om door te gaan",

@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useUser } from '../context/UserContext'
+import LinkCommunityWizard from './LinkCommunityWizard'
 
 /**
  * Full-screen community selection screen.
@@ -15,6 +17,7 @@ export default function CommunityPicker({ communities, onSelect, isFacilitatorSe
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { logout } = useUser()
+  const [showLinkWizard, setShowLinkWizard] = useState(false)
 
   // Error state: facilitator login but no facilitator communities
   if (isFacilitatorSession && communities.length === 0) {
@@ -107,18 +110,15 @@ export default function CommunityPicker({ communities, onSelect, isFacilitatorSe
               padding: '14px 18px',
               background: 'white',
               border: `2px solid ${c.primary_color || 'var(--color-sand, #e8e0d5)'}`,
-              borderRadius: 12,
+              borderRadius: 0,
               cursor: 'pointer',
               textAlign: 'left',
-              transition: 'box-shadow 0.15s',
             }}
-            onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.10)'}
-            onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
           >
             <div style={{
               width: 44,
               height: 44,
-              borderRadius: 10,
+              borderRadius: 0,
               background: c.primary_color || '#C4622D',
               flexShrink: 0,
               overflow: 'hidden',
@@ -151,6 +151,35 @@ export default function CommunityPicker({ communities, onSelect, isFacilitatorSe
           </button>
         ))}
       </div>
+
+      {!isFacilitatorSession && (
+        <>
+          <div style={{ height: 1, background: 'var(--color-sand, #e8e0d5)', margin: '20px 0', width: '100%', maxWidth: 420 }} />
+          {showLinkWizard ? (
+            <LinkCommunityWizard
+              onLinked={(community) => { setShowLinkWizard(false); onSelect(community.id) }}
+              onCancel={() => setShowLinkWizard(false)}
+            />
+          ) : (
+            <button
+              onClick={() => setShowLinkWizard(true)}
+              style={{
+                background: 'none',
+                border: '2px dashed var(--color-sand, #e8e0d5)',
+                padding: '12px 18px',
+                width: '100%',
+                maxWidth: 420,
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                color: 'var(--color-muted, #888)',
+                textAlign: 'center',
+              }}
+            >
+              + {t('community_link.title', { defaultValue: 'Link community' })}
+            </button>
+          )}
+        </>
+      )}
     </div>
   )
 }

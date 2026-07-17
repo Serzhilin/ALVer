@@ -351,6 +351,27 @@
     "role_member": "Member",
     "switch_btn": "Switch community"
   },
+  "community_link": {
+    "title": "Link community",
+    "description": "Enter the W3DS identity of your community.",
+    "w3id_label": "Community W3ID",
+    "resolve_btn": "Continue",
+    "resolving": "Checking…",
+    "review_title": "Review community",
+    "slug_label": "URL slug",
+    "slug_hint": "Used in URLs. Letters, numbers, and hyphens only.",
+    "link_btn": "Link community",
+    "linking": "Linking…",
+    "success_title": "Community linked!",
+    "success_description": "You are now the first facilitator of this community in ALVer.",
+    "enter_btn": "Enter community",
+    "error_w3id_not_found": "Community not found on W3DS network.",
+    "error_group_not_found": "No community envelope found. Create it in Onboarding first.",
+    "error_not_admin": "You are not an owner or admin of this community.",
+    "error_already_linked": "This community is already linked to ALVer.",
+    "error_slug_taken": "This slug is already taken. Choose another.",
+    "error_generic": "Something went wrong. Try again."
+  },
   "admin": {
     "title": "ALVer Admin",
     "login_hint": "Sign in with your eID to continue",
