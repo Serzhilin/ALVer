@@ -2,6 +2,8 @@ import { In } from "typeorm";
 import { AppDataSource } from "../database/data-source";
 import { Community } from "../database/entities/Community";
 import { Member } from "../database/entities/Member";
+import { findEnvelopesByOntology, getUserMetaEnvelopeId } from "../lib/evault";
+import { ONTOLOGIES } from "../lib/w3ds/ontology";
 
 export class CommunityService {
     private repo = AppDataSource.getRepository(Community);
@@ -188,8 +190,99 @@ export class CommunityService {
     async updateMemberEvaultFields(id: string, data: {
         first_name: string;
         last_name: string;
+        display_name: string;
         avatar_url: string | null;
     }): Promise<void> {
         await this.memberRepo.update(id, data);
     }
+}
+
+export type W3idResolution = {
+    evault_uri: string;
+    w3id: string;
+    envelopeId: string;
+    envelope: {
+        name: string;
+        logo_url: string | null;
+        description: string | null;
+    };
+};
+
+/**
+ * Resolve a W3ID and verify the caller owns or admins the community.
+ * Throws Error with string message: 'w3id_not_found' | 'group_not_found' | 'not_admin'
+ */
+export async function resolveW3id(w3id: string, userEname: string): Promise<W3idResolution> {
+    const registryUrl = process.env.PUBLIC_REGISTRY_URL;
+    if (!registryUrl) throw new Error('w3id_not_found');
+
+    const normalizedW3id = w3id.startsWith('@') ? w3id : `@${w3id}`;
+
+    // Resolve W3ID → eVault URI
+    const resolveRes = await fetch(`${registryUrl}/resolve?w3id=${encodeURIComponent(normalizedW3id)}`);
+    if (!resolveRes.ok) throw new Error('w3id_not_found');
+    const { uri: evault_uri } = await resolveRes.json() as { uri: string };
+
+    // Fetch Chat envelopes from community eVault
+    const envelopes = await findEnvelopesByOntology(normalizedW3id, ONTOLOGIES.Community, 1);
+    if (envelopes.length === 0) throw new Error('group_not_found');
+
+    const envelope = envelopes[0];
+    const payload = envelope.parsed ?? {};
+
+    // Verify caller is owner or admin
+    const normalizedUserEname = userEname.startsWith('@') ? userEname : `@${userEname}`;
+    const owner = (payload.owner as string | undefined) ?? '';
+    const admins: string[] = Array.isArray(payload.admins) ? payload.admins : [];
+
+    const isOwner = owner === normalizedUserEname || owner === userEname;
+    let isAdmin = false;
+    if (!isOwner) {
+        const userMetaId = await getUserMetaEnvelopeId(normalizedUserEname);
+        isAdmin = userMetaId !== null && admins.includes(userMetaId);
+    }
+
+    if (!isOwner && !isAdmin) throw new Error('not_admin');
+
+    return {
+        evault_uri,
+        w3id: normalizedW3id,
+        envelopeId: envelope.id,
+        envelope: {
+            name: (payload.name as string | undefined) ?? normalizedW3id,
+            logo_url: (payload.avatar as string | undefined) ?? null,
+            description: (payload.description as string | undefined) ?? null,
+        },
+    };
+}
+
+/**
+ * Link a W3DS community to ALVer. First linker becomes facilitator.
+ * Throws Error with string message: 'w3id_already_linked' | 'slug_taken' | + resolveW3id errors
+ */
+export async function linkCommunity(
+    input: { w3id: string; slug: string },
+    userEname: string
+): Promise<Community> {
+    const resolution = await resolveW3id(input.w3id, userEname);
+
+    const repo = AppDataSource.getRepository(Community);
+
+    const existing = await repo.findOne({ where: { ename: resolution.w3id } });
+    if (existing) throw new Error('w3id_already_linked');
+
+    const slugConflict = await repo.findOne({ where: { slug: input.slug } });
+    if (slugConflict) throw new Error('slug_taken');
+
+    const community = repo.create({
+        name: resolution.envelope.name,
+        slug: input.slug,
+        facilitator_ename: userEname.startsWith('@') ? userEname : `@${userEname}`,
+        logo_url: resolution.envelope.logo_url ?? null,
+        ename: resolution.w3id,
+        evault_uri: resolution.evault_uri,
+        locations: [],
+    });
+
+    return repo.save(community);
 }
