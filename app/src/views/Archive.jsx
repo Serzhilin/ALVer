@@ -7,6 +7,8 @@ import FacilitatorHeader from '../components/FacilitatorHeader'
 import AgendaHtml from '../components/AgendaHtml'
 import MinutesEditor from '../components/MinutesEditor'
 import * as api from '../api/client'
+import { Button, Card, Badge, Heading, Loading, SectionLabel } from '@ecommons/ui'
+import styles from './Archive.module.css'
 
 const SUPERADMIN_ENAME = '@9dafa031-4118-564c-bfa6-5917ddc8ab88'
 
@@ -23,7 +25,15 @@ export default function Archive() {
 
   useEffect(() => { setMeetingId(id) }, [id])
 
-  if (!meeting) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--color-charcoal-light)' }}>{t('common.loading')}</div>
+  if (!meeting) {
+    return (
+      <div className={styles.pageRoot}>
+        <div className={styles.content}>
+          <Loading>{t('common.loading')}</Loading>
+        </div>
+      </div>
+    )
+  }
 
   const isAvailable = meeting.phase === 'closed' || meeting.phase === 'archived'
   const dateLocale = i18n.language === 'nl' ? 'nl-NL' : 'en-GB'
@@ -36,194 +46,185 @@ export default function Archive() {
   ) && meeting.minutes_status !== 'published')
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--color-cream)' }}>
-      <FacilitatorHeader
-        title={t('archive.header')}
-      />
+    <div className={styles.pageRoot}>
+      <FacilitatorHeader title={t('archive.header')} />
 
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '40px 24px' }}>
+      <div className={styles.content}>
         {!isAvailable && (
-          <div className="card" style={{ padding: 32, textAlign: 'center', marginBottom: 24 }}>
-            <div style={{ fontSize: '2rem', marginBottom: 12 }}>🔒</div>
-            <h2 style={{ margin: '0 0 8px', fontSize: '1.1rem' }}>{t('archive.not_available_title')}</h2>
-            <p style={{ color: 'var(--color-charcoal-light)', margin: 0, fontSize: '0.88rem' }}>
-              {t('archive.not_available_hint')}
-            </p>
-          </div>
+          <Card className={styles.notAvailableCard}>
+            <div className={styles.notAvailableIcon}>🔒</div>
+            <Heading as="h2" fontSize="1.1rem" style={{ margin: '0 0 8px' }}>
+              {t('archive.not_available_title')}
+            </Heading>
+            <p className={styles.notAvailableHint}>{t('archive.not_available_hint')}</p>
+          </Card>
         )}
 
         {/* Meeting header */}
-        <div className="card-warm" style={{ padding: 28, marginBottom: 24 }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
-            <div>
-              <h1 style={{ fontSize: '1.5rem', margin: '0 0 10px', color: 'var(--color-charcoal)' }}>
-                {meeting.name}
-              </h1>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <div style={{ fontSize: '0.88rem', color: 'var(--color-charcoal-light)' }}>📅 {dateStr}</div>
-                <div style={{ fontSize: '0.88rem', color: 'var(--color-charcoal-light)' }}>🕐 {meeting.time}{meeting.end_time ? ` – ${meeting.end_time}` : ''}</div>
-                <div style={{ fontSize: '0.88rem', color: 'var(--color-charcoal-light)' }}>📍 {meeting.location}</div>
+        <Card className={styles.meetingHeaderCard}>
+          <div className={styles.meetingHeaderTop}>
+            <div className={styles.meetingTitleCol}>
+              <div className={styles.meetingName}>
+                <Heading as="h1" fontSize="1.5rem">{meeting.name}</Heading>
+              </div>
+              <div className={styles.meetingMeta}>
+                <div className={styles.metaRow}>📅 {dateStr}</div>
+                <div className={styles.metaRow}>🕐 {meeting.time}{meeting.end_time ? ` – ${meeting.end_time}` : ''}</div>
+                <div className={styles.metaRow}>📍 {meeting.location}</div>
               </div>
             </div>
-            <div style={{ textAlign: 'right', display: 'flex', gap: 20 }}>
-              <div>
-                <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-charcoal)' }}>
+            <div className={styles.meetingStats}>
+              <div className={styles.statBlock}>
+                <div className={styles.statNumber}>
                   {meeting.checkedIn.filter(c => !c.isAspirant).length}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)' }}>{t('archive.voters_present')}</div>
+                <div className={styles.statLabel}>{t('archive.voters_present')}</div>
               </div>
-              <div>
-                <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-charcoal)' }}>
-                  {meeting.confirmedMandates.length}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)' }}>{t('facilitate.mandates')}</div>
+              <div className={styles.statBlock}>
+                <div className={styles.statNumber}>{meeting.confirmedMandates.length}</div>
+                <div className={styles.statLabel}>{t('facilitate.mandates')}</div>
               </div>
             </div>
           </div>
 
           <hr className="divider" />
 
-          <div>
-            <label>{t('common.agenda')}</label>
-            <AgendaHtml html={meeting.agenda} style={{ marginTop: 8 }} />
+          <div className={styles.agendaSection}>
+            <SectionLabel style={{ marginBottom: 8 }}>{t('common.agenda')}</SectionLabel>
+            <AgendaHtml html={meeting.agenda} />
           </div>
-        </div>
+        </Card>
 
         {/* Decisions */}
-        <h2 style={{ fontSize: '1.1rem', margin: '0 0 16px', color: 'var(--color-charcoal)' }}>
-          {t('archive.decisions')}
-        </h2>
+        <div className={styles.decisionsHeading}>
+          <Heading as="h2" fontSize="1.1rem">{t('archive.decisions')}</Heading>
+        </div>
 
         {meeting.polls.filter(p => p.status === 'closed').length === 0 && (
-          <div className="card" style={{ padding: 24, textAlign: 'center', marginBottom: 24 }}>
-            <p style={{ color: 'var(--color-charcoal-light)', margin: 0, fontSize: '0.88rem' }}>
-              {t('archive.no_decisions')}
-            </p>
-          </div>
+          <Card className={styles.emptyCard}>
+            <p className={styles.emptyText}>{t('archive.no_decisions')}</p>
+          </Card>
         )}
 
         {meeting.polls.filter(p => p.status === 'closed').map((poll, idx) => (
-          <div key={poll.id} className="card" style={{ padding: 24, marginBottom: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 14 }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '0.72rem', color: 'var(--color-charcoal-light)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+          <Card key={poll.id} className={styles.pollCard}>
+            <div className={styles.pollCardTop}>
+              <div className={styles.pollCardLeft}>
+                <div className={styles.decisionNumber}>
                   {t('archive.decision_number', { number: idx + 1 })}
                 </div>
-                <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--color-charcoal)', lineHeight: 1.6, fontWeight: 500 }}>
-                  {poll.title}
-                </p>
+                <p className={styles.pollTitle}>{poll.title}</p>
               </div>
             </div>
 
             {poll.result && (
               <>
-                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 8 }}>
-                  {Object.entries(poll.result.tally).map(([option, count]) => (
-                    <div key={option} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <div style={{
-                        width: 32, height: 32, borderRadius: 8,
-                        background: option === 'Voor' || option === 'Ja' ? 'rgba(45,122,74,0.1)' :
-                          option === 'Tegen' || option === 'Nee' ? 'rgba(196,45,45,0.1)' : 'rgba(44,44,44,0.06)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontWeight: 700, fontSize: '0.95rem',
-                        color: option === 'Voor' || option === 'Ja' ? 'var(--color-green)' :
-                          option === 'Tegen' || option === 'Nee' ? 'var(--color-red)' : 'var(--color-charcoal-light)',
-                      }}>
-                        {count}
+                <div className={styles.tallyRow}>
+                  {Object.entries(poll.result.tally).map(([option, count]) => {
+                    const isFor = option === 'Voor' || option === 'Ja'
+                    const isAgainst = option === 'Tegen' || option === 'Nee'
+                    return (
+                      <div key={option} className={styles.tallyItem}>
+                        <div
+                          className={styles.tallyBox}
+                          style={{
+                            background: isFor ? 'rgba(45,122,74,0.1)' : isAgainst ? 'rgba(196,45,45,0.1)' : 'rgba(44,44,44,0.06)',
+                            color: isFor ? 'var(--color-green)' : isAgainst ? 'var(--color-red)' : 'var(--color-charcoal-light)',
+                          }}
+                        >
+                          {count}
+                        </div>
+                        <span className={styles.tallyLabel}>{option}</span>
                       </div>
-                      <span style={{ fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>{option}</span>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
                 {poll.closedAt && (
-                  <div style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)' }}>
+                  <div className={styles.closedAt}>
                     {t('archive.closed_at', { time: poll.closedAt })}
                   </div>
                 )}
               </>
             )}
-          </div>
+          </Card>
         ))}
 
         {/* Attendees — collapsed by default */}
-        <button
-          onClick={() => setAttendeesOpen(o => !o)}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0, margin: '24px 0 12px' }}
-        >
-          <h2 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--color-charcoal)' }}>
-            {t('archive.attendees_count', { count: meeting.checkedIn.length })}
-          </h2>
-          <span style={{ fontSize: '0.85rem', color: 'var(--color-charcoal-light)' }}>{attendeesOpen ? '▼' : '▶'}</span>
-        </button>
+        <div className={styles.attendeesSection}>
+          <Button
+            variant="secondary"
+            className={styles.collapseBtn}
+            onClick={() => setAttendeesOpen(o => !o)}
+          >
+            <Heading as="h2" fontSize="1.1rem" style={{ margin: 0 }}>
+              {t('archive.attendees_count', { count: meeting.checkedIn.length })}
+            </Heading>
+            <span className={styles.collapseChevron}>{attendeesOpen ? '▼' : '▶'}</span>
+          </Button>
+        </div>
         {attendeesOpen && (
-          <div className="card" style={{ padding: 20, marginBottom: 16 }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          <Card className={styles.attendeesCard}>
+            <div className={styles.attendeeBadges}>
               {meeting.checkedIn.map(c => (
-                <span
-                  key={c.id}
-                  style={{
-                    padding: '4px 14px', borderRadius: 20,
-                    background: 'var(--color-sand)', fontSize: '0.85rem',
-                    color: 'var(--color-charcoal)',
-                    display: 'inline-flex', alignItems: 'center', gap: 4,
-                  }}
-                >
-                  {c.name} {c.manual && <span title={t('facilitate.manually_added')} style={{ fontSize: '0.75rem' }}>📝</span>}
-                </span>
+                <Badge key={c.id} variant="gray">
+                  {c.name} {c.manual && <span title={t('facilitate.manually_added')}>📝</span>}
+                </Badge>
               ))}
             </div>
-          </div>
+          </Card>
         )}
 
         {/* Mandates — collapsed by default */}
         {meeting.confirmedMandates.length > 0 && (
           <>
-            <button
-              onClick={() => setMandatesOpen(o => !o)}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0, margin: '16px 0 12px' }}
-            >
-              <h2 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--color-charcoal)' }}>
-                {t('archive.mandates_count', { count: meeting.confirmedMandates.length })}
-              </h2>
-              <span style={{ fontSize: '0.85rem', color: 'var(--color-charcoal-light)' }}>{mandatesOpen ? '▼' : '▶'}</span>
-            </button>
+            <div className={styles.mandatesSection}>
+              <Button
+                variant="secondary"
+                className={styles.collapseBtn}
+                onClick={() => setMandatesOpen(o => !o)}
+              >
+                <Heading as="h2" fontSize="1.1rem" style={{ margin: 0 }}>
+                  {t('archive.mandates_count', { count: meeting.confirmedMandates.length })}
+                </Heading>
+                <span className={styles.collapseChevron}>{mandatesOpen ? '▼' : '▶'}</span>
+              </Button>
+            </div>
             {mandatesOpen && (
-              <div className="card" style={{ padding: 20 }}>
+              <Card className={styles.mandatesCard}>
                 {meeting.confirmedMandates.map(m => (
-                  <div key={m.id} style={{ padding: '8px 0', borderBottom: '1px solid var(--color-sand)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div key={m.id} className={styles.mandateRow}>
                     <div>
-                      <span style={{ fontSize: '0.9rem', color: 'var(--color-charcoal)' }}>
+                      <div className={styles.mandateNames}>
                         <strong>{m.from}</strong> → <strong>{m.to}</strong>
-                      </span>
-                      {m.note && <div style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', marginTop: 2 }}>{m.note}</div>}
+                      </div>
+                      {m.note && <div className={styles.mandateNote}>{m.note}</div>}
                     </div>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)' }}>{m.confirmedAt}</span>
+                    <span className={styles.mandateTime}>{m.confirmedAt}</span>
                   </div>
                 ))}
-              </div>
+              </Card>
             )}
           </>
         )}
 
         {/* Minutes — shown only when a notulist is assigned */}
         {meeting.notulist_ename && (
-          <div style={{ marginTop: 32 }}>
-            <button
+          <div className={styles.minutesSection}>
+            <Button
+              variant="secondary"
+              className={styles.collapseBtn}
               onClick={() => setMinutesOpen(o => !o)}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0, margin: '0 0 12px' }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <h2 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--color-charcoal)' }}>
+              <div className={styles.minutesTitleRow}>
+                <Heading as="h2" fontSize="1.1rem" style={{ margin: 0 }}>
                   {t('minutes.section_title')}
-                </h2>
+                </Heading>
                 {meeting.minutes_status === 'draft' && isMinutesEditor && (
-                  <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-charcoal-light)', background: 'var(--color-sand)', padding: '2px 8px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                    {t('minutes.draft_badge')}
-                  </span>
+                  <Badge variant="gray">{t('minutes.draft_badge')}</Badge>
                 )}
               </div>
-              <span style={{ fontSize: '0.85rem', color: 'var(--color-charcoal-light)' }}>{minutesOpen ? '▼' : '▶'}</span>
-            </button>
+              <span className={styles.collapseChevron}>{minutesOpen ? '▼' : '▶'}</span>
+            </Button>
 
             {minutesOpen && (
               <>
@@ -237,18 +238,19 @@ export default function Archive() {
 
                 {/* Read-only — published, for all logged-in members */}
                 {meeting.minutes_status === 'published' && user && !isMinutesEditor && (
-                  <div className="card" style={{ padding: 24 }}>
+                  <Card className={styles.minutesReadCard}>
                     <AgendaHtml html={meeting.minutes_html ?? ''} />
-                  </div>
+                  </Card>
                 )}
               </>
             )}
           </div>
         )}
+
         {user?.ename === SUPERADMIN_ENAME && (
-          <div style={{ marginTop: 40, textAlign: 'right' }}>
-            <button
-              className="btn-danger"
+          <div className={styles.deleteArea}>
+            <Button
+              variant="danger"
               onClick={async () => {
                 if (!window.confirm(`Delete "${meeting.name}"? This cannot be undone.`)) return
                 await api.deleteMeeting(id)
@@ -256,7 +258,7 @@ export default function Archive() {
               }}
             >
               Delete meeting
-            </button>
+            </Button>
           </div>
         )}
       </div>

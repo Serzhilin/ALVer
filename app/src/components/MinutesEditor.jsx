@@ -2,7 +2,9 @@ import { useState, useRef } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { useTranslation } from 'react-i18next'
+import { Button, Card } from '@ecommons/ui'
 import { saveMinutes, publishMinutes } from '../api/client'
+import styles from './MinutesEditor.module.css'
 
 /**
  * Editor for draft minutes — shown to the notulist and facilitator.
@@ -74,63 +76,59 @@ export default function MinutesEditor({ meeting, onPublished }) {
   if (!editor) return null
 
   return (
-    <div className="card" style={{ padding: 24 }}>
-      {/* Import from Word */}
-      <div style={{ marginBottom: 16 }}>
-        <label
-          htmlFor="docx-import"
-          className="btn-secondary"
-          style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.85rem' }}
-        >
+    <Card className={styles.editorCard}>
+      {/* Import from Word — label triggers hidden file input (no ecommons-ui file picker) */}
+      <div className={styles.importRow}>
+        <label htmlFor="docx-import" className={styles.importLabel}>
           📄 {t('minutes.import_word')}
         </label>
         <input
           id="docx-import"
           type="file"
           accept=".docx"
-          style={{ display: 'none' }}
+          className={styles.docxInput}
           onChange={handleImportDocx}
         />
       </div>
 
       {/* TipTap editor */}
-      <div style={{ border: '1px solid var(--color-sand-dark)', borderRadius: 8, padding: '12px 16px', minHeight: 200, fontSize: '0.92rem', lineHeight: 1.7 }}>
+      <div className={styles.editorArea}>
         <EditorContent editor={editor} />
       </div>
 
       {/* Save indicator */}
       {saving && (
-        <div style={{ marginTop: 8, fontSize: '0.78rem', color: 'var(--color-charcoal-light)' }}>
+        <div className={styles.savingText}>
           {t('minutes.saving')}
         </div>
       )}
 
       {/* Publish button */}
-      <div style={{ marginTop: 20 }}>
+      <div className={styles.publishArea}>
         {!publishConfirm ? (
-          <button
-            className="btn-primary"
+          <Button
+            variant="primary"
+            className={styles.fullWidthBtn}
             onClick={() => setPublishConfirm(true)}
-            style={{ width: '100%', justifyContent: 'center' }}
           >
             {t('minutes.publish_btn')}
-          </button>
+          </Button>
         ) : (
-          <div style={{ background: 'rgba(196,98,45,0.06)', border: '1.5px solid rgba(196,98,45,0.25)', borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--color-charcoal)', lineHeight: 1.5 }}>
+          <div className={styles.publishConfirm}>
+            <p className={styles.publishConfirmText}>
               {t('minutes.publish_confirm')}
             </p>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button className="btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={handlePublish}>
+            <div className={styles.publishConfirmBtns}>
+              <Button variant="primary" className={styles.flex1Btn} onClick={handlePublish}>
                 {t('minutes.publish_confirm_yes')}
-              </button>
-              <button className="btn-secondary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setPublishConfirm(false)}>
+              </Button>
+              <Button variant="secondary" className={styles.flex1Btn} onClick={() => setPublishConfirm(false)}>
                 {t('common.cancel')}
-              </button>
+              </Button>
             </div>
           </div>
         )}
       </div>
-    </div>
+    </Card>
   )
 }

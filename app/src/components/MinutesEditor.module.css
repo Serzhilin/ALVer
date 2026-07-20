@@ -1,0 +1,85 @@
+/* MinutesEditor component – ecommons-ui migration */
+
+.editorCard {
+  padding: var(--space-24);
+}
+
+.importRow {
+  margin-bottom: var(--space-16);
+}
+
+/* File-upload label styled like btn-secondary (no native button available for file triggers) */
+.importLabel {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  color: var(--color-charcoal);
+  padding: var(--space-10) var(--space-20);
+  border: 2px solid var(--color-charcoal);
+  background: white;
+  transition: transform 0.1s, box-shadow 0.1s;
+  box-shadow: var(--block-shadow-sm);
+}
+
+.importLabel:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--block-shadow-color);
+}
+
+/* Hidden file input – must stay as native <input type="file"> (no ecommons-ui equivalent) */
+.docxInput {
+  display: none;
+}
+
+.editorArea {
+  border: 1px solid var(--color-sand-dark);
+  padding: 12px var(--space-16);
+  min-height: 200px;
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+
+.savingText {
+  margin-top: var(--space-8);
+  font-size: 0.78rem;
+  color: var(--color-charcoal-light);
+}
+
+.publishArea {
+  margin-top: var(--space-20);
+}
+
+.fullWidthBtn {
+  width: 100%;
+  justify-content: center;
+}
+
+.publishConfirm {
+  background: rgba(196, 98, 45, 0.06);
+  border: 1.5px solid rgba(196, 98, 45, 0.25);
+  padding: var(--space-16) 18px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.publishConfirmText {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--color-charcoal);
+  line-height: 1.5;
+}
+
+.publishConfirmBtns {
+  display: flex;
+  gap: 10px;
+}
+
+.flex1Btn {
+  flex: 1;
+  justify-content: center;
+}

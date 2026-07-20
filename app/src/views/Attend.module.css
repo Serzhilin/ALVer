@@ -1,0 +1,577 @@
+/* Attend view – ecommons-ui migration */
+
+/* ── Shared page shell ──────────────────────────────────────────────────── */
+.pageRoot {
+  min-height: 100vh;
+  background: var(--color-cream);
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  flex: 1;
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px var(--space-16) 40px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+/* ── Loading state ──────────────────────────────────────────────────────── */
+.loadingScreen {
+  min-height: 100vh;
+  background: var(--color-cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Session-locked screen ──────────────────────────────────────────────── */
+.lockedScreen {
+  min-height: 100vh;
+  background: var(--color-cream);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-32) var(--space-24);
+  text-align: center;
+}
+
+.lockedIcon {
+  font-size: 2.5rem;
+  margin-bottom: var(--space-16);
+}
+
+.lockedHint {
+  color: var(--color-charcoal-light);
+  font-size: 0.9rem;
+  margin: 0 0 var(--space-8);
+  line-height: 1.5;
+}
+
+.lockedSub {
+  color: var(--color-charcoal-light);
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+/* ── Login hero (not logged in) ─────────────────────────────────────────── */
+.loginHero {
+  background: var(--color-primary, var(--color-terracotta));
+  padding: 40px 28px var(--space-32);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.loginLogo {
+  height: 48px;
+  max-width: 160px;
+  object-fit: contain;
+  margin-bottom: var(--space-8);
+}
+
+.loginBrand {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.loginMetaList {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: var(--space-12);
+}
+
+.loginMetaRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.9rem;
+}
+
+.loginBody {
+  flex: 1;
+  background: white;
+  margin-top: -16px;
+  padding: var(--space-32) var(--space-24) 40px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Reconnecting banner ────────────────────────────────────────────────── */
+.reconnBanner {
+  background: #f59e0b;
+  color: white;
+  text-align: center;
+  padding: 6px var(--space-16);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+/* ── Aspirant notice ────────────────────────────────────────────────────── */
+.aspirantNotice {
+  padding: var(--space-12) var(--space-16);
+  background: rgba(196, 98, 45, 0.08);
+  border: 1px solid rgba(196, 98, 45, 0.2);
+}
+
+.aspirantText {
+  font-size: 0.85rem;
+  color: var(--color-terracotta);
+  font-weight: 500;
+}
+
+/* ── Mandate notice ─────────────────────────────────────────────────────── */
+.mandateNotice {
+  padding: var(--space-12) var(--space-16);
+  background: rgba(45, 98, 196, 0.06);
+  border: 1.5px solid rgba(45, 98, 196, 0.2);
+}
+
+.mandateText {
+  font-size: 0.85rem;
+  color: #2d62c4;
+  font-weight: 500;
+}
+
+.mandateNote {
+  font-weight: 400;
+  color: var(--color-charcoal-light);
+}
+
+/* ── Aspirant can see poll but not vote ─────────────────────────────────── */
+.aspirantPollCard {
+  padding: 24px var(--space-20);
+  text-align: center;
+}
+
+.aspirantPollIcon {
+  font-size: 1.8rem;
+  margin-bottom: var(--space-12);
+}
+
+.aspirantPollTitle {
+  color: var(--color-charcoal);
+  font-size: 0.95rem;
+  margin: 0 0 var(--space-8);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.aspirantPollHint {
+  color: var(--color-terracotta);
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+/* ── Waiting for poll ───────────────────────────────────────────────────── */
+.waitingForPollCard {
+  padding: 40px var(--space-24);
+  text-align: center;
+}
+
+.waitingForPollIcon {
+  font-size: 2rem;
+  margin-bottom: 14px;
+}
+
+.waitingForPollTitle {
+  color: var(--color-charcoal);
+  font-size: 1rem;
+  margin: 0 0 6px;
+  font-weight: 500;
+}
+
+.waitingForPollHint {
+  color: var(--color-charcoal-light);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* ── Agenda card (in session, no active poll) ───────────────────────────── */
+.agendaCard {
+  padding: var(--space-20);
+}
+
+.agendaLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-charcoal-light);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-12);
+}
+
+/* ── WaitingScreen sub-component ────────────────────────────────────────── */
+.waitingRoot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.waitingInfoCard {
+  padding: var(--space-32) var(--space-24);
+  text-align: center;
+}
+
+.waitingIcon {
+  font-size: 2.5rem;
+  margin-bottom: var(--space-16);
+}
+
+.waitingSubtitle {
+  color: var(--color-charcoal-light);
+  font-size: 0.88rem;
+  margin: 0 0 var(--space-20);
+  line-height: 1.5;
+}
+
+.waitingMetaList {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  text-align: left;
+}
+
+.waitingMetaRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--color-charcoal);
+}
+
+.waitingAgendaCard {
+  padding: var(--space-20);
+}
+
+.agendaEmpty {
+  margin: 0;
+  color: var(--color-charcoal-light);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+/* ── VoteCard sub-component ─────────────────────────────────────────────── */
+.voteWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.voteBanner {
+  background: var(--color-terracotta);
+  padding: var(--space-12) var(--space-20);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.voteBannerText {
+  color: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.votePulseDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  display: inline-block;
+  margin-left: auto;
+}
+
+.voteBody {
+  padding: 24px var(--space-20);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.voteTitle {
+  font-size: 1rem;
+  color: var(--color-charcoal);
+  line-height: 1.6;
+  margin: 0;
+  font-weight: 500;
+}
+
+.voteOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Vote option button — override ecommons-ui btn-secondary for large clickable blocks */
+.voteOption {
+  padding: 18px var(--space-20) !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  text-align: left;
+  width: 100%;
+  justify-content: flex-start !important;
+}
+
+.voteOption:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: var(--color-terracotta) !important;
+  background: rgba(196, 98, 45, 0.04) !important;
+}
+
+.voteCast {
+  padding: var(--space-16) var(--space-20);
+  background: rgba(45, 122, 74, 0.08);
+  border: 2px solid rgba(45, 122, 74, 0.3);
+}
+
+.voteCastText {
+  font-weight: 600;
+  color: var(--color-green);
+  font-size: 0.95rem;
+}
+
+/* Mandate vote section */
+.mandateVoteBox {
+  padding: var(--space-16) 18px;
+  background: rgba(45, 98, 196, 0.05);
+  border: 1.5px solid rgba(45, 98, 196, 0.2);
+}
+
+.mandateVoteTitle {
+  margin: 0 0 var(--space-12);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2d62c4;
+}
+
+.mandateVoteOptions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.mandateOptBtn {
+  padding: 14px 18px !important;
+  font-weight: 500 !important;
+  font-size: 0.95rem !important;
+  color: #2d62c4 !important;
+  border-color: rgba(45, 98, 196, 0.3) !important;
+  width: 100%;
+  text-align: left;
+  justify-content: flex-start !important;
+}
+
+.mandateOptBtn:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  background: rgba(45, 98, 196, 0.06) !important;
+}
+
+.mandateVoteDone {
+  padding: var(--space-12) var(--space-16);
+  background: rgba(45, 98, 196, 0.05);
+  border: 1px solid rgba(45, 98, 196, 0.2);
+}
+
+.mandateVoteDoneText {
+  font-size: 0.85rem;
+  color: #2d62c4;
+  font-weight: 500;
+}
+
+/* Progress bar */
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progressTrack {
+  flex: 1;
+  height: 5px;
+  background: var(--color-sand);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--color-terracotta);
+  transition: width 0.5s;
+}
+
+.progressLabel {
+  font-size: 0.78rem;
+  color: var(--color-charcoal-light);
+  white-space: nowrap;
+}
+
+/* ── ClosedPollResult sub-component ─────────────────────────────────────── */
+.closedPollWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.closedPollHeader {
+  background: var(--color-charcoal);
+  padding: var(--space-8) 18px;
+}
+
+.closedPollHeaderText {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.75rem;
+}
+
+.closedPollBody {
+  background: white;
+  padding: var(--space-20);
+}
+
+.closedPollTitle {
+  margin: 0 0 var(--space-12);
+  font-size: 0.9rem;
+  color: var(--color-charcoal);
+  line-height: 1.5;
+}
+
+.closedTally {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+}
+
+.tallyOption {
+  color: var(--color-charcoal-light);
+}
+
+.yourVoteHistory {
+  color: var(--color-charcoal-light);
+  margin-left: auto;
+}
+
+/* ── UpcomingPolls sub-component ────────────────────────────────────────── */
+.upcomingCard {
+  overflow: hidden;
+  padding: 0 !important;
+}
+
+.upcomingToggle {
+  width: 100%;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: var(--space-16) var(--space-20) !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--color-charcoal) !important;
+  cursor: pointer;
+}
+
+.upcomingToggle:hover {
+  transform: none !important;
+  background: var(--color-cream) !important;
+  box-shadow: none !important;
+  color: var(--color-charcoal) !important;
+}
+
+.upcomingToggleLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.upcomingLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-charcoal-light);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.upcomingCount {
+  font-size: 0.72rem;
+  background: var(--color-sand);
+  color: var(--color-charcoal-light);
+  padding: 1px 7px;
+  font-weight: 600;
+}
+
+.upcomingChevron {
+  font-size: 0.7rem;
+  color: var(--color-charcoal-light);
+}
+
+.upcomingList {
+  padding: 0 var(--space-20) var(--space-16);
+  border-top: 1px solid var(--color-sand);
+}
+
+.upcomingItems {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  margin-top: var(--space-12);
+}
+
+.upcomingItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.upcomingNum {
+  font-size: 0.75rem;
+  color: var(--color-charcoal-light);
+  margin-top: 2px;
+  min-width: 16px;
+  font-weight: 600;
+}
+
+.upcomingTitle {
+  font-size: 0.9rem;
+  color: var(--color-charcoal);
+  line-height: 1.5;
+}
+
+/* ── ClosedMeetingScreen sub-component ──────────────────────────────────── */
+.closedMeetingRoot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.closedMeetingCard {
+  padding: 28px var(--space-20);
+  text-align: center;
+}
+
+.closedMeetingIcon {
+  font-size: 2.5rem;
+  margin-bottom: var(--space-12);
+}
+
+.closedMeetingHint {
+  color: var(--color-charcoal-light);
+  font-size: 0.88rem;
+  margin: 0;
+}
+
+.archiveBtn {
+  width: 100%;
+  justify-content: center;
+}

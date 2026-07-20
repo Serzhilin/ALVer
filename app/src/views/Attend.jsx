@@ -7,6 +7,8 @@ import { useTranslation } from 'react-i18next'
 import LoginScreen from '../components/LoginScreen'
 import AppHeader from '../components/AppHeader'
 import AgendaHtml from '../components/AgendaHtml'
+import { Button, Card, Loading, Heading } from '@ecommons/ui'
+import styles from './Attend.module.css'
 
 export default function Attend() {
   const { id } = useParams()
@@ -49,8 +51,8 @@ export default function Attend() {
 
   if (!meeting) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: 'var(--color-charcoal-light)', fontSize: '0.9rem' }}>{t('common.loading')}</span>
+      <div className={styles.loadingScreen}>
+        <Loading>{t('common.loading')}</Loading>
       </div>
     )
   }
@@ -84,32 +86,27 @@ export default function Attend() {
     // If meeting is live and this user isn't in checkedIn list — block them
     if (meeting.phase === 'in_session') {
       return (
-        <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>🔒</div>
-          <h2 style={{ margin: '0 0 10px', fontSize: '1.1rem', fontFamily: 'Inter, sans-serif', fontWeight: 600, color: 'var(--color-charcoal)' }}>
+        <div className={styles.lockedScreen}>
+          <div className={styles.lockedIcon}>🔒</div>
+          <Heading as="h2" fontSize="1.1rem" fontWeight={600} style={{ margin: '0 0 10px' }}>
             {meeting.name}
-          </h2>
-          <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.9rem', margin: '0 0 8px', lineHeight: 1.5 }}>
-            {t('attend.session_locked_hint')}
-          </p>
-          <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.82rem', margin: 0 }}>
-            {t('attend.session_locked_sub')}
-          </p>
+          </Heading>
+          <p className={styles.lockedHint}>{t('attend.session_locked_hint')}</p>
+          <p className={styles.lockedSub}>{t('attend.session_locked_sub')}</p>
         </div>
       )
     }
     // archived: show results; open: show meeting info — in both cases without voting access
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', flexDirection: 'column' }}>
+      <div className={styles.pageRoot}>
         <AppHeader
-          appLogo="/logo.png"
           logo={community?.logo_url}
           title={meeting.name}
           liveIndicator={false}
           user={user ?? (myName ? { displayName: myName } : null)}
           onLogout={logout}
         />
-        <div style={{ flex: 1, maxWidth: 480, width: '100%', margin: '0 auto', padding: '20px 16px 40px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div className={styles.content}>
           {meeting.phase === 'archived'
             ? <ClosedMeetingScreen meeting={meeting} votedPolls={{}} onArchive={() => navigate(`/${community?.slug}/meeting/${meeting.id}/archive`)} t={t} />
             : <WaitingScreen meeting={meeting} dateStr={dateStr} amAspirant={amAspirant} t={t} />
@@ -122,35 +119,31 @@ export default function Attend() {
   // ── Not logged in: show eID login full-screen ─────────────────────────────
   if (!user) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', flexDirection: 'column' }}>
-        <div style={{
-          background: 'var(--color-primary, var(--color-terracotta))',
-          padding: '40px 28px 32px',
-          display: 'flex', flexDirection: 'column', gap: 6,
-        }}>
+      <div className={styles.pageRoot}>
+        <div className={styles.loginHero}>
           {community?.logo_url
-            ? <img src={community.logo_url} alt="logo" style={{ height: 48, maxWidth: 160, objectFit: 'contain', marginBottom: 8 }} />
-            : <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>ALVer</div>
+            ? <img src={community.logo_url} alt="logo" className={styles.loginLogo} />
+            : <div className={styles.loginBrand}>ALVer</div>
           }
-          <h1 style={{ color: 'white', fontSize: '1.6rem', fontFamily: 'var(--font-title)', margin: 0, lineHeight: 1.2 }}>
+          <Heading as="h1" fontSize="1.6rem" color="white" style={{ margin: 0, lineHeight: 1.2 }}>
             {meeting.name}
-          </h1>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginTop: 12 }}>
+          </Heading>
+          <div className={styles.loginMetaList}>
             {dateStr && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.85)', fontSize: '0.9rem' }}>
+              <div className={styles.loginMetaRow}>
                 <span>📅</span><span>{dateStr}</span>
               </div>
             )}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.85)', fontSize: '0.9rem' }}>
+            <div className={styles.loginMetaRow}>
               <span>🕐</span><span>{meeting.time}{meeting.end_time ? ` – ${meeting.end_time}` : ''}</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.85)', fontSize: '0.9rem' }}>
+            <div className={styles.loginMetaRow}>
               <span>📍</span><span>{meeting.location}</span>
             </div>
           </div>
         </div>
 
-        <div style={{ flex: 1, background: 'white', borderRadius: '20px 20px 0 0', marginTop: -16, padding: '32px 24px 40px', display: 'flex', flexDirection: 'column' }}>
+        <div className={styles.loginBody}>
           <LoginScreen onSuccess={(token, u) => login(token, u)} nameOption={false} returnTo={location.pathname} />
         </div>
       </div>
@@ -159,9 +152,9 @@ export default function Attend() {
 
   // ── Checked in ────────────────────────────────────────────────────────────
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', flexDirection: 'column' }}>
+    <div className={styles.pageRoot}>
       {!sseConnected && (
-        <div style={{ background: '#f59e0b', color: 'white', textAlign: 'center', padding: '6px 16px', fontSize: '0.82rem', fontWeight: 500 }}>
+        <div className={styles.reconnBanner}>
           {t('common.reconnecting')}
         </div>
       )}
@@ -175,12 +168,12 @@ export default function Attend() {
       />
 
       {/* Content */}
-      <div style={{ flex: 1, maxWidth: 480, width: '100%', margin: '0 auto', padding: '20px 16px 40px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div className={styles.content}>
 
         {/* Aspirant notice */}
         {amAspirant && (
-          <div style={{ padding: '12px 16px', background: 'rgba(196,98,45,0.08)', borderRadius: 10, border: '1px solid rgba(196,98,45,0.2)' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--color-terracotta)', fontWeight: 500 }}>
+          <div className={styles.aspirantNotice}>
+            <span className={styles.aspirantText}>
               {t('attend.aspirant_notice')}
             </span>
           </div>
@@ -188,10 +181,10 @@ export default function Attend() {
 
         {/* Mandate notice */}
         {myMandate && (
-          <div style={{ padding: '12px 16px', background: 'rgba(45,98,196,0.06)', borderRadius: 10, border: '1.5px solid rgba(45,98,196,0.2)' }}>
-            <span style={{ fontSize: '0.85rem', color: '#2D62C4', fontWeight: 500 }}>
+          <div className={styles.mandateNotice}>
+            <span className={styles.mandateText}>
               {t('attend.has_mandate_prefix')} <strong>{myMandate.from}</strong>
-              {myMandate.note && <span style={{ fontWeight: 400, color: 'var(--color-charcoal-light)' }}> — {myMandate.note}</span>}
+              {myMandate.note && <span className={styles.mandateNote}> — {myMandate.note}</span>}
             </span>
           </div>
         )}
@@ -216,28 +209,24 @@ export default function Attend() {
 
         {/* In session: aspirant sees poll but can't vote */}
         {isInSession && activePoll && amAspirant && (
-          <div style={{ background: 'white', borderRadius: 14, padding: '24px 20px', textAlign: 'center' }}>
-            <div style={{ fontSize: '1.8rem', marginBottom: 12 }}>🗳️</div>
-            <p style={{ color: 'var(--color-charcoal)', fontSize: '0.95rem', margin: '0 0 8px', fontWeight: 500, lineHeight: 1.5 }}>
-              {activePoll.title}
-            </p>
-            <p style={{ color: 'var(--color-terracotta)', fontSize: '0.82rem', margin: 0 }}>
-              {t('attend.aspirant_no_vote')}
-            </p>
-          </div>
+          <Card className={styles.aspirantPollCard}>
+            <div className={styles.aspirantPollIcon}>🗳️</div>
+            <p className={styles.aspirantPollTitle}>{activePoll.title}</p>
+            <p className={styles.aspirantPollHint}>{t('attend.aspirant_no_vote')}</p>
+          </Card>
         )}
 
         {/* In session: waiting for poll (only if more polls are prepared) */}
         {isInSession && !activePoll && meeting.polls.some(p => p.status === 'prepared') && (
-          <div style={{ background: 'white', borderRadius: 14, padding: '40px 24px', textAlign: 'center' }}>
-            <div style={{ fontSize: '2rem', marginBottom: 14 }}>💬</div>
-            <p style={{ color: 'var(--color-charcoal)', fontSize: '1rem', margin: '0 0 6px', fontWeight: 500 }}>
+          <Card className={styles.waitingForPollCard}>
+            <div className={styles.waitingForPollIcon}>💬</div>
+            <p className={styles.waitingForPollTitle}>
               {t('attend.waiting').split('.')[0]}
             </p>
-            <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.85rem', margin: 0 }}>
+            <p className={styles.waitingForPollHint}>
               {t('attend.waiting').split('.').slice(1).join('.').trim()}
             </p>
-          </div>
+          </Card>
         )}
 
         {/* Closed poll results (during session) */}
@@ -252,12 +241,10 @@ export default function Attend() {
 
         {/* Agenda (in session, no active poll) */}
         {isInSession && !activePoll && meeting.agenda && (
-          <div style={{ background: 'white', borderRadius: 14, padding: '20px' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-charcoal-light)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 12 }}>
-              📋 {t('common.agenda')}
-            </div>
+          <Card className={styles.agendaCard}>
+            <div className={styles.agendaLabel}>📋 {t('common.agenda')}</div>
             <AgendaHtml html={meeting.agenda} />
-          </div>
+          </Card>
         )}
 
         {/* Upcoming prepared polls (in session, no active poll) */}
@@ -271,38 +258,34 @@ export default function Attend() {
 
 function WaitingScreen({ meeting, dateStr, amAspirant, t }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ background: 'white', borderRadius: 14, padding: '32px 24px', textAlign: 'center' }}>
-        <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>⏳</div>
-        <h2 style={{ margin: '0 0 8px', fontSize: '1.1rem', fontFamily: 'Inter, sans-serif', fontWeight: 600 }}>
+    <div className={styles.waitingRoot}>
+      <Card className={styles.waitingInfoCard}>
+        <div className={styles.waitingIcon}>⏳</div>
+        <Heading as="h2" fontSize="1.1rem" fontWeight={600} style={{ margin: '0 0 8px' }}>
           {t('attend.not_started_title')}
-        </h2>
-        <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.88rem', margin: '0 0 20px', lineHeight: 1.5 }}>
-          {t('attend.not_started_hint')}
-        </p>
-        <div style={{ display: 'inline-flex', flexDirection: 'column', gap: 8, textAlign: 'left' }}>
+        </Heading>
+        <p className={styles.waitingSubtitle}>{t('attend.not_started_hint')}</p>
+        <div className={styles.waitingMetaList}>
           {dateStr && (
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: '0.9rem', color: 'var(--color-charcoal)' }}>
+            <div className={styles.waitingMetaRow}>
               <span>📅</span><span>{dateStr}</span>
             </div>
           )}
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: '0.9rem', color: 'var(--color-charcoal)' }}>
+          <div className={styles.waitingMetaRow}>
             <span>🕐</span><span>{meeting.time}{meeting.end_time ? ` – ${meeting.end_time}` : ''}</span>
           </div>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: '0.9rem', color: 'var(--color-charcoal)' }}>
+          <div className={styles.waitingMetaRow}>
             <span>📍</span><span>{meeting.location}</span>
           </div>
         </div>
-      </div>
-      <div style={{ background: 'white', borderRadius: 14, padding: '20px' }}>
-        <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-charcoal-light)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 12 }}>
-          📋 {t('common.agenda')}
-        </div>
+      </Card>
+      <Card className={styles.waitingAgendaCard}>
+        <div className={styles.agendaLabel}>📋 {t('common.agenda')}</div>
         {meeting.agenda
           ? <AgendaHtml html={meeting.agenda} />
-          : <p style={{ margin: 0, color: 'var(--color-charcoal-light)', fontSize: '0.9rem', fontStyle: 'italic' }}>{t('attend.agenda_tba')}</p>
+          : <p className={styles.agendaEmpty}>{t('attend.agenda_tba')}</p>
         }
-      </div>
+      </Card>
       {!amAspirant && <UpcomingPolls polls={meeting.polls} t={t} />}
     </div>
   )
@@ -321,46 +304,32 @@ function VoteCard({ poll, votedPolls, myMandate, myName, onVote, attendeeCount, 
   const totalVotes = Object.keys(poll.votes).length + (poll.onBehalfVoters?.size ?? 0)
 
   return (
-    <div className="animate-slide-in" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+    <div className={`animate-slide-in ${styles.voteWrapper}`}>
       {/* Banner */}
-      <div style={{
-        background: 'var(--color-terracotta)', borderRadius: '14px 14px 0 0',
-        padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 10,
-      }}>
-        <span style={{ color: 'white', fontWeight: 700, fontSize: '0.9rem' }}>{t('attend.voting_open')}</span>
-        <span className="animate-pulse-soft" style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255,255,255,0.85)', display: 'inline-block', marginLeft: 'auto' }} />
+      <div className={styles.voteBanner}>
+        <span className={styles.voteBannerText}>{t('attend.voting_open')}</span>
+        <span className={`animate-pulse-soft ${styles.votePulseDot}`} />
       </div>
 
-      <div style={{ background: 'white', borderRadius: '0 0 14px 14px', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <p style={{ fontSize: '1rem', color: 'var(--color-charcoal)', lineHeight: 1.6, margin: 0, fontWeight: 500 }}>
-          {poll.title}
-        </p>
+      <Card className={styles.voteBody}>
+        <p className={styles.voteTitle}>{poll.title}</p>
 
         {!myVote ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div className={styles.voteOptions}>
             {poll.options.map(opt => (
-              <button
+              <Button
                 key={opt}
+                variant="secondary"
+                className={styles.voteOption}
                 onClick={() => onVote(poll.id, opt, false)}
-                style={{
-                  padding: '18px 20px', borderRadius: 10, border: '2px solid var(--color-sand-dark)',
-                  background: 'white', cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-                  fontWeight: 600, fontSize: '1rem', color: 'var(--color-charcoal)',
-                  transition: 'all 0.15s', textAlign: 'left', width: '100%',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-terracotta)'; e.currentTarget.style.background = 'rgba(196,98,45,0.04)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-sand-dark)'; e.currentTarget.style.background = 'white' }}
               >
                 {opt}
-              </button>
+              </Button>
             ))}
           </div>
         ) : (
-          <div style={{
-            padding: '16px 20px', borderRadius: 10,
-            background: 'rgba(45,122,74,0.08)', border: '2px solid rgba(45,122,74,0.3)',
-          }}>
-            <span style={{ fontWeight: 600, color: 'var(--color-green)', fontSize: '0.95rem' }}>
+          <div className={styles.voteCast}>
+            <span className={styles.voteCastText}>
               {t('attend.vote_cast')} <strong>{myVote}</strong>
             </span>
           </div>
@@ -368,52 +337,47 @@ function VoteCard({ poll, votedPolls, myMandate, myName, onVote, attendeeCount, 
 
         {/* Mandate vote — only after own vote is cast */}
         {myVote && myMandate && !myMandateVote && (
-          <div style={{ padding: '16px 18px', background: 'rgba(45,98,196,0.05)', borderRadius: 10, border: '1.5px solid rgba(45,98,196,0.2)' }}>
-            <p style={{ margin: '0 0 12px', fontSize: '0.9rem', fontWeight: 600, color: '#2D62C4' }}>
+          <div className={styles.mandateVoteBox}>
+            <p className={styles.mandateVoteTitle}>
               {t('attend.vote_on_behalf', { name: myMandate.from })}
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div className={styles.mandateVoteOptions}>
               {poll.options.map(opt => (
-                <button
+                <Button
                   key={opt}
+                  variant="secondary"
+                  className={styles.mandateOptBtn}
                   onClick={() => onVote(poll.id, opt, true)}
-                  style={{
-                    padding: '14px 18px', borderRadius: 10, border: '1.5px solid rgba(45,98,196,0.3)',
-                    background: 'white', cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-                    fontWeight: 500, fontSize: '0.95rem', color: '#2D62C4', transition: 'all 0.15s', textAlign: 'left', width: '100%',
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(45,98,196,0.06)' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'white' }}
                 >
                   {opt}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
         )}
 
         {myVote && myMandate && myMandateVote && (
-          <div style={{ padding: '12px 16px', background: 'rgba(45,98,196,0.05)', borderRadius: 10, border: '1px solid rgba(45,98,196,0.2)' }}>
-            <span style={{ fontSize: '0.85rem', color: '#2D62C4', fontWeight: 500 }}>
-              {t('attend.vote_on_behalf_done', { name: myMandate.from })} {typeof myMandateVote === 'string' && <strong>{myMandateVote}</strong>}
+          <div className={styles.mandateVoteDone}>
+            <span className={styles.mandateVoteDoneText}>
+              {t('attend.vote_on_behalf_done', { name: myMandate.from })}{' '}
+              {typeof myMandateVote === 'string' && <strong>{myMandateVote}</strong>}
             </span>
           </div>
         )}
 
         {/* Progress bar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ flex: 1, height: 5, background: 'var(--color-sand)', borderRadius: 3, overflow: 'hidden' }}>
-            <div style={{
-              height: '100%', background: 'var(--color-terracotta)', borderRadius: 3,
-              width: attendeeCount > 0 ? `${(totalVotes / attendeeCount) * 100}%` : '0%',
-              transition: 'width 0.5s',
-            }} />
+        <div className={styles.progressRow}>
+          <div className={styles.progressTrack}>
+            <div
+              className={styles.progressFill}
+              style={{ width: attendeeCount > 0 ? `${(totalVotes / attendeeCount) * 100}%` : '0%' }}
+            />
           </div>
-          <span style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', whiteSpace: 'nowrap' }}>
+          <span className={styles.progressLabel}>
             {t('attend.votes_progress', { cast: totalVotes, total: attendeeCount })}
           </span>
         </div>
-      </div>
+      </Card>
     </div>
   )
 }
@@ -423,21 +387,23 @@ function ClosedPollResult({ poll, votedPolls, t }) {
   const myVote = votedPolls[poll.id]?.own
 
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-      <div style={{ background: 'var(--color-charcoal)', borderRadius: '14px 14px 0 0', padding: '8px 18px' }}>
-        <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem' }}>{t('attend.result_header')}</span>
+    <div className={`animate-fade-in ${styles.closedPollWrapper}`}>
+      <div className={styles.closedPollHeader}>
+        <span className={styles.closedPollHeaderText}>{t('attend.result_header')}</span>
       </div>
-      <div style={{ background: 'white', borderRadius: '0 0 14px 14px', padding: '20px' }}>
-        <p style={{ margin: '0 0 12px', fontSize: '0.9rem', color: 'var(--color-charcoal)', lineHeight: 1.5 }}>
-          {poll.title}
-        </p>
-        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: '0.8rem' }}>
+      <div className={styles.closedPollBody}>
+        <p className={styles.closedPollTitle}>{poll.title}</p>
+        <div className={styles.closedTally}>
           {Object.entries(poll.result.tally).map(([option, count]) => (
-            <span key={option} style={{ color: 'var(--color-charcoal-light)' }}>
+            <span key={option} className={styles.tallyOption}>
               {option}: <strong style={{ color: 'var(--color-charcoal)' }}>{count}</strong>
             </span>
           ))}
-          {myVote && <span style={{ color: 'var(--color-charcoal-light)', marginLeft: 'auto' }}>{t('attend.your_vote_history')} <strong>{myVote}</strong></span>}
+          {myVote && (
+            <span className={styles.yourVoteHistory}>
+              {t('attend.your_vote_history')} <strong>{myVote}</strong>
+            </span>
+          )}
         </div>
       </div>
     </div>
@@ -450,71 +416,53 @@ function UpcomingPolls({ polls, t }) {
   if (prepared.length === 0) return null
 
   return (
-    <div style={{ background: 'white', borderRadius: 14, overflow: 'hidden' }}>
-      <button
+    <Card className={styles.upcomingCard}>
+      <Button
+        variant="secondary"
+        className={styles.upcomingToggle}
         onClick={() => setOpen(o => !o)}
-        style={{
-          width: '100%', background: 'none', border: 'none', padding: '16px 20px',
-          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: '0.85rem',
-          color: 'var(--color-charcoal)',
-        }}
       >
-        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-charcoal-light)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            🗳️ {t('attend.upcoming_polls')}
-          </span>
-          <span style={{ fontSize: '0.72rem', background: 'var(--color-sand)', color: 'var(--color-charcoal-light)', borderRadius: 10, padding: '1px 7px', fontWeight: 600 }}>
-            {prepared.length}
-          </span>
+        <span className={styles.upcomingToggleLeft}>
+          <span className={styles.upcomingLabel}>🗳️ {t('attend.upcoming_polls')}</span>
+          <span className={styles.upcomingCount}>{prepared.length}</span>
         </span>
-        <span style={{ fontSize: '0.7rem', color: 'var(--color-charcoal-light)' }}>{open ? '▼' : '▶'}</span>
-      </button>
+        <span className={styles.upcomingChevron}>{open ? '▼' : '▶'}</span>
+      </Button>
       {open && (
-        <div style={{ padding: '0 20px 16px', borderTop: '1px solid var(--color-sand)' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
+        <div className={styles.upcomingList}>
+          <div className={styles.upcomingItems}>
             {prepared.map((poll, i) => (
-              <div key={poll.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)', marginTop: 2, minWidth: 16, fontWeight: 600 }}>
-                  {i + 1}.
-                </span>
-                <span style={{ fontSize: '0.9rem', color: 'var(--color-charcoal)', lineHeight: 1.5 }}>
-                  {poll.title}
-                </span>
+              <div key={poll.id} className={styles.upcomingItem}>
+                <span className={styles.upcomingNum}>{i + 1}.</span>
+                <span className={styles.upcomingTitle}>{poll.title}</span>
               </div>
             ))}
           </div>
         </div>
       )}
-    </div>
+    </Card>
   )
 }
 
 function ClosedMeetingScreen({ meeting, votedPolls, onArchive, t }) {
   const closedPolls = meeting.polls.filter(p => p.status === 'closed')
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ background: 'white', borderRadius: 14, padding: '28px 20px', textAlign: 'center' }}>
-        <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🎉</div>
-        <h2 style={{ margin: '0 0 6px', fontSize: '1.1rem', fontFamily: 'Inter, sans-serif', fontWeight: 600 }}>
+    <div className={styles.closedMeetingRoot}>
+      <Card className={styles.closedMeetingCard}>
+        <div className={styles.closedMeetingIcon}>🎉</div>
+        <Heading as="h2" fontSize="1.1rem" fontWeight={600} style={{ margin: '0 0 6px' }}>
           {t('attend.meeting_closed_title')}
-        </h2>
+        </Heading>
         {closedPolls.length > 0 && (
-          <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.88rem', margin: 0 }}>
-            {t('attend.meeting_closed_hint')}
-          </p>
+          <p className={styles.closedMeetingHint}>{t('attend.meeting_closed_hint')}</p>
         )}
-      </div>
+      </Card>
       {closedPolls.map(poll => (
         <ClosedPollResult key={poll.id} poll={poll} votedPolls={votedPolls} t={t} />
       ))}
-      <button
-        className="btn-secondary"
-        style={{ width: '100%', justifyContent: 'center' }}
-        onClick={onArchive}
-      >
+      <Button variant="secondary" className={styles.archiveBtn} onClick={onArchive}>
         {t('attend.view_archive')}
-      </button>
+      </Button>
     </div>
   )
 }
