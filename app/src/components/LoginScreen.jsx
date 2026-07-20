@@ -16,7 +16,7 @@ const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
  *   nameOption             — if true, shows "continue with name" fallback below
  *   onNameContinue(name)   — called when user chooses name fallback
  */
-export default function LoginScreen({ onSuccess, nameOption = false, onNameContinue, returnTo }) {
+export default function LoginScreen({ onSuccess, nameOption = false, onNameContinue, returnTo, showFooter = true }) {
   const { t } = useTranslation()
   const [offer, setOffer] = useState(null)
   const [qrDataUrl, setQrDataUrl] = useState(null)
@@ -167,16 +167,18 @@ export default function LoginScreen({ onSuccess, nameOption = false, onNameConti
 
 
       {/* Footer: Project of eCommons + Metastate */}
-      <div className={styles.footer}>
-        <span className={styles.footerLabel}>Project of</span>
-        <a href="https://ecommons.space" target="_blank" rel="noopener noreferrer">
-          <img src="/eCommons.svg" alt="eCommons" className={styles.footerLogoEcommons} />
-        </a>
-        <span className={styles.footerAnd}>and</span>
-        <a href="https://metastate.foundation" target="_blank" rel="noopener noreferrer">
-          <img src="/metastate.png" alt="Metastate" className={styles.footerLogoMetastate} />
-        </a>
-      </div>
+      {showFooter && (
+        <div className={styles.footer}>
+          <span className={styles.footerLabel}>Project of</span>
+          <a href="https://ecommons.space" target="_blank" rel="noopener noreferrer">
+            <img src="/eCommons.svg" alt="eCommons" className={styles.footerLogoEcommons} />
+          </a>
+          <span className={styles.footerAnd}>and</span>
+          <a href="https://metastate.foundation" target="_blank" rel="noopener noreferrer">
+            <img src="/metastate.png" alt="Metastate" className={styles.footerLogoMetastate} />
+          </a>
+        </div>
+      )}
 
     </div>
   )

@@ -10,7 +10,7 @@ import AgendaHtml from '../components/AgendaHtml'
 import MeetingFormModal from '../components/MeetingFormModal'
 import FacilitatorHeader from '../components/FacilitatorHeader'
 import AppHeader from '../components/AppHeader'
-import { Button, Badge, Card, Loading, Heading, SectionLabel, Page, ErrorText, Select, Input } from '@ecommons/ui'
+import { Button, Badge, Card, Loading, Heading, SectionLabel, ErrorText, Select, Input } from '@ecommons/ui'
 import styles from './Home.module.css'
 
 const CURRENT_STATUSES  = ['in_session', 'open']
@@ -123,26 +123,62 @@ export default function Home() {
 
   // ── Not logged in ─────────────────────────────────────────────────────────
   if (!user) {
+    const partnerApps = [
+      { name: 'CORE', logo: '/core-logo.png', desc: 'Manages membership, workgroups and governance for your community.', url: 'https://core.lab.ecommons.space' },
+      { name: 'WVTTK', logo: '/wvttk-logo.png', desc: 'Plans workgroup meetings and agendas.', url: 'https://wvttk.lab.ecommons.space' },
+      { name: 'Meshenger', logo: '/meshenger-logo.svg', desc: 'Chat, calls and files, synced to your Digital Self.', url: 'https://meshenger.postplatforms.com' },
+    ]
     return (
-      <div className={styles.loginWrapper}>
-        <Page maxWidth={420}>
-          <div className={styles.logoRow}>
-            <img src="/logo.png" alt="ALVer" className={styles.logo} />
-            <div className={styles.logoText}>
-              <Heading as="h1" fontSize="1.3rem">ALVer</Heading>
-              <p className={styles.subtitle}>{t('home.subtitle')}</p>
+      <div className={styles.loginPage}>
+        <div className={styles.loginGrid}>
+
+          {/* Left column: brand */}
+          <div className={styles.loginLeft}>
+            <div className={styles.loginLogoRow}>
+              <img src="/logo.png" alt="ALVer" style={{ height: 40, width: 40, objectFit: 'contain' }} />
+              <h1 className={styles.loginTitle}>ALVer</h1>
+            </div>
+            <p className={styles.loginDesc}>
+              ALVer facilitates formal cooperative meetings, votes and governance for your community.
+              It works alongside other community-focused apps in eCommons. W3DS-native — all data is
+              stored only in users' eVaults, nothing on the server.
+            </p>
+            <h2 className={styles.loginAppsTitle}>This app works together with:</h2>
+            <div className={styles.loginAppsGrid}>
+              {partnerApps.map((app) => (
+                <a key={app.name} href={app.url} target="_blank" rel="noopener noreferrer" className={styles.loginAppLink}>
+                  <img src={app.logo} alt={app.name} style={{ width: 48, height: 48, objectFit: 'contain', marginBottom: 'var(--space-10)' }} />
+                  <div className={styles.loginAppName}>{app.name}</div>
+                  <div className={styles.loginAppDesc}>{app.desc}</div>
+                </a>
+              ))}
             </div>
           </div>
-          <Card className={styles.loginCard}>
-            <LoginScreen onSuccess={login} nameOption={false} />
-          </Card>
-          <p className={styles.facilitatorHint}>
-            {t('home.facilitator_hint')}{' '}
-            <a href="/facilitator" className={styles.facilitatorLink}>
-              {t('home.facilitator_link')}
-            </a>
-          </p>
-        </Page>
+
+          {/* Right column: auth card + footer + facilitator hint */}
+          <div>
+            <Card style={{ padding: 'var(--space-28)' }}>
+              <LoginScreen onSuccess={login} nameOption={false} showFooter={false} />
+            </Card>
+            <div className={styles.loginFooter}>
+              <span className={styles.loginFooterLabel}>Project of</span>
+              <a href="https://ecommons.space" target="_blank" rel="noopener noreferrer">
+                <img src="/eCommons.svg" alt="eCommons" style={{ height: 28, opacity: 0.75 }} />
+              </a>
+              <span className={styles.loginFooterAnd}>and</span>
+              <a href="https://metastate.foundation" target="_blank" rel="noopener noreferrer">
+                <img src="/metastate.png" alt="Metastate" style={{ height: 28, opacity: 0.85 }} />
+              </a>
+            </div>
+            <p className={styles.facilitatorHint}>
+              {t('home.facilitator_hint')}{' '}
+              <a href="/facilitator" className={styles.facilitatorLink}>
+                {t('home.facilitator_link')}
+              </a>
+            </p>
+          </div>
+
+        </div>
       </div>
     )
   }

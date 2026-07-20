@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Meshenger app icon. Conveys "decentralised messenger" via a chat
+       bubble whose tail is built from three small circles, hinting at
+       the W3DS mesh of vaults rather than a single central server. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8968FF"/>
+      <stop offset="100%" stop-color="#5B3FCC"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- Speech bubble -->
+  <path d="M120 180 Q120 132 168 132 H344 Q392 132 392 180 V300 Q392 348 344 348 H236 L168 396 V348 Q120 348 120 300 Z"
+        fill="white"/>
+  <!-- Mesh dots inside bubble -->
+  <circle cx="200" cy="240" r="22" fill="#8968FF"/>
+  <circle cx="256" cy="240" r="22" fill="#8968FF"/>
+  <circle cx="312" cy="240" r="22" fill="#8968FF"/>
+  <!-- Connecting lines (mesh) -->
+  <line x1="200" y1="240" x2="256" y2="240" stroke="#8968FF" stroke-width="6" stroke-linecap="round" opacity="0.3"/>
+  <line x1="256" y1="240" x2="312" y2="240" stroke="#8968FF" stroke-width="6" stroke-linecap="round" opacity="0.3"/>
+</svg>
