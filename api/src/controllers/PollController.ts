@@ -16,7 +16,7 @@ export class PollController {
                 label: o.label ?? o,
             }));
 
-            const poll = await svc.create(req.params.id, { motion_text, vote_options: options });
+            const poll = await svc.create(req.params.id, { motion_text, vote_options: options }, req.user?.ename);
             res.status(201).json(poll);
         } catch (e: any) {
             res.status(400).json({ error: e.message });

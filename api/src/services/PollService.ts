@@ -4,6 +4,7 @@ import { Vote } from "../database/entities/Vote";
 import { Decision } from "../database/entities/Decision";
 import { Meeting } from "../database/entities/Meeting";
 import { sseService } from "./SSEService";
+import { getUserMetaEnvelopeId } from "../lib/evault";
 
 export class PollService {
     private pollRepo = AppDataSource.getRepository(Poll);
@@ -14,7 +15,7 @@ export class PollService {
         motion_text: string;
         vote_options: VoteOption[];
         facilitator_ename?: string;
-    }): Promise<Poll> {
+    }, creatorEname?: string): Promise<Poll> {
         const existingCount = await this.pollRepo.count({ where: { meeting_id: meetingId } });
         const poll = this.pollRepo.create({
             meeting_id: meetingId,
@@ -24,7 +25,22 @@ export class PollService {
             status: "prepared",
             sort_order: existingCount,
         });
+
+        // Populate option_labels synchronously from vote_options
+        if (poll.vote_options && Array.isArray(poll.vote_options)) {
+            poll.option_labels = poll.vote_options.map((o: { id: string; label: string }) => o.label);
+        }
+
         const saved = await this.pollRepo.save(poll);
+
+        // Resolve and store creator's MetaEnvelope ID fire-and-forget
+        if (creatorEname) {
+            getUserMetaEnvelopeId(creatorEname)
+                .then(metaId => {
+                    if (metaId) this.pollRepo.update(saved.id, { created_by_meta_envelope_id: metaId });
+                })
+                .catch(() => {/* non-critical */});
+        }
 
         sseService.emit(meetingId, "poll_added", { meetingId, pollId: saved.id });
 
@@ -66,8 +82,10 @@ export class PollService {
             throw new Error("Another poll is already active for this meeting");
         }
 
-        await this.pollRepo.update(pollId, { status: "active", opened_at: new Date() });
-        const poll = await this.pollRepo.findOneByOrFail({ id: pollId });
+        let poll = await this.pollRepo.findOneByOrFail({ id: pollId });
+        poll.status = "active";
+        poll.opened_at = new Date();
+        poll = await this.pollRepo.save(poll);
 
         sseService.emit(meetingId, "poll_opened", {
             meetingId,
@@ -82,11 +100,13 @@ export class PollService {
 
     async close(pollId: string, meetingId: string): Promise<{ poll: Poll; decision: Decision }> {
         const now = new Date();
-        await this.pollRepo.update(pollId, { status: "closed", closed_at: now });
-        const poll = await this.pollRepo.findOneOrFail({
+        let poll = await this.pollRepo.findOneOrFail({
             where: { id: pollId },
             relations: ["votes"],
         });
+        poll.status = "closed";
+        poll.closed_at = now;
+        poll = await this.pollRepo.save(poll);
 
         // Tally votes
         const tally: Record<string, number> = {};
@@ -136,12 +156,15 @@ export class PollService {
     }
 
     async update(pollId: string, data: Partial<Poll>): Promise<Poll> {
-        await this.pollRepo.update(pollId, data);
-        return this.pollRepo.findOneByOrFail({ id: pollId });
+        const poll = await this.pollRepo.findOneByOrFail({ id: pollId });
+        Object.assign(poll, data);
+        return this.pollRepo.save(poll);
     }
 
     async delete(pollId: string): Promise<void> {
-        await this.pollRepo.delete(pollId);
+        const poll = await this.pollRepo.findOneBy({ id: pollId });
+        if (!poll) return;
+        await this.pollRepo.remove(poll);
     }
 
     async getDecisionsForMeeting(meetingId: string): Promise<Decision[]> {
@@ -159,7 +182,11 @@ export class PollService {
             if (!meetingPollIds.has(id)) throw new Error(`Poll ${id} does not belong to meeting ${meetingId}`);
         }
         await Promise.all(
-            ids.map((id, index) => this.pollRepo.update(id, { sort_order: index }))
+            ids.map(async (id, index) => {
+                const poll = polls.find((p) => p.id === id)!;
+                poll.sort_order = index;
+                await this.pollRepo.save(poll);
+            })
         );
         sseService.emit(meetingId, "polls_reordered", { meetingId });
     }
