@@ -1,4 +1,5 @@
 import { Component } from 'react'
+import { Button } from '@ecommons/ui'
 import { reportRenderError } from '../lib/errorReporter'
 import styles from './ErrorBoundary.module.css'
 
@@ -28,12 +29,9 @@ export default class ErrorBoundary extends Component {
         <p className={styles.message}>
           {this.state.message}
         </p>
-        <button
-          onClick={() => window.location.reload()}
-          className={styles.reloadBtn}
-        >
+        <Button variant="primary" onClick={() => window.location.reload()}>
           Reload
-        </button>
+        </Button>
       </div>
     )
   }

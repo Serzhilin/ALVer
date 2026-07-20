@@ -25,13 +25,3 @@
   max-width: 320px;
   line-height: 1.5;
 }
-.reloadBtn {
-  padding: var(--space-10) var(--space-24);
-  border-radius: 0;
-  border: none;
-  background: var(--color-terracotta, #C4622D);
-  color: white;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-}

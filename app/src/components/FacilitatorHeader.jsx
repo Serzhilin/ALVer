@@ -10,12 +10,11 @@ import { useUser } from '../context/UserContext'
  * Auto-injects: logo, user, isFacilitator, Settings + Members dropdown, logout.
  *
  * Props:
- *   backTo        — passed through to AppHeader (path or -1)
  *   title         — override title; defaults to community-aware "ALVer [— name]"
  *   liveIndicator — green pulse dot
  *   right         — extra right-side slot (phase badge, display link, etc.)
  */
-export default function FacilitatorHeader({ backTo, title, liveIndicator, right }) {
+export default function FacilitatorHeader({ title, liveIndicator, right }) {
   const { community } = useCommunity()
   const { user, logout, communities, switchCommunity } = useUser()
   const [showSettings, setShowSettings] = useState(false)
