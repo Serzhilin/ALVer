@@ -617,6 +617,18 @@
   font-size: 0.95rem;
 }
 
+.currentCard {
+  padding: var(--space-28);
+}
+
+.archiveEmptyCard {
+  padding: var(--space-20);
+}
+
+.errorLabel {
+  color: var(--color-red);
+}
+
 .announceRow {
   display: flex;
   gap: 10px;

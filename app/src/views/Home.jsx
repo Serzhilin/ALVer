@@ -506,7 +506,7 @@ export default function Home() {
       <div className={styles.facilitatorContent}>
         {error && (
           <Card className={styles.errorCard}>
-            <strong style={{ color: 'var(--color-red)' }}>{t('home.error_api')}</strong>
+            <strong className={styles.errorLabel}>{t('home.error_api')}</strong>
             <span className={styles.errorMsg}>{error}</span>
           </Card>
         )}
@@ -659,7 +659,7 @@ function CurrentMeetingCard({ meeting: m, navigate, formatDate, onEdit, t, commu
   const accentColor = isInSession ? 'var(--color-green)' : 'var(--color-terracotta)'
   const loc = lookupLocation(m.location, communityLocations)
   return (
-    <Card style={{ padding: 'var(--space-28)', borderLeft: `4px solid ${accentColor}` }}>
+    <Card className={styles.currentCard} style={{ borderLeft: `4px solid ${accentColor}` }}>
       <div className={styles.currentCardHeader}>
         <div>
           <span className={styles.currentCardBadge}>
@@ -740,7 +740,7 @@ function ArchiveList({ meetings, formatDate, t }) {
         </Button>
       </div>
       {open && (meetings.length === 0
-        ? <Card style={{ padding: 'var(--space-20)' }}>
+        ? <Card className={styles.archiveEmptyCard}>
             <p className={styles.emptyText}>{t('dashboard.no_archive')}</p>
           </Card>
         : <Card className={styles.cardNoPad}>
