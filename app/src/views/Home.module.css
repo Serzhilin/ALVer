@@ -510,21 +510,6 @@
   gap: var(--space-6);
 }
 
-/* Suppress btn-secondary hover decoration on upcoming-row-btn buttons */
-.upcomingBtn {
-  background: none !important;
-  border: 1px solid transparent !important;
-  transition: none !important;
-}
-
-.upcomingBtn:hover {
-  transform: none !important;
-  box-shadow: none !important;
-  border-radius: 0 !important;
-  color: var(--color-charcoal-light) !important;
-  background: var(--color-sand) !important;
-}
-
 /* Card with no padding (e.g. meeting rows container) */
 .cardNoPad {
   padding: 0 !important;

@@ -708,21 +708,19 @@ function UpcomingRow({ meeting: m, last, formatDate, onEdit, isFacilitator, navi
       </div>
       <div className={styles.upcomingRowBtns}>
         {isFacilitator && (
-          <Button
-            variant="secondary"
-            className={`upcoming-row-btn ${styles.upcomingBtn}`}
+          <button
+            className="upcoming-row-btn"
             onClick={() => navigate(`/${communitySlug}/meeting/${m.id}/facilitate`)}
           >
             {t('facilitate.facilitate')}
-          </Button>
+          </button>
         )}
-        <Button
-          variant="secondary"
-          className={`upcoming-row-btn ${styles.upcomingBtn}`}
+        <button
+          className="upcoming-row-btn"
           onClick={onEdit}
         >
           {t('common.edit')}
-        </Button>
+        </button>
       </div>
     </div>
   )
