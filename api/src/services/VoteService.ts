@@ -6,6 +6,7 @@ import { Mandate } from "../database/entities/Mandate";
 import { Attendee } from "../database/entities/Attendee";
 import { sseService } from "./SSEService";
 import { PollService } from "./PollService";
+import { getUserMetaEnvelopeId } from "../lib/evault";
 
 export class VoteService {
     private voteRepo = AppDataSource.getRepository(Vote);
@@ -92,12 +93,19 @@ export class VoteService {
             });
         }
         if (existing) {
-            await this.voteRepo.update(existing.id, {
-                option_id: data.option_id,
-                voter_ename: data.voter_ename ?? existing.voter_ename,
-                on_behalf_of_ename: on_behalf_of_ename ?? existing.on_behalf_of_ename,
-            });
-            return this.voteRepo.findOneByOrFail({ id: existing.id });
+            existing.option_id = data.option_id;
+            existing.voter_ename = data.voter_ename ?? existing.voter_ename;
+            existing.on_behalf_of_ename = on_behalf_of_ename ?? existing.on_behalf_of_ename;
+            existing.vote_data = { mode: "normal", data: [validOption.label] };
+            const savedExisting = await this.voteRepo.save(existing);
+            if (data.voter_ename) {
+                getUserMetaEnvelopeId(data.voter_ename)
+                    .then(metaId => {
+                        if (metaId) this.voteRepo.update(savedExisting.id, { voter_meta_envelope_id: metaId });
+                    })
+                    .catch(() => {/* non-critical */});
+            }
+            return savedExisting;
         }
 
         const vote = this.voteRepo.create({
@@ -107,12 +115,21 @@ export class VoteService {
             voter_ename: data.voter_ename,
             voter_member_id: checkedInAttendee?.member_id ?? data.voter_member_id ?? null,
             option_id: data.option_id,
+            vote_data: { mode: "normal", data: [validOption.label] },
             cast_at: new Date(),
             method: data.method ?? "app",
             on_behalf_of_name: data.on_behalf_of_name,
             on_behalf_of_ename,
         });
         const saved = await this.voteRepo.save(vote);
+
+        if (data.voter_ename) {
+            getUserMetaEnvelopeId(data.voter_ename)
+                .then(metaId => {
+                    if (metaId) this.voteRepo.update(saved.id, { voter_meta_envelope_id: metaId });
+                })
+                .catch(() => {/* non-critical */});
+        }
 
         const count = await this.voteRepo.count({ where: { poll_id: pollId } });
         sseService.emit(poll.meeting_id, "vote_cast", { meetingId: poll.meeting_id, pollId, count });
@@ -192,7 +209,9 @@ export class VoteService {
     }
 
     async deleteVote(voteId: string): Promise<void> {
-        await this.voteRepo.delete(voteId);
+        const vote = await this.voteRepo.findOneBy({ id: voteId });
+        if (!vote) return;
+        await this.voteRepo.remove(vote);
     }
 
     async hasVoted(pollId: string, voterName: string, onBehalfOf?: string, voterEname?: string): Promise<boolean> {
