@@ -1,0 +1,658 @@
+/* ── Shared ───────────────────────────────────────────────────────────────── */
+.fullscreen {
+  min-height: 100vh;
+  background: var(--color-cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loginWrapper {
+  min-height: 100vh;
+  background: var(--color-cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-24);
+}
+
+/* ── Login screen (not logged in) ─────────────────────────────────────────── */
+.logoRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-12);
+  margin-bottom: var(--space-32);
+}
+
+.logo { height: 40px; object-fit: contain; }
+
+.logoText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.subtitle {
+  color: var(--color-charcoal-light);
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.facilitatorHint {
+  text-align: center;
+  margin-top: var(--space-20);
+  font-size: 0.82rem;
+  color: var(--color-charcoal-light);
+}
+
+.facilitatorLink {
+  color: var(--color-terracotta);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+/* ── Attendee view ────────────────────────────────────────────────────────── */
+.attendeeRoot {
+  min-height: 100vh;
+  background: var(--color-cream);
+  display: flex;
+  flex-direction: column;
+}
+
+.attendeeContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-32) var(--space-20);
+}
+
+.attendeeLogo {
+  margin-bottom: var(--space-28);
+  text-align: center;
+}
+
+.meetingStack {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+}
+
+.liveBanner {
+  background: var(--color-green);
+  padding: 10px var(--space-20);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.liveDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  display: inline-block;
+}
+
+.liveBannerText {
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.meetingPanel {
+  background: white;
+  padding: var(--space-28) var(--space-24);
+}
+
+.meetingMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: var(--space-20);
+}
+
+.metaRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--color-charcoal-light);
+}
+
+.metaRowTop {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 0.9rem;
+  color: var(--color-charcoal-light);
+}
+
+.locAddress {
+  display: block;
+  font-size: 0.82rem;
+  margin-top: 2px;
+}
+
+.mapsLink {
+  display: inline-block;
+  margin-top: 3px;
+  font-size: 0.8rem;
+  color: var(--color-terracotta);
+  text-decoration: none;
+}
+
+.collapsible {
+  margin-bottom: var(--space-20);
+  border-top: 1px solid var(--color-sand);
+  padding-top: 14px;
+}
+
+.collapsibleNoTop {
+  margin-bottom: var(--space-20);
+  padding-top: 14px;
+}
+
+/* Ghost button — strips all btn-* visual decoration */
+.ghostBtn {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-charcoal-light);
+  padding: 0 !important;
+  transform: none !important;
+}
+
+.ghostBtn:hover {
+  background: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  color: var(--color-charcoal-light);
+}
+
+.pollList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  margin-top: 10px;
+}
+
+.pollItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-8);
+}
+
+.pollNum {
+  font-size: 0.75rem;
+  color: var(--color-charcoal-light);
+  margin-top: 2px;
+  min-width: 16px;
+  font-weight: 600;
+}
+
+.pollTitle {
+  font-size: 0.83rem;
+  color: var(--color-charcoal);
+  line-height: 1.5;
+}
+
+.actionArea {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Attendance status banners */
+.statusAttend {
+  padding: var(--space-12) var(--space-16);
+  background: rgba(45, 122, 74, 0.08);
+  border: 1.5px solid rgba(45, 122, 74, 0.3);
+  font-size: 0.88rem;
+  color: var(--color-green);
+  font-weight: 500;
+  text-align: center;
+}
+
+.statusMandate {
+  padding: var(--space-12) var(--space-16);
+  background: rgba(45, 98, 196, 0.07);
+  border: 1.5px solid rgba(45, 98, 196, 0.25);
+  font-size: 0.88rem;
+  color: #2d62c4;
+  font-weight: 500;
+  text-align: center;
+}
+
+.statusDecline {
+  padding: var(--space-12) var(--space-16);
+  background: rgba(0, 0, 0, 0.04);
+  border: 1.5px solid var(--color-sand-dark);
+  font-size: 0.88rem;
+  color: var(--color-charcoal-light);
+  text-align: center;
+}
+
+.statusLive {
+  padding: var(--space-12) var(--space-16);
+  background: rgba(45, 122, 74, 0.06);
+  border: 1.5px solid rgba(45, 122, 74, 0.25);
+  font-size: 0.88rem;
+  color: var(--color-green);
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Mandate form */
+.mandateForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.mandateTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.mandateHint {
+  margin: 0;
+  font-size: 0.83rem;
+  color: var(--color-charcoal-light);
+}
+
+.mandateBtns {
+  display: flex;
+  gap: var(--space-8);
+}
+
+.btnFullWidth {
+  width: 100%;
+  justify-content: center;
+}
+
+.btnIllCome {
+  width: 100%;
+  justify-content: center;
+  font-size: 1rem !important;
+  padding: var(--space-16) !important;
+}
+
+.btnModify {
+  width: 100%;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+.btnMandateFlex {
+  flex: 1;
+  justify-content: center;
+}
+
+/* "Can't come" text-only button */
+.cantComeBtn {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  color: var(--color-charcoal-light) !important;
+  font-size: 0.85rem;
+  padding: var(--space-6) 0 !important;
+  text-align: center;
+  width: 100%;
+  transform: none !important;
+}
+
+.cantComeBtn:hover {
+  background: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  color: var(--color-charcoal-light) !important;
+}
+
+/* No current meeting */
+.noMeetingPanel {
+  width: 100%;
+  max-width: 420px;
+  background: white;
+  padding: var(--space-28) var(--space-24);
+  text-align: center;
+}
+
+.noMeetingIcon {
+  font-size: 2.5rem;
+  margin-bottom: var(--space-16);
+}
+
+.noMeetingText {
+  color: var(--color-charcoal-light);
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.archiveWrapper {
+  width: 100%;
+  max-width: 420px;
+  margin-top: var(--space-32);
+}
+
+/* ── Facilitator dashboard ─────────────────────────────────────────────────── */
+.facilitatorRoot {
+  min-height: 100vh;
+  background: var(--color-cream);
+}
+
+.facilitatorContent {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 40px var(--space-24);
+}
+
+.facilitatorSections {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.errorCard {
+  padding: var(--space-16) !important;
+  border-left: 4px solid var(--color-red);
+  margin-bottom: var(--space-24);
+}
+
+.errorMsg {
+  font-size: 0.85rem;
+  color: var(--color-charcoal-light);
+  margin-left: var(--space-8);
+}
+
+/* Section header row */
+.sectionHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-12);
+}
+
+.newMeetingBtn {
+  font-size: 0.82rem !important;
+  padding: var(--space-6) 14px !important;
+}
+
+/* Current meeting card */
+.currentCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-12);
+  margin-bottom: 10px;
+}
+
+.currentCardBadge {
+  margin-bottom: var(--space-8);
+  display: inline-block;
+}
+
+.currentMeetingName {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--color-charcoal);
+}
+
+.currentMeetingInfo {
+  color: var(--color-charcoal-light);
+  font-size: 0.9rem;
+  margin: 0 0 22px;
+}
+
+.currentCardLocAddress {
+  display: block;
+  font-size: 0.82rem;
+  margin-top: 3px;
+}
+
+.currentCardBtns {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Icon-only edit button */
+.editIconBtn {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--color-charcoal-light) !important;
+  padding: 4px !important;
+  flex-shrink: 0;
+  transform: none !important;
+}
+
+.editIconBtn:hover {
+  background: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* UpcomingRow */
+.upcomingRowOuter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px var(--space-20);
+}
+
+.upcomingRowLeft { flex: 1; }
+
+.upcomingRowName {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--color-charcoal);
+}
+
+.upcomingRowMeta {
+  font-size: 0.78rem;
+  color: var(--color-charcoal-light);
+  margin-top: 2px;
+}
+
+.upcomingRowBtns {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+/* Suppress btn-secondary hover decoration on upcoming-row-btn buttons */
+.upcomingBtn {
+  background: none !important;
+  border: 1px solid transparent !important;
+}
+
+.upcomingBtn:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  color: var(--color-charcoal-light) !important;
+}
+
+/* Card with no padding (e.g. meeting rows container) */
+.cardNoPad {
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+/* ── ArchiveList ─────────────────────────────────────────────────────────── */
+.archiveHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-12);
+}
+
+/* Looks like a SectionLabel but is clickable */
+.archiveLabelBtn {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--color-charcoal-light) !important;
+  font-family: inherit;
+  transform: none !important;
+}
+
+.archiveLabelBtn:hover {
+  background: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  color: var(--color-charcoal-light) !important;
+}
+
+.archiveChevron { font-size: 0.7rem; }
+
+.archiveItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: 14px var(--space-20);
+  cursor: pointer;
+  background: white;
+  transition: background 0.15s;
+}
+
+/* CSS divider between archive items */
+.archiveItem + .archiveItem {
+  border-top: 1px solid var(--color-sand);
+}
+
+.archiveItem:hover { background: var(--color-cream); }
+
+.archiveItemName {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--color-charcoal);
+}
+
+.archiveItemMeta {
+  font-size: 0.78rem;
+  color: var(--color-charcoal-light);
+  margin-top: 2px;
+}
+
+/* ── AnnounceCard ────────────────────────────────────────────────────────── */
+/* Simple empty-state card (no error border) */
+.simpleCard {
+  padding: 18px var(--space-20) !important;
+}
+
+.announceCard {
+  padding: var(--space-28) !important;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.announceEmptyCard {
+  padding: var(--space-32) !important;
+  text-align: center;
+}
+
+.announceHint {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-charcoal-light);
+}
+
+.emptyText {
+  color: var(--color-charcoal-light);
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.emptyTextLg {
+  color: var(--color-charcoal-light);
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.announceRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.announceSelect {
+  flex: 1;
+  min-width: 180px;
+}
+
+.announceConfirmRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.announceConfirmText {
+  font-size: 0.82rem;
+  color: var(--color-charcoal-light);
+}
+
+/* Inline confirm yes/cancel text buttons */
+.confirmYesBtn {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--color-terracotta) !important;
+  font-weight: 600;
+  padding: 4px var(--space-8) !important;
+  transform: none !important;
+}
+
+.confirmYesBtn:hover {
+  background: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.confirmCancelBtn {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--color-charcoal-light) !important;
+  padding: 4px var(--space-8) !important;
+  transform: none !important;
+}
+
+.confirmCancelBtn:hover {
+  background: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  color: var(--color-charcoal-light) !important;
+}

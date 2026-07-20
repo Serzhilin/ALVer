@@ -10,13 +10,15 @@ import AgendaHtml from '../components/AgendaHtml'
 import MeetingFormModal from '../components/MeetingFormModal'
 import FacilitatorHeader from '../components/FacilitatorHeader'
 import AppHeader from '../components/AppHeader'
+import { Button, Badge, Card, Loading, Heading, SectionLabel, Page, ErrorText, Select, Input } from '@ecommons/ui'
+import styles from './Home.module.css'
 
 const CURRENT_STATUSES  = ['in_session', 'open']
 const UPCOMING_STATUSES = ['draft']
 const ARCHIVE_STATUSES  = ['archived']
 
-function statusColor(s) {
-  return { draft: 'badge-gray', open: 'badge-blue', in_session: 'badge-green', archived: 'badge-gray' }[s] || 'badge-gray'
+function statusVariant(s) {
+  return { draft: 'gray', open: 'blue', in_session: 'green', archived: 'gray' }[s] || 'gray'
 }
 
 function lookupLocation(name, communityLocations) {
@@ -104,8 +106,8 @@ export default function Home() {
   // ── Auth loading ──────────────────────────────────────────────────────────
   if (authLoading) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: 'var(--color-charcoal-light)' }}>{t('common.loading')}</span>
+      <div className={styles.fullscreen}>
+        <Loading>{t('common.loading')}</Loading>
       </div>
     )
   }
@@ -113,8 +115,8 @@ export default function Home() {
   // ── Wait for DB check before rendering attendee UI (prevents stale-localStorage flash) ─────
   if (!isFacilitator && user && currentMeeting && !ctxMeeting) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: 'var(--color-charcoal-light)' }}>{t('common.loading')}</span>
+      <div className={styles.fullscreen}>
+        <Loading>{t('common.loading')}</Loading>
       </div>
     )
   }
@@ -122,25 +124,25 @@ export default function Home() {
   // ── Not logged in ─────────────────────────────────────────────────────────
   if (!user) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-        <div style={{ maxWidth: 420, width: '100%' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 32 }}>
-            <img src="/logo.png" alt="ALVer" style={{ height: 40, objectFit: 'contain' }} />
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
-              <h1 style={{ fontSize: '1.3rem', margin: 0, fontFamily: 'var(--font-title)', lineHeight: 1 }}>ALVer</h1>
-              <p style={{ color: 'var(--color-charcoal-light)', margin: 0, fontSize: '0.9rem', lineHeight: 1 }}>{t('home.subtitle')}</p>
+      <div className={styles.loginWrapper}>
+        <Page maxWidth={420}>
+          <div className={styles.logoRow}>
+            <img src="/logo.png" alt="ALVer" className={styles.logo} />
+            <div className={styles.logoText}>
+              <Heading as="h1" fontSize="1.3rem">ALVer</Heading>
+              <p className={styles.subtitle}>{t('home.subtitle')}</p>
             </div>
           </div>
-          <div className="card" style={{ padding: 28 }}>
+          <Card style={{ padding: 'var(--space-28)' }}>
             <LoginScreen onSuccess={login} nameOption={false} />
-          </div>
-          <p style={{ textAlign: 'center', marginTop: 20, fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>
+          </Card>
+          <p className={styles.facilitatorHint}>
             {t('home.facilitator_hint')}{' '}
-            <a href="/facilitator" style={{ color: 'var(--color-terracotta)', textDecoration: 'none', fontWeight: 500 }}>
+            <a href="/facilitator" className={styles.facilitatorLink}>
               {t('home.facilitator_link')}
             </a>
           </p>
-        </div>
+        </Page>
       </div>
     )
   }
@@ -251,61 +253,59 @@ export default function Home() {
     const agenda = ctxMeeting?.agenda || currentMeeting?.agenda_text
 
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', flexDirection: 'column' }}>
+      <div className={styles.attendeeRoot}>
         <AppHeader
-          appLogo="/logo.png"
           user={user}
           isFacilitator={isFacilitator}
           onLogout={logout}
           onSwitchCommunity={communities.length > 1 ? switchCommunity : undefined}
         />
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 20px' }}>
-          <div style={{ marginBottom: 28, textAlign: 'center' }}>
+        <div className={styles.attendeeContent}>
+          <div className={styles.attendeeLogo}>
             <HeaderLogo communityLogo={community?.logo_url} size="large" />
           </div>
 
           {meetingsLoading ? (
-            <span style={{ color: 'var(--color-charcoal-light)', fontSize: '0.9rem' }}>{t('common.loading')}</span>
+            <Loading style={{ fontSize: '0.9rem' }}>{t('common.loading')}</Loading>
           ) : currentMeeting ? (
-            <div style={{ width: '100%', maxWidth: 420, display: 'flex', flexDirection: 'column', gap: 0 }}>
+            <div className={styles.meetingStack}>
               {isLive && (
-                <div style={{ background: 'var(--color-green)', borderRadius: '14px 14px 0 0', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span className="animate-pulse-soft" style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255,255,255,0.9)', display: 'inline-block' }} />
-                  <span style={{ color: 'white', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                <div className={styles.liveBanner}>
+                  <span className={`animate-pulse-soft ${styles.liveDot}`} />
+                  <span className={styles.liveBannerText}>
                     {t('dashboard.meeting_live')}
                   </span>
                 </div>
               )}
 
-              <div style={{ background: 'white', borderRadius: isLive ? '0 0 14px 14px' : 14, padding: '28px 24px', boxShadow: '0 2px 16px rgba(0,0,0,0.07)' }}>
+              <div className={styles.meetingPanel}>
                 <h1 style={{ margin: '0 0 16px', fontSize: '1.5rem', fontFamily: 'var(--font-title)', color: 'var(--color-charcoal)', lineHeight: 1.2 }}>
                   {currentMeeting.name}
                 </h1>
 
                 {/* Meeting meta */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 20 }}>
+                <div className={styles.meetingMeta}>
                   {dateStr && (
-                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: '0.9rem', color: 'var(--color-charcoal-light)' }}>
+                    <div className={styles.metaRow}>
                       <span>📅</span><span>{dateStr}</span>
                     </div>
                   )}
-                  <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: '0.9rem', color: 'var(--color-charcoal-light)' }}>
+                  <div className={styles.metaRow}>
                     <span>🕐</span><span>{currentMeeting.time}</span>
                   </div>
                   {currentMeeting.facilitator_name && (
-                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: '0.9rem', color: 'var(--color-charcoal-light)' }}>
+                    <div className={styles.metaRow}>
                       <span>🎙️</span><span>{currentMeeting.facilitator_name}</span>
                     </div>
                   )}
-                  <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: '0.9rem', color: 'var(--color-charcoal-light)' }}>
+                  <div className={styles.metaRowTop}>
                     <span>📍</span>
                     <span>
                       {currentMeeting.location}
-                      {loc?.address && <span style={{ display: 'block', fontSize: '0.82rem', marginTop: 2 }}>{loc.address}</span>}
+                      {loc?.address && <span className={styles.locAddress}>{loc.address}</span>}
                       {loc?.maps_url && (
-                        <a href={loc.maps_url} target="_blank" rel="noopener noreferrer"
-                          style={{ display: 'inline-block', marginTop: 3, fontSize: '0.8rem', color: 'var(--color-terracotta)', textDecoration: 'none' }}>
+                        <a href={loc.maps_url} target="_blank" rel="noopener noreferrer" className={styles.mapsLink}>
                           🗺️ {t('settings.location_maps_link')}
                         </a>
                       )}
@@ -315,14 +315,15 @@ export default function Home() {
 
                 {/* Collapsible agenda */}
                 {agenda && (
-                  <div style={{ marginBottom: 20, borderTop: '1px solid var(--color-sand)', paddingTop: 14 }}>
-                    <button
+                  <div className={styles.collapsible}>
+                    <Button
+                      variant="secondary"
+                      className={styles.ghostBtn}
                       onClick={() => setAgendaOpen(o => !o)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', fontWeight: 600, color: 'var(--color-charcoal-light)', padding: 0 }}
                     >
                       <span>{agendaOpen ? '▼' : '▶'}</span>
                       <span>{t('common.agenda')}</span>
-                    </button>
+                    </Button>
                     {agendaOpen && (
                       <AgendaHtml html={agenda} style={{ marginTop: 10, fontSize: '0.83rem', lineHeight: 1.7 }} />
                     )}
@@ -331,20 +332,21 @@ export default function Home() {
 
                 {/* Collapsible polls */}
                 {(ctxMeeting?.polls || []).filter(p => p.status === 'prepared').length > 0 && (
-                  <div style={{ marginBottom: 20, paddingTop: 14 }}>
-                    <button
+                  <div className={styles.collapsibleNoTop}>
+                    <Button
+                      variant="secondary"
+                      className={styles.ghostBtn}
                       onClick={() => setPollsOpen(o => !o)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', fontWeight: 600, color: 'var(--color-charcoal-light)', padding: 0 }}
                     >
                       <span>{pollsOpen ? '▼' : '▶'}</span>
                       <span>{t('attend.upcoming_polls')}</span>
-                    </button>
+                    </Button>
                     {pollsOpen && (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
+                      <div className={styles.pollList}>
                         {(ctxMeeting?.polls || []).filter(p => p.status === 'prepared').map((poll, i) => (
-                          <div key={poll.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)', marginTop: 2, minWidth: 16, fontWeight: 600 }}>{i + 1}.</span>
-                            <span style={{ fontSize: '0.83rem', color: 'var(--color-charcoal)', lineHeight: 1.5 }}>{poll.title}</span>
+                          <div key={poll.id} className={styles.pollItem}>
+                            <span className={styles.pollNum}>{i + 1}.</span>
+                            <span className={styles.pollTitle}>{poll.title}</span>
                           </div>
                         ))}
                       </div>
@@ -353,47 +355,46 @@ export default function Home() {
                 )}
 
                 {/* ── Action area ── */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div className={styles.actionArea}>
                   {localPreReg?.type === 'attend' ? (
                     <>
-                      <div style={{ padding: '12px 16px', background: 'rgba(45,122,74,0.08)', border: '1.5px solid rgba(45,122,74,0.3)', borderRadius: 10, fontSize: '0.88rem', color: 'var(--color-green)', fontWeight: 500, textAlign: 'center' }}>
+                      <div className={styles.statusAttend}>
                         {t('home.preregistered_status')}
                       </div>
-                      <button className="btn-secondary" style={{ width: '100%', justifyContent: 'center', fontSize: '0.9rem' }} onClick={handleModify}>
+                      <Button variant="secondary" className={styles.btnModify} onClick={handleModify}>
                         {t('home.btn_modify')}
-                      </button>
+                      </Button>
                     </>
 
                   ) : localPreReg?.type === 'mandate' ? (
                     <>
-                      <div style={{ padding: '12px 16px', background: 'rgba(45,98,196,0.07)', border: '1.5px solid rgba(45,98,196,0.25)', borderRadius: 10, fontSize: '0.88rem', color: '#2D62C4', fontWeight: 500, textAlign: 'center' }}>
+                      <div className={styles.statusMandate}>
                         📜 {t('home.mandate_status', { proxy: localPreReg.proxy })}
                       </div>
-                      <button className="btn-secondary" style={{ width: '100%', justifyContent: 'center', fontSize: '0.9rem' }} onClick={handleModify}>
+                      <Button variant="secondary" className={styles.btnModify} onClick={handleModify}>
                         {t('home.btn_modify')}
-                      </button>
+                      </Button>
                     </>
 
                   ) : localPreReg?.type === 'decline' ? (
                     <>
-                      <div style={{ padding: '12px 16px', background: 'rgba(0,0,0,0.04)', border: '1.5px solid var(--color-sand-dark)', borderRadius: 10, fontSize: '0.88rem', color: 'var(--color-charcoal-light)', textAlign: 'center' }}>
+                      <div className={styles.statusDecline}>
                         👋 {t('home.decline_status')}
                       </div>
-                      <button className="btn-secondary" style={{ width: '100%', justifyContent: 'center', fontSize: '0.9rem' }} onClick={handleModify}>
+                      <Button variant="secondary" className={styles.btnModify} onClick={handleModify}>
                         {t('home.btn_modify')}
-                      </button>
+                      </Button>
                     </>
 
                   ) : isLive && !localPreReg ? (
-                    <div style={{ padding: '12px 16px', background: 'rgba(45,122,74,0.06)', border: '1.5px solid rgba(45,122,74,0.25)', borderRadius: 10, fontSize: '0.88rem', color: 'var(--color-green)', fontWeight: 500, textAlign: 'center' }}>
+                    <div className={styles.statusLive}>
                       {t('home.scan_qr_to_checkin')}
                     </div>
                   ) : attendanceMode === 'mandate' ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                      <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>📜 {t('register.give_mandate_title')}</h3>
-                      <p style={{ margin: 0, fontSize: '0.83rem', color: 'var(--color-charcoal-light)' }}>{t('register.give_mandate_hint')}</p>
-                      <select
-                        className="input"
+                    <div className={styles.mandateForm}>
+                      <h3 className={styles.mandateTitle}>📜 {t('register.give_mandate_title')}</h3>
+                      <p className={styles.mandateHint}>{t('register.give_mandate_hint')}</p>
+                      <Select
                         value={proxyMemberId}
                         onChange={e => setProxyMemberId(e.target.value)}
                         autoFocus
@@ -408,69 +409,72 @@ export default function Home() {
                             )
                           })
                         }
-                      </select>
-                      <input
-                        className="input"
+                      </Select>
+                      <Input
                         value={mandateNote}
                         onChange={e => setMandateNote(e.target.value)}
                         placeholder={t('register.note_placeholder')}
                       />
                       {mandateError && (
-                        <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--color-red)', fontWeight: 500 }}>{mandateError}</p>
+                        <ErrorText as="p">{mandateError}</ErrorText>
                       )}
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <button
-                          className="btn-primary"
-                          style={{ flex: 1, justifyContent: 'center' }}
+                      <div className={styles.mandateBtns}>
+                        <Button
+                          variant="primary"
+                          className={styles.btnMandateFlex}
                           disabled={!proxyMemberId || submitting}
                           onClick={handleMandateSubmit}
                         >
                           {submitting ? t('common.loading') : t('register.sign_confirm')}
-                        </button>
-                        <button className="btn-secondary" onClick={() => { setAttendanceMode(null); setProxyMemberId(''); setMandateNote(''); setMandateError(null) }}>
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          onClick={() => { setAttendanceMode(null); setProxyMemberId(''); setMandateNote(''); setMandateError(null) }}
+                        >
                           {t('common.cancel')}
-                        </button>
+                        </Button>
                       </div>
                     </div>
 
                   ) : (
                     <>
-                      <button
-                        className="btn-primary"
-                        style={{ width: '100%', justifyContent: 'center', fontSize: '1rem', padding: '16px' }}
+                      <Button
+                        variant="primary"
+                        className={styles.btnIllCome}
                         disabled={submitting}
                         onClick={handleIllCome}
                       >
                         {submitting ? t('common.loading') : t('home.btn_ill_come')}
-                      </button>
-                      <button
-                        className="btn-secondary"
-                        style={{ width: '100%', justifyContent: 'center', fontSize: '0.9rem' }}
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        className={styles.btnFullWidth}
                         onClick={() => setAttendanceMode('mandate')}
                       >
                         {t('home.btn_mandate_short')}
-                      </button>
-                      <button
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-charcoal-light)', fontSize: '0.85rem', padding: '6px 0', textAlign: 'center' }}
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        className={styles.cantComeBtn}
                         onClick={handleCannotCome}
                       >
                         {t('home.btn_cant_come')}
-                      </button>
+                      </Button>
                     </>
                   )}
                 </div>
               </div>
             </div>
           ) : (
-            <div style={{ width: '100%', maxWidth: 420, background: 'white', borderRadius: 14, padding: '28px 24px', boxShadow: '0 2px 16px rgba(0,0,0,0.07)', textAlign: 'center' }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>🏛️</div>
-              <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.95rem', margin: 0, lineHeight: 1.6 }}>
+            <div className={styles.noMeetingPanel}>
+              <div className={styles.noMeetingIcon}>🏛️</div>
+              <p className={styles.noMeetingText}>
                 {t('dashboard.no_active_meeting')}
               </p>
             </div>
           )}
 
-          <div style={{ width: '100%', maxWidth: 420, marginTop: 32 }}>
+          <div className={styles.archiveWrapper}>
             <ArchiveList meetings={archiveMeetings} formatDate={formatDate} t={t} />
           </div>
         </div>
@@ -495,18 +499,18 @@ export default function Home() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--color-cream)' }}>
+    <div className={styles.facilitatorRoot}>
       <FacilitatorHeader />
 
-      <div style={{ maxWidth: 860, margin: '0 auto', padding: '40px 24px' }}>
+      <div className={styles.facilitatorContent}>
         {error && (
-          <div className="card" style={{ padding: 16, borderLeft: '4px solid var(--color-red)', marginBottom: 24 }}>
+          <Card className={styles.errorCard}>
             <strong style={{ color: 'var(--color-red)' }}>{t('home.error_api')}</strong>
-            <span style={{ fontSize: '0.85rem', color: 'var(--color-charcoal-light)', marginLeft: 8 }}>{error}</span>
-          </div>
+            <span className={styles.errorMsg}>{error}</span>
+          </Card>
         )}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+        <div className={styles.facilitatorSections}>
           <section>
             <SectionHeader label={
               currentMeeting?.status === 'in_session'
@@ -516,7 +520,7 @@ export default function Home() {
                   : t('dashboard.current_meeting')
             } />
             {meetingsLoading
-              ? <p style={{ color: 'var(--color-charcoal-light)' }}>{t('common.loading')}</p>
+              ? <Loading>{t('common.loading')}</Loading>
               : currentMeeting
                 ? <CurrentMeetingCard
                     meeting={currentMeeting}
@@ -537,19 +541,19 @@ export default function Home() {
 
           <section>
             <SectionHeader label={t('dashboard.upcoming')}>
-              <button className="btn-primary" style={{ fontSize: '0.82rem', padding: '6px 14px' }} onClick={() => setShowCreateModal(true)}>
+              <Button variant="primary" className={styles.newMeetingBtn} onClick={() => setShowCreateModal(true)}>
                 + {t('dashboard.new_meeting')}
-              </button>
+              </Button>
             </SectionHeader>
             {upcomingMeetings.length === 0
-              ? <div className="card" style={{ padding: '18px 20px' }}>
-                  <p style={{ color: 'var(--color-charcoal-light)', margin: 0, fontSize: '0.88rem' }}>{t('dashboard.no_upcoming')}</p>
-                </div>
-              : <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+              ? <Card className={styles.simpleCard}>
+                  <p className={styles.emptyText}>{t('dashboard.no_upcoming')}</p>
+                </Card>
+              : <Card className={styles.cardNoPad}>
                   {upcomingMeetings.map((m, i) => (
                     <UpcomingRow key={m.id} meeting={m} last={i === upcomingMeetings.length - 1} formatDate={formatDate} onEdit={() => setEditingMeeting(m)} isFacilitator={isFacilitator} navigate={navigate} t={t} communitySlug={community?.slug} />
                   ))}
-                </div>
+                </Card>
             }
           </section>
 
@@ -582,9 +586,9 @@ function AnnounceCard({ upcomingMeetings, onAnnounce, t }) {
 
   if (upcomingMeetings.length === 0) {
     return (
-      <div className="card" style={{ padding: 32, textAlign: 'center' }}>
-        <p style={{ color: 'var(--color-charcoal-light)', margin: 0, fontSize: '0.95rem' }}>{t('dashboard.no_active_meeting')}</p>
-      </div>
+      <Card className={styles.announceEmptyCard}>
+        <p className={styles.emptyTextLg}>{t('dashboard.no_active_meeting')}</p>
+      </Card>
     )
   }
 
@@ -597,29 +601,33 @@ function AnnounceCard({ upcomingMeetings, onAnnounce, t }) {
   }
 
   return (
-    <div className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-charcoal-light)' }}>{t('dashboard.no_announced_hint')}</p>
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-        <select className="input" value={selected} onChange={e => { setSelected(e.target.value); setConfirming(false) }} style={{ flex: 1, minWidth: 180 }}>
+    <Card className={styles.announceCard}>
+      <p className={styles.announceHint}>{t('dashboard.no_announced_hint')}</p>
+      <div className={styles.announceRow}>
+        <Select
+          className={styles.announceSelect}
+          value={selected}
+          onChange={e => { setSelected(e.target.value); setConfirming(false) }}
+        >
           {upcomingMeetings.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-        </select>
+        </Select>
         {confirming ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>{t('dashboard.announce_confirm')}</span>
-            <button onClick={handleAnnounce} disabled={loading} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--color-terracotta)', fontWeight: 600, padding: '4px 8px' }}>
+          <div className={styles.announceConfirmRow}>
+            <span className={styles.announceConfirmText}>{t('dashboard.announce_confirm')}</span>
+            <Button variant="primary" className={styles.confirmYesBtn} onClick={handleAnnounce} disabled={loading}>
               {loading ? t('common.loading') : t('dashboard.announce_yes')}
-            </button>
-            <button onClick={() => setConfirming(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--color-charcoal-light)', padding: '4px 8px' }}>
+            </Button>
+            <Button variant="secondary" className={styles.confirmCancelBtn} onClick={() => setConfirming(false)}>
               {t('common.cancel')}
-            </button>
+            </Button>
           </div>
         ) : (
-          <button className="btn-primary" onClick={() => setConfirming(true)} disabled={!selected}>
+          <Button variant="primary" onClick={() => setConfirming(true)} disabled={!selected}>
             📢 {t('facilitate.announce')}
-          </button>
+          </Button>
         )}
       </div>
-    </div>
+    </Card>
   )
 }
 
@@ -638,8 +646,8 @@ function HeaderLogo({ communityLogo, onFail, size = 'small' }) {
 
 function SectionHeader({ label, children }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-      <h2 style={{ margin: 0, fontSize: '0.78rem', fontWeight: 700, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.09em', fontFamily: 'inherit' }}>{label}</h2>
+    <div className={styles.sectionHeaderRow}>
+      <SectionLabel fontSize="0.78rem" fontWeight={700} letterSpacing="0.09em">{label}</SectionLabel>
       {children}
     </div>
   )
@@ -650,60 +658,68 @@ function CurrentMeetingCard({ meeting: m, navigate, formatDate, onEdit, t, commu
   const accentColor = isInSession ? 'var(--color-green)' : 'var(--color-terracotta)'
   const loc = lookupLocation(m.location, communityLocations)
   return (
-    <div className="card" style={{ padding: 28, borderLeft: `4px solid ${accentColor}` }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
+    <Card style={{ padding: 'var(--space-28)', borderLeft: `4px solid ${accentColor}` }}>
+      <div className={styles.currentCardHeader}>
         <div>
-          <span className={`badge ${statusColor(m.status)}`} style={{ marginBottom: 8, display: 'inline-block' }}>{t(`phases.${m.status}`)}</span>
-          <h2 style={{ margin: 0, fontSize: '1.4rem', color: 'var(--color-charcoal)' }}>{m.name}</h2>
+          <span className={styles.currentCardBadge}>
+            <Badge variant={statusVariant(m.status)}>{t(`phases.${m.status}`)}</Badge>
+          </span>
+          <h2 className={styles.currentMeetingName}>{m.name}</h2>
         </div>
         {!isInSession && (
-          <button onClick={onEdit} title={t('dashboard.edit_meeting')}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', color: 'var(--color-charcoal-light)', padding: '4px', flexShrink: 0 }}>
+          <Button variant="secondary" className={styles.editIconBtn} onClick={onEdit} title={t('dashboard.edit_meeting')}>
             ✏️
-          </button>
+          </Button>
         )}
       </div>
-      <div style={{ color: 'var(--color-charcoal-light)', fontSize: '0.9rem', margin: '0 0 22px' }}>
+      <div className={styles.currentMeetingInfo}>
         <span>📅 {formatDate(m.date)} &nbsp;·&nbsp; 🕐 {m.time}</span>
         <span> &nbsp;·&nbsp; 📍 {m.location}</span>
-        {loc?.address && <span style={{ display: 'block', fontSize: '0.82rem', marginTop: 3 }}>{loc.address}</span>}
+        {loc?.address && <span className={styles.currentCardLocAddress}>{loc.address}</span>}
         {loc?.maps_url && (
-          <a href={loc.maps_url} target="_blank" rel="noopener noreferrer"
-            style={{ display: 'inline-block', marginTop: 3, fontSize: '0.8rem', color: 'var(--color-terracotta)', textDecoration: 'none' }}>
+          <a href={loc.maps_url} target="_blank" rel="noopener noreferrer" className={styles.mapsLink}>
             🗺️ {t('settings.location_maps_link')}
           </a>
         )}
       </div>
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-        <button className="btn-primary" onClick={() => navigate(`/${communitySlug}/meeting/${m.id}/facilitate`)}>
+      <div className={styles.currentCardBtns}>
+        <Button variant="primary" onClick={() => navigate(`/${communitySlug}/meeting/${m.id}/facilitate`)}>
           🎙️ {t('home.nav_facilitator')}
-        </button>
+        </Button>
         {isInSession && (
-          <button className="btn-secondary" onClick={() => window.open(`/${communitySlug}/meeting/${m.id}/display`, '_blank')}>
+          <Button variant="secondary" onClick={() => window.open(`/${communitySlug}/meeting/${m.id}/display`, '_blank')}>
             📺 {t('home.nav_display')}
-          </button>
+          </Button>
         )}
       </div>
-    </div>
+    </Card>
   )
 }
 
 function UpcomingRow({ meeting: m, last, formatDate, onEdit, isFacilitator, navigate, t, communitySlug }) {
   return (
-    <div className="upcoming-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: last ? 'none' : '1px solid var(--color-sand)' }}>
-      <div>
-        <div style={{ fontWeight: 500, fontSize: '0.9rem', color: 'var(--color-charcoal)' }}>{m.name}</div>
-        <div style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', marginTop: 2 }}>{formatDate(m.date)} · 📍 {m.location}</div>
+    <div className={`upcoming-row ${styles.upcomingRowOuter}`} style={{ borderBottom: last ? 'none' : '1px solid var(--color-sand)' }}>
+      <div className={styles.upcomingRowLeft}>
+        <div className={styles.upcomingRowName}>{m.name}</div>
+        <div className={styles.upcomingRowMeta}>{formatDate(m.date)} · 📍 {m.location}</div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <div className={styles.upcomingRowBtns}>
         {isFacilitator && (
-          <button onClick={() => navigate(`/${communitySlug}/meeting/${m.id}/facilitate`)} className="upcoming-row-btn">
+          <Button
+            variant="secondary"
+            className={`upcoming-row-btn ${styles.upcomingBtn}`}
+            onClick={() => navigate(`/${communitySlug}/meeting/${m.id}/facilitate`)}
+          >
             🎙️ {t('facilitate.facilitate')}
-          </button>
+          </Button>
         )}
-        <button onClick={onEdit} className="upcoming-row-btn">
+        <Button
+          variant="secondary"
+          className={`upcoming-row-btn ${styles.upcomingBtn}`}
+          onClick={onEdit}
+        >
           ✏️ {t('common.edit')}
-        </button>
+        </Button>
       </div>
     </div>
   )
@@ -716,36 +732,31 @@ function ArchiveList({ meetings, formatDate, t }) {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
-        <button
-          onClick={() => setOpen(o => !o)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--color-charcoal-light)', fontFamily: 'inherit' }}
-        >
+      <div className={styles.archiveHeader}>
+        <Button variant="secondary" className={styles.archiveLabelBtn} onClick={() => setOpen(o => !o)}>
           {t('dashboard.archive')}
-          <span style={{ fontSize: '0.7rem' }}>{open ? '▼' : '▶'}</span>
-        </button>
+          <span className={styles.archiveChevron}>{open ? '▼' : '▶'}</span>
+        </Button>
       </div>
       {open && (meetings.length === 0
-        ? <div className="card" style={{ padding: '18px 20px' }}>
-            <p style={{ color: 'var(--color-charcoal-light)', margin: 0, fontSize: '0.88rem' }}>{t('dashboard.no_archive')}</p>
-          </div>
-        : <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            {meetings.map((m, i) => (
+        ? <Card style={{ padding: 'var(--space-20)' }}>
+            <p className={styles.emptyText}>{t('dashboard.no_archive')}</p>
+          </Card>
+        : <Card className={styles.cardNoPad}>
+            {meetings.map(m => (
               <div
                 key={m.id}
+                className={styles.archiveItem}
                 onClick={() => navigate(`/${community?.slug}/meeting/${m.id}/archive`)}
-                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 20px', borderBottom: i < meetings.length - 1 ? '1px solid var(--color-sand)' : 'none', cursor: 'pointer' }}
-                onMouseEnter={e => e.currentTarget.style.background = 'var(--color-cream)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'white'}
               >
                 <span>📁</span>
                 <div>
-                  <div style={{ fontWeight: 500, fontSize: '0.9rem', color: 'var(--color-charcoal)' }}>{m.name}</div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', marginTop: 2 }}>{formatDate(m.date)} · {m.location}</div>
+                  <div className={styles.archiveItemName}>{m.name}</div>
+                  <div className={styles.archiveItemMeta}>{formatDate(m.date)} · {m.location}</div>
                 </div>
               </div>
             ))}
-          </div>
+          </Card>
       )}
     </div>
   )
