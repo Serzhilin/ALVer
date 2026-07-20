@@ -1,0 +1,17 @@
+.root {
+  display: flex;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+}
+
+.errorRoot {
+  display: flex;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.backLink { color: #2563EB; }

@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { Loading, ErrorText } from '@ecommons/ui'
+import styles from './DeeplinkLogin.module.css'
 
 /**
  * DeeplinkLogin — landing page opened by the W3DS wallet after mobile auth.
@@ -81,16 +83,16 @@ export default function DeeplinkLogin() {
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', color: '#555' }}>
-        Authenticating…
+      <div className={styles.root}>
+        <Loading>Authenticating…</Loading>
       </div>
     )
   }
 
   return (
-    <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16, fontFamily: 'Inter, sans-serif' }}>
-      <p style={{ color: '#e53e3e' }}>{error}</p>
-      <a href="/" style={{ color: '#2563EB' }}>Back to home</a>
+    <div className={styles.errorRoot}>
+      <ErrorText as="p">{error}</ErrorText>
+      <a href="/" className={styles.backLink}>Back to home</a>
     </div>
   )
 }
