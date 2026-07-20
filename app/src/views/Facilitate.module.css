@@ -1,0 +1,884 @@
+/* Facilitate view – ecommons-ui migration */
+
+/* ── Page shell ─────────────────────────────────────────────────────────── */
+.root {
+  min-height: 100vh;
+  background: var(--color-cream);
+}
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 16px;
+}
+
+/* ── Phase label (FacilitatorHeader right prop) ───────────────────────────── */
+.phaseLabel {
+  font-size: 0.8rem;
+  color: var(--color-charcoal-light);
+}
+
+.phaseLabelStrong {
+  color: var(--color-charcoal);
+}
+
+/* ── Zone 1 — Attendance bar ─────────────────────────────────────────────── */
+.attendBar {
+  padding: 16px 24px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.statGroup {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-charcoal);
+  line-height: 1;
+}
+
+.statValueBlue {
+  color: #2d62c4;
+}
+
+.statValueTerracotta {
+  color: var(--color-terracotta);
+}
+
+.statDivider {
+  width: 1px;
+  height: 40px;
+  background: var(--color-sand);
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: var(--color-charcoal-light);
+  margin-top: 2px;
+}
+
+.attendActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.displayLink {
+  background: transparent;
+  border: 1px solid var(--color-green);
+  color: var(--color-green);
+  padding: 9px 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Theme toggle — ghost appearance, overrides btn-secondary */
+.themeToggle {
+  background: transparent !important;
+  border: 1px solid var(--color-charcoal-light) !important;
+  color: var(--color-charcoal) !important;
+  font-weight: 500 !important;
+  padding: 9px 20px !important;
+  font-size: 0.9rem !important;
+  box-shadow: none !important;
+}
+
+.themeToggle:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  color: var(--color-charcoal) !important;
+}
+
+.confirmRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.confirmText {
+  font-size: 0.82rem;
+  color: var(--color-charcoal);
+}
+
+/* Small-size button override */
+.btnSm {
+  font-size: 0.82rem !important;
+  padding: 5px 12px !important;
+}
+
+/* ── Main grid ───────────────────────────────────────────────────────────── */
+.mainGrid {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.leftCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rightCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Side cards (attendees / mandates) ────────────────────────────────────── */
+.sideCard {
+  padding: 20px;
+}
+
+.sectionHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+/* Heading wrapper: strip margin from Heading component */
+.sectionH3 h3 {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Small "+" add button */
+.addBtn {
+  background: none !important;
+  border: 1px solid var(--color-sand-dark) !important;
+  color: var(--color-charcoal-light) !important;
+  font-size: 0.75rem !important;
+  padding: 1px 7px !important;
+  line-height: 18px !important;
+  box-shadow: none !important;
+  font-weight: 400 !important;
+}
+
+.addBtn:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ── List section labels ──────────────────────────────────────────────────── */
+.listLabelRow {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-charcoal-light);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.listLabelActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.listEntry {
+  display: flex;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--color-sand);
+}
+
+.entryName {
+  font-size: 0.88rem;
+  color: var(--color-charcoal-light);
+}
+
+.declinedName {
+  font-size: 0.88rem;
+  color: var(--color-charcoal-light);
+  text-decoration: line-through;
+}
+
+.spacer {
+  height: 12px;
+}
+
+.emptyText {
+  color: var(--color-charcoal-light);
+  font-size: 0.85rem;
+  margin: 8px 0;
+}
+
+/* ── Checked-in attendee rows ─────────────────────────────────────────────── */
+.checkedInEntry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--color-sand);
+  gap: 8px;
+}
+
+.checkedInName {
+  font-size: 0.9rem;
+  color: var(--color-charcoal);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.entryActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.entryTime {
+  font-size: 0.75rem;
+  color: var(--color-charcoal-light);
+}
+
+/* Inline confirm / cancel row */
+.confirmInlineRow {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+/* Strip-down inline button variants */
+.inlineYesBtn {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--color-red) !important;
+  font-size: 0.78rem !important;
+  padding: 2px 6px !important;
+  font-weight: 600 !important;
+}
+
+.inlineYesBtn:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.inlineCancelBtn {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--color-charcoal-light) !important;
+  font-size: 0.78rem !important;
+  padding: 2px 6px !important;
+  font-weight: 400 !important;
+}
+
+.inlineCancelBtn:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.removeBtn {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--color-charcoal-light) !important;
+  font-size: 0.8rem !important;
+  padding: 2px 4px !important;
+  line-height: 1 !important;
+  min-width: unset !important;
+}
+
+.removeBtn:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  color: var(--color-red) !important;
+}
+
+/* ── Mandate entries ──────────────────────────────────────────────────────── */
+.mandateEntry {
+  padding: 9px 0;
+  border-bottom: 1px solid var(--color-sand);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mandateContent {
+  flex: 1;
+}
+
+.mandateNames {
+  font-size: 0.9rem;
+  color: var(--color-charcoal);
+}
+
+.mandateNote {
+  font-size: 0.78rem;
+  color: var(--color-charcoal-light);
+  margin-top: 2px;
+}
+
+/* ── Zone 3 — Polls card ─────────────────────────────────────────────────── */
+.pollsCard {
+  padding: 20px;
+}
+
+/* ── Viz display mode selector ────────────────────────────────────────────── */
+.vizBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-cream, #faf8f5);
+  border: 1px solid var(--color-sand, #e8e0d5);
+  padding: 6px;
+  margin-bottom: 16px;
+}
+
+.vizBarLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-charcoal-light);
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+
+/* Mode tab button — overrides btn-secondary heavily */
+.modeBtn {
+  flex: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  padding: 7px 8px !important;
+  font-size: 0.8rem !important;
+  border: none !important;
+  box-shadow: none !important;
+  transition: all 0.15s !important;
+}
+
+.modeBtn:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ── Polls section header ─────────────────────────────────────────────────── */
+.pollsHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pollsH3 h3 {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.addPollBtn {
+  font-size: 0.8rem !important;
+  padding: 6px 12px !important;
+}
+
+.pollsHint {
+  margin: 0 0 16px;
+  font-size: 0.8rem;
+  color: var(--color-charcoal-light);
+  font-style: italic;
+}
+
+.pollsEmpty {
+  color: var(--color-charcoal-light);
+  font-size: 0.9rem;
+}
+
+.pollsList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pollDragWrap {
+  transition: opacity 0.15s;
+}
+
+/* ── PollCard ─────────────────────────────────────────────────────────────── */
+.pollCard {
+  position: relative;
+  padding: 18px;
+  transition: all 0.2s;
+}
+
+.pollDragHandle {
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-charcoal-light);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: grab;
+  user-select: none;
+  opacity: 0.4;
+}
+
+.pollHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.pollInfo {
+  flex: 1;
+}
+
+.pollNumRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.pollNum {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-charcoal-light);
+}
+
+.pollTitle {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--color-charcoal);
+  line-height: 1.5;
+}
+
+.pollOpts {
+  margin-top: 6px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pollOptPill {
+  padding: 2px 8px;
+  background: var(--color-sand);
+  font-size: 0.75rem;
+  color: var(--color-charcoal-light);
+}
+
+.pollCardBtns {
+  display: flex;
+  gap: 6px;
+}
+
+.pollEditBtn {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-size: 0.8rem !important;
+  color: var(--color-charcoal-light) !important;
+  padding: 4px 6px !important;
+}
+
+.pollEditBtn:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.pollDeleteBtn {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-size: 0.8rem !important;
+  color: var(--color-red) !important;
+  padding: 4px 6px !important;
+}
+
+.pollDeleteBtn:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Live vote counter */
+.pollLiveCounter {
+  margin-bottom: 12px;
+}
+
+.voteStats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.voteCountText {
+  font-size: 0.82rem;
+  color: var(--color-charcoal-light);
+}
+
+.votePct {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-terracotta);
+}
+
+/* Closed poll result */
+.pollResult {
+  margin-bottom: 12px;
+}
+
+.tallyRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tallyItem {
+  font-size: 0.82rem;
+  color: var(--color-charcoal-light);
+}
+
+.tallyCount {
+  color: var(--color-charcoal);
+}
+
+/* Poll action buttons row */
+.pollActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.btnPollAction {
+  font-size: 0.82rem !important;
+  padding: 7px 14px !important;
+}
+
+.pollConfirmRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pollWaitText {
+  font-size: 0.8rem;
+  color: var(--color-charcoal-light);
+  padding: 7px 0;
+}
+
+/* ── Collapsible sections (agenda / notes) ────────────────────────────────── */
+.collapsibleCard {
+  padding: 0;
+  overflow: hidden;
+}
+
+.collapsibleToggle {
+  width: 100% !important;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 16px 24px !important;
+  cursor: pointer;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-sans);
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+  color: var(--color-charcoal) !important;
+}
+
+.collapsibleToggle:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  background: none !important;
+  color: var(--color-charcoal) !important;
+}
+
+.collapsibleChevron {
+  font-size: 0.8rem;
+  color: var(--color-charcoal-light);
+}
+
+.collapsibleBody {
+  padding: 0 24px 20px;
+  border-top: 1px solid var(--color-sand);
+}
+
+/* ── Notes / notulist form ────────────────────────────────────────────────── */
+.notesForm {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notesSelectRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.notulistSelect {
+  font-size: 0.9rem !important;
+  width: auto !important;
+  min-width: 160px;
+  flex: 0 1 260px;
+}
+
+.notesAssignBtn {
+  font-size: 0.85rem !important;
+  padding: 7px 14px !important;
+  white-space: nowrap;
+}
+
+.notesCurrentText {
+  font-size: 0.8rem;
+  color: var(--color-charcoal-light);
+}
+
+/* ── Loading screen ───────────────────────────────────────────────────────── */
+.loadingScreen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-cream);
+}
+
+/* ── Modal internals ─────────────────────────────────────────────────────── */
+.modalCheckIn {
+  max-width: 420px;
+}
+
+.modalPoll {
+  max-width: 500px;
+}
+
+/* Heading wrappers for modal h3 titles */
+.modalTitle h3 {
+  margin: 0 0 16px;
+  font-family: var(--font-title);
+  font-size: 1.1rem;
+}
+
+.modalTitleSm h3 {
+  margin: 0 0 6px;
+  font-family: var(--font-title);
+  font-size: 1.1rem;
+}
+
+.modalHint {
+  color: var(--color-charcoal-light);
+  font-size: 0.85rem;
+  margin: 0 0 16px;
+}
+
+.modalHintSm {
+  color: var(--color-charcoal-light);
+  font-size: 0.82rem;
+  margin: 0 0 16px;
+}
+
+.modalActions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Member list box in check-in modal */
+.memberListBox {
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid var(--color-sand);
+  margin-bottom: 16px;
+}
+
+.memberSearchBox {
+  margin-bottom: 16px;
+}
+
+/* Member row button */
+.memberBtn {
+  width: 100% !important;
+  padding: 10px 14px !important;
+  border: none !important;
+  border-bottom: 1px solid var(--color-sand) !important;
+  cursor: pointer;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-sans) !important;
+  font-size: 0.9rem !important;
+  color: var(--color-charcoal) !important;
+  text-align: left;
+  box-shadow: none !important;
+  font-weight: 400 !important;
+}
+
+.memberBtn:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Cast votes list */
+.castVotesBox {
+  margin-bottom: 16px;
+  border: 1px solid var(--color-sand);
+  overflow: hidden;
+}
+
+.castVotesHeader {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-charcoal-light);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 8px 12px;
+  background: var(--color-cream);
+  border-bottom: 1px solid var(--color-sand);
+}
+
+.castVoteRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--color-sand);
+  gap: 8px;
+}
+
+.castVoteName {
+  font-size: 0.88rem;
+  color: var(--color-charcoal);
+  flex: 1;
+}
+
+.castVoteOpt {
+  font-size: 0.78rem;
+  color: var(--color-charcoal-light);
+  background: var(--color-sand);
+  padding: 2px 8px;
+}
+
+.deleteVoteBtn {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--color-red) !important;
+  font-size: 0.85rem !important;
+  padding: 2px 4px !important;
+  flex-shrink: 0;
+}
+
+.deleteVoteBtn:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Vote option pick buttons */
+.voteOptRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.voteOptBtn {
+  flex: 1 !important;
+  padding: 12px 8px !important;
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+  transition: all 0.15s !important;
+  box-shadow: none !important;
+}
+
+.voteOptBtn:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Form field helpers in modals */
+.fieldBlock {
+  display: flex;
+  flex-direction: column;
+}
+
+.optionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.optionInputRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.removeOptBtn {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--color-red) !important;
+  font-size: 1rem !important;
+  padding: 4px !important;
+}
+
+.removeOptBtn:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.addOptRow {
+  display: flex;
+  gap: 8px;
+}
+
+.addOptBtn {
+  padding: 8px 14px !important;
+  white-space: nowrap;
+}
+
+.presetRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.presetBtn {
+  font-size: 0.75rem !important;
+  padding: 4px 10px !important;
+}
+
+.mandateModalFields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.pollModalFields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}

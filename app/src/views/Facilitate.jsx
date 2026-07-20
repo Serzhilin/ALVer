@@ -7,6 +7,8 @@ import { useTranslation } from 'react-i18next'
 import FacilitatorHeader from '../components/FacilitatorHeader'
 import AgendaHtml from '../components/AgendaHtml'
 import { reopenMeeting, setDisplayMode as apiSetDisplayMode, setScreenTheme as apiSetScreenTheme, setScreenLanguage as apiSetScreenLanguage, assignNotulist as apiAssignNotulist } from '../api/client'
+import { Button, Card, Badge, Heading, Loading, Modal, Input, Select, Textarea, Label, ProgressBar } from '@ecommons/ui'
+import styles from './Facilitate.module.css'
 
 export default function Facilitate() {
   const { id } = useParams()
@@ -155,107 +157,97 @@ export default function Facilitate() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--color-cream)' }}>
+    <div className={styles.root}>
       <FacilitatorHeader
         title={meeting.name}
         liveIndicator={meeting.phase === 'in_session'}
         right={
-          <>
-            <span style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)' }}>
-              {t('facilitate.phase_label')}: <strong style={{ color: 'var(--color-charcoal)' }}>{t(`phases.${meeting.phase}`)}</strong>
-            </span>
-          </>
+          <span className={styles.phaseLabel}>
+            {t('facilitate.phase_label')}: <strong className={styles.phaseLabelStrong}>{t(`phases.${meeting.phase}`)}</strong>
+          </span>
         }
       />
 
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '20px 16px' }}>
+      <div className={styles.content}>
         {/* Zone 1 — Attendance bar */}
-        <div className="card" style={{ padding: '16px 24px', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+        <Card className={styles.attendBar}>
+          <div className={styles.statGroup}>
             <div>
-              <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-charcoal)', lineHeight: 1 }}>{attendeeCount}</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)', marginTop: 2 }}>{t('facilitate.eligible')}</div>
+              <div className={styles.statValue}>{attendeeCount}</div>
+              <div className={styles.statLabel}>{t('facilitate.eligible')}</div>
             </div>
-            <div style={{ width: 1, height: 40, background: 'var(--color-sand)' }} />
+            <div className={styles.statDivider} />
             <div>
-              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#2D62C4', lineHeight: 1 }}>{meeting.confirmedMandates.length}</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)', marginTop: 2 }}>{t('facilitate.mandates')}</div>
+              <div className={`${styles.statValue} ${styles.statValueBlue}`}>{meeting.confirmedMandates.length}</div>
+              <div className={styles.statLabel}>{t('facilitate.mandates')}</div>
             </div>
-            <div style={{ width: 1, height: 40, background: 'var(--color-sand)' }} />
+            <div className={styles.statDivider} />
             <div>
-              <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-terracotta)', lineHeight: 1 }}>
-                {attendeeCount}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)', marginTop: 2 }}>{t('facilitate.total_votes')}</div>
+              <div className={`${styles.statValue} ${styles.statValueTerracotta}`}>{attendeeCount}</div>
+              <div className={styles.statLabel}>{t('facilitate.total_votes')}</div>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div className={styles.attendActions}>
             {meeting.phase === 'open' && (
-              <button className="btn-green" onClick={() => updatePhase('in_session')}>
+              <Button variant="green" onClick={() => updatePhase('in_session')}>
                 {t('facilitate.open_meeting')}
-              </button>
+              </Button>
             )}
             <a
               href={`/${community?.slug}/meeting/${mid}/display`}
               target="_blank"
               rel="noreferrer"
-              style={{ background: 'transparent', border: '1px solid var(--color-green)', color: 'var(--color-green)', borderRadius: 8, padding: '9px 20px', fontSize: '0.9rem', fontWeight: 500, textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+              className={styles.displayLink}
             >
               {t('facilitate.open_display')}
             </a>
             {meeting.phase === 'in_session' && (
-              <button
+              <Button
+                variant="secondary"
+                className={styles.themeToggle}
                 onClick={() => apiSetScreenTheme(meeting.id, screenTheme === 'day' ? 'night' : 'day').catch(console.error)}
-                style={{
-                  background: 'transparent',
-                  border: '1px solid var(--color-charcoal-light)',
-                  color: 'var(--color-charcoal)',
-                  borderRadius: 8,
-                  padding: '9px 20px',
-                  fontSize: '0.9rem',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                }}
               >
                 {screenTheme === 'day' ? t('facilitate.screen_theme_night') : t('facilitate.screen_theme_day')}
-              </button>
+              </Button>
             )}
             {meeting.phase === 'in_session' && !confirmCloseMeeting && (
-              <button className="btn-danger" onClick={() => setConfirmCloseMeeting(true)}>
+              <Button variant="danger" onClick={() => setConfirmCloseMeeting(true)}>
                 {t('facilitate.close_meeting')}
-              </button>
+              </Button>
             )}
             {meeting.phase === 'in_session' && confirmCloseMeeting && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: '0.82rem', color: 'var(--color-charcoal)' }}>{t('common.confirm_question')}</span>
-                <button className="btn-danger" style={{ fontSize: '0.82rem', padding: '5px 12px' }} onClick={() => { setConfirmCloseMeeting(false); updatePhase('archived') }}>
+              <div className={styles.confirmRow}>
+                <span className={styles.confirmText}>{t('common.confirm_question')}</span>
+                <Button variant="danger" className={styles.btnSm} onClick={() => { setConfirmCloseMeeting(false); updatePhase('archived') }}>
                   {t('common.yes')}
-                </button>
-                <button className="btn-secondary" style={{ fontSize: '0.82rem', padding: '5px 12px' }} onClick={() => setConfirmCloseMeeting(false)}>
+                </Button>
+                <Button variant="secondary" className={styles.btnSm} onClick={() => setConfirmCloseMeeting(false)}>
                   {t('common.cancel')}
-                </button>
+                </Button>
               </div>
             )}
             {meeting.phase === 'archived' && meeting.date === new Date().toISOString().slice(0, 10) && (
-              <button className="btn-secondary" onClick={async () => {
+              <Button variant="secondary" onClick={async () => {
                 await reopenMeeting(meeting.id)
                 window.location.reload()
               }}>
                 {t('facilitate.reopen_meeting')}
-              </button>
+              </Button>
             )}
           </div>
-        </div>
+        </Card>
 
         {/* Main grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 16, alignItems: 'start' }}>
+        <div className={styles.mainGrid}>
           {/* Zone 2 — Check-in list */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div className="card" style={{ padding: 20 }}>
-              <div style={{ marginBottom: 14 }}>
-                <h3 style={{ margin: 0, fontSize: '0.95rem', fontFamily: 'Inter, sans-serif', fontWeight: 600 }}>
-                  {t('facilitate.attendees')}
-                </h3>
+          <div className={styles.leftCol}>
+            <Card className={styles.sideCard}>
+              <div className={styles.sectionHeaderRow}>
+                <div className={styles.sectionH3}>
+                  <Heading as="h3" fontSize="0.95rem" fontWeight={600}>
+                    {t('facilitate.attendees')}
+                  </Heading>
+                </div>
               </div>
 
               {/* Pre-registered but not yet checked in */}
@@ -264,16 +256,16 @@ export default function Facilitate() {
                 if (pending.length === 0) return null
                 return (
                   <div style={{ marginBottom: 12 }}>
-                    <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div className={styles.listLabelRow}>
                       <span>{t('facilitate.expected')}</span>
-                      <span className="badge badge-gray">{pending.length}</span>
+                      <Badge variant="gray">{pending.length}</Badge>
                     </div>
                     {pending.map(pr => (
-                      <div key={pr.id} style={{ display: 'flex', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid var(--color-sand)' }}>
-                        <span style={{ fontSize: '0.88rem', color: 'var(--color-charcoal-light)' }}>{pr.name}</span>
+                      <div key={pr.id} className={styles.listEntry}>
+                        <span className={styles.entryName}>{pr.name}</span>
                       </div>
                     ))}
-                    <div style={{ height: 12 }} />
+                    <div className={styles.spacer} />
                   </div>
                 )
               })()}
@@ -281,598 +273,587 @@ export default function Facilitate() {
               {/* Declined */}
               {meeting.declines?.length > 0 && (
                 <div style={{ marginBottom: 12 }}>
-                  <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div className={styles.listLabelRow}>
                     <span>{t('facilitate.declined') || 'Afgemeld'}</span>
-                    <span className="badge badge-gray">{meeting.declines.length}</span>
+                    <Badge variant="gray">{meeting.declines.length}</Badge>
                   </div>
                   {meeting.declines.map(d => (
-                    <div key={d.id} style={{ display: 'flex', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid var(--color-sand)' }}>
-                      <span style={{ fontSize: '0.88rem', color: 'var(--color-charcoal-light)', textDecoration: 'line-through' }}>{d.name}</span>
+                    <div key={d.id} className={styles.listEntry}>
+                      <span className={styles.declinedName}>{d.name}</span>
                     </div>
                   ))}
-                  <div style={{ height: 12 }} />
+                  <div className={styles.spacer} />
                 </div>
               )}
 
               {/* Checked in */}
-              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div className={styles.listLabelRow}>
                 <span>{t('facilitate.checked_in_label')}</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span className="badge badge-green">{meeting.checkedIn.length}</span>
-                  <button
-                    onClick={() => setShowCheckInModal(true)}
-                    style={{ background: 'none', border: '1px solid var(--color-sand-dark)', borderRadius: 4, cursor: 'pointer', color: 'var(--color-charcoal-light)', fontSize: '0.75rem', padding: '1px 7px', lineHeight: '18px' }}
-                  >+</button>
+                <div className={styles.listLabelActions}>
+                  <Badge variant="green">{meeting.checkedIn.length}</Badge>
+                  <Button variant="secondary" className={styles.addBtn} onClick={() => setShowCheckInModal(true)}>+</Button>
                 </div>
               </div>
               {meeting.checkedIn.length === 0 && (
-                <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.85rem', margin: '8px 0' }}>{t('facilitate.no_checkins')}</p>
+                <p className={styles.emptyText}>{t('facilitate.no_checkins')}</p>
               )}
               {[...meeting.checkedIn].reverse().map(c => (
-                <div key={c.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid var(--color-sand)', gap: 8 }}>
-                  <span style={{ fontSize: '0.9rem', color: 'var(--color-charcoal)', display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
+                <div key={c.id} className={styles.checkedInEntry}>
+                  <span className={styles.checkedInName}>
                     {c.name}
                     {c.manual && <span title={t('facilitate.manually_added')}>📝</span>}
                     {c.isAspirant && (
-                      <span style={{ fontSize: '0.68rem', background: 'rgba(196,98,45,0.12)', color: 'var(--color-terracotta)', borderRadius: 4, padding: '1px 6px', fontWeight: 600 }}>
-                        {t('facilitate.aspirant_badge')}
-                      </span>
+                      <Badge variant="orange">{t('facilitate.aspirant_badge')}</Badge>
                     )}
                   </span>
                   {confirmCloseAttendeeId === c.id ? (
-                    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                      <button
+                    <div className={styles.confirmInlineRow}>
+                      <Button
+                        variant="secondary"
+                        className={styles.inlineYesBtn}
                         onClick={() => { setConfirmCloseAttendeeId(null); removeAttendee(c.id) }}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-red)', fontSize: '0.78rem', padding: '2px 6px', fontWeight: 600 }}
-                      >{t('common.yes')}</button>
-                      <button
+                      >{t('common.yes')}</Button>
+                      <Button
+                        variant="secondary"
+                        className={styles.inlineCancelBtn}
                         onClick={() => setConfirmCloseAttendeeId(null)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-charcoal-light)', fontSize: '0.78rem', padding: '2px 6px' }}
-                      >{t('common.cancel')}</button>
+                      >{t('common.cancel')}</Button>
                     </div>
                   ) : (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)' }}>{c.checkedInAt}</span>
-                      <button
+                    <div className={styles.entryActions}>
+                      <span className={styles.entryTime}>{c.checkedInAt}</span>
+                      <Button
+                        variant="secondary"
+                        className={styles.removeBtn}
                         onClick={() => setConfirmCloseAttendeeId(c.id)}
                         title={t('facilitate.remove_attendee')}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-charcoal-light)', fontSize: '0.8rem', padding: '2px 4px', lineHeight: 1 }}
-                      >✕</button>
+                      >✕</Button>
                     </div>
                   )}
                 </div>
               ))}
-            </div>
+            </Card>
 
             {/* Mandates */}
-            <div className="card" style={{ padding: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                <h3 style={{ margin: 0, fontSize: '0.95rem', fontFamily: 'Inter, sans-serif', fontWeight: 600 }}>
-                  {t('facilitate.mandates')}
-                </h3>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span className="badge badge-blue">{meeting.confirmedMandates.length}</span>
-                  <button
-                    onClick={() => setShowMandateModal(true)}
-                    style={{ background: 'none', border: '1px solid var(--color-sand-dark)', borderRadius: 4, cursor: 'pointer', color: 'var(--color-charcoal-light)', fontSize: '0.75rem', padding: '1px 7px', lineHeight: '18px' }}
-                  >+</button>
+            <Card className={styles.sideCard}>
+              <div className={styles.sectionHeaderRow}>
+                <div className={styles.sectionH3}>
+                  <Heading as="h3" fontSize="0.95rem" fontWeight={600}>
+                    {t('facilitate.mandates')}
+                  </Heading>
+                </div>
+                <div className={styles.listLabelActions}>
+                  <Badge variant="blue">{meeting.confirmedMandates.length}</Badge>
+                  <Button variant="secondary" className={styles.addBtn} onClick={() => setShowMandateModal(true)}>+</Button>
                 </div>
               </div>
               {meeting.confirmedMandates.length === 0 && (
-                <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.85rem', margin: '8px 0' }}>{t('facilitate.no_mandates')}</p>
+                <p className={styles.emptyText}>{t('facilitate.no_mandates')}</p>
               )}
               {meeting.confirmedMandates.map(m => (
-                <div key={m.id} style={{ padding: '9px 0', borderBottom: '1px solid var(--color-sand)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '0.9rem', color: 'var(--color-charcoal)' }}>
+                <div key={m.id} className={styles.mandateEntry}>
+                  <div className={styles.mandateContent}>
+                    <div className={styles.mandateNames}>
                       <strong>{m.from}</strong> → <strong>{m.to}</strong>
                     </div>
-                    {m.note && <div style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', marginTop: 2 }}>{m.note}</div>}
+                    {m.note && <div className={styles.mandateNote}>{m.note}</div>}
                   </div>
                   {confirmRevokeMandateId === m.id ? (
-                    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                      <button
+                    <div className={styles.confirmInlineRow}>
+                      <Button
+                        variant="secondary"
+                        className={styles.inlineYesBtn}
                         onClick={() => { setConfirmRevokeMandateId(null); revokeMandate(m.from) }}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-red)', fontSize: '0.78rem', padding: '2px 6px', fontWeight: 600 }}
-                      >{t('common.yes')}</button>
-                      <button
+                      >{t('common.yes')}</Button>
+                      <Button
+                        variant="secondary"
+                        className={styles.inlineCancelBtn}
                         onClick={() => setConfirmRevokeMandateId(null)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-charcoal-light)', fontSize: '0.78rem', padding: '2px 6px' }}
-                      >{t('common.cancel')}</button>
+                      >{t('common.cancel')}</Button>
                     </div>
                   ) : (
-                    <button
+                    <Button
+                      variant="secondary"
+                      className={styles.removeBtn}
                       onClick={() => setConfirmRevokeMandateId(m.id)}
                       title={t('facilitate.revoke_mandate')}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-charcoal-light)', fontSize: '0.8rem', padding: '2px 4px', lineHeight: 1 }}
-                    >✕</button>
+                    >✕</Button>
                   )}
                 </div>
               ))}
-            </div>
+            </Card>
           </div>
 
           {/* Zone 3 — Right column: Polls + Agenda + Notes */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div className="card" style={{ padding: 20 }}>
-            {meeting.phase === 'in_session' && (
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                background: 'var(--color-cream, #faf8f5)',
-                border: '1px solid var(--color-sand, #e8e0d5)',
-                borderRadius: 10, padding: 6, marginBottom: 16,
-              }}>
-                <span style={{ fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-charcoal-light)', padding: '0 4px', flexShrink: 0 }}>
-                  {t('facilitate.viz_screen_label')}
-                </span>
-                {[
-                  { key: 'numbers', label: t('facilitate.viz_mode_numbers'), icon: '🔢' },
-                  { key: 'bars',    label: t('facilitate.viz_mode_bars'),    icon: '📊' },
-                  { key: 'pie',     label: t('facilitate.viz_mode_pie'),     icon: '🥧' },
-                  { key: 'bubbles', label: t('facilitate.viz_mode_bubbles'), icon: '🫧' },
-                ].map(m => (
-                  <button
-                    key={m.key}
-                    onClick={() => apiSetDisplayMode(meeting.id, m.key).catch(console.error)}
+          <div className={styles.rightCol}>
+            <Card className={styles.pollsCard}>
+              {meeting.phase === 'in_session' && (
+                <div className={styles.vizBar}>
+                  <span className={styles.vizBarLabel}>{t('facilitate.viz_screen_label')}</span>
+                  {[
+                    { key: 'numbers', label: t('facilitate.viz_mode_numbers'), icon: '🔢' },
+                    { key: 'bars',    label: t('facilitate.viz_mode_bars'),    icon: '📊' },
+                    { key: 'pie',     label: t('facilitate.viz_mode_pie'),     icon: '🥧' },
+                    { key: 'bubbles', label: t('facilitate.viz_mode_bubbles'), icon: '🫧' },
+                  ].map(mode => (
+                    <Button
+                      key={mode.key}
+                      variant="secondary"
+                      className={styles.modeBtn}
+                      onClick={() => apiSetDisplayMode(meeting.id, mode.key).catch(console.error)}
+                      style={{
+                        fontWeight: displayMode === mode.key ? 700 : 500,
+                        color: displayMode === mode.key ? 'var(--color-terracotta)' : 'var(--color-charcoal-light)',
+                        background: displayMode === mode.key ? 'white' : 'transparent',
+                        borderBottom: displayMode === mode.key ? '2px solid var(--color-terracotta)' : '2px solid transparent',
+                      }}
+                    >
+                      <span>{mode.icon}</span> {mode.label}
+                    </Button>
+                  ))}
+                </div>
+              )}
+              <div
+                className={styles.pollsHeaderRow}
+                style={{ marginBottom: meeting.phase !== 'in_session' && meeting.phase !== 'archived' ? 4 : 20 }}
+              >
+                <div className={styles.pollsH3}>
+                  <Heading as="h3" fontSize="1rem" fontWeight={600}>
+                    {t('facilitate.polls')}
+                  </Heading>
+                </div>
+                {meeting.phase !== 'archived' && (
+                  <Button
+                    variant="secondary"
+                    className={styles.addPollBtn}
+                    onClick={() => { setNewPoll({ title: '', options: [] }); setEditingPoll(null); setShowAddPollModal(true) }}
+                  >
+                    {t('facilitate.add_poll')}
+                  </Button>
+                )}
+              </div>
+              {meeting.phase !== 'in_session' && meeting.phase !== 'archived' && (
+                <p className={styles.pollsHint}>
+                  {t('facilitate.available_during_session')}
+                </p>
+              )}
+
+              {meeting.polls.length === 0 && (
+                <p className={styles.pollsEmpty}>{t('facilitate.no_polls')}</p>
+              )}
+
+              <div className={styles.pollsList}>
+                {meeting.polls.map((poll, idx) => (
+                  <div
+                    key={poll.id}
+                    className={styles.pollDragWrap}
+                    draggable={poll.status === 'prepared' && meeting.phase !== 'archived'}
+                    onDragStart={e => {
+                      e.dataTransfer.effectAllowed = 'move'
+                      e.dataTransfer.setData('text/plain', poll.id)
+                    }}
+                    onDragOver={e => {
+                      if (poll.status !== 'prepared') return
+                      e.preventDefault()
+                      e.dataTransfer.dropEffect = 'move'
+                      setDragOverId(poll.id)
+                    }}
+                    onDragLeave={() => setDragOverId(null)}
+                    onDrop={e => {
+                      e.preventDefault()
+                      setDragOverId(null)
+                      const draggedId = e.dataTransfer.getData('text/plain')
+                      if (draggedId === poll.id) return
+                      const ids = meeting.polls.map(p => p.id)
+                      const fromIdx = ids.indexOf(draggedId)
+                      const toIdx = ids.indexOf(poll.id)
+                      if (fromIdx === -1 || toIdx === -1) return
+                      const reordered = [...ids]
+                      reordered.splice(fromIdx, 1)
+                      reordered.splice(toIdx, 0, draggedId)
+                      reorderPolls(reordered)
+                    }}
+                    onDragEnd={() => setDragOverId(null)}
                     style={{
-                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      gap: 5, padding: '7px 8px', borderRadius: 7,
-                      fontSize: '0.8rem', fontWeight: displayMode === m.key ? 700 : 500,
-                      color: displayMode === m.key ? 'var(--color-terracotta)' : 'var(--color-charcoal-light)',
-                      background: displayMode === m.key ? 'white' : 'transparent',
-                      border: 'none', cursor: 'pointer',
-                      boxShadow: displayMode === m.key ? '0 1px 4px rgba(0,0,0,0.10)' : 'none',
-                      transition: 'all 0.15s',
+                      opacity: dragOverId === poll.id ? 0.6 : 1,
+                      cursor: poll.status === 'prepared' && meeting.phase !== 'archived' ? 'grab' : 'default',
                     }}
                   >
-                    <span>{m.icon}</span> {m.label}
-                  </button>
+                    <PollCard
+                      poll={poll}
+                      idx={idx}
+                      activePoll={activePoll}
+                      attendeeCount={attendeeCount}
+                      canStart={canStart(poll)}
+                      onStart={() => startPoll(poll.id)}
+                      onClose={() => closePoll(poll.id)}
+                      onEdit={() => openEditPoll(poll)}
+                      onDelete={() => deletePoll(poll.id)}
+                      onManualVote={() => setShowManualVoteModal(true)}
+                      getVoteCount={getVoteCount}
+                      isActive={activePoll?.id === poll.id}
+                      phase={meeting.phase}
+                      confirmClosePollId={confirmClosePollId}
+                      setConfirmClosePollId={setConfirmClosePollId}
+                      isDraggable={poll.status === 'prepared' && meeting.phase !== 'archived'}
+                    />
+                  </div>
                 ))}
               </div>
-            )}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: meeting.phase !== 'in_session' && meeting.phase !== 'archived' ? 4 : 20 }}>
-              <h3 style={{ margin: 0, fontSize: '1rem', fontFamily: 'Inter, sans-serif', fontWeight: 600 }}>
-                {t('facilitate.polls')}
-              </h3>
-              {meeting.phase !== 'archived' && (
-                <button
-                  className="btn-secondary"
-                  style={{ fontSize: '0.8rem', padding: '6px 12px' }}
-                  onClick={() => { setNewPoll({ title: '', options: [] }); setEditingPoll(null); setShowAddPollModal(true) }}
-                >
-                  {t('facilitate.add_poll')}
-                </button>
-              )}
-            </div>
-            {meeting.phase !== 'in_session' && meeting.phase !== 'archived' && (
-              <p style={{ margin: '0 0 16px', fontSize: '0.8rem', color: 'var(--color-charcoal-light)', fontStyle: 'italic' }}>
-                {t('facilitate.available_during_session')}
-              </p>
-            )}
+            </Card>
 
-            {meeting.polls.length === 0 && (
-              <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.9rem' }}>{t('facilitate.no_polls')}</p>
-            )}
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {meeting.polls.map((poll, idx) => (
-                <div
-                  key={poll.id}
-                  draggable={poll.status === 'prepared' && meeting.phase !== 'archived'}
-                  onDragStart={e => {
-                    e.dataTransfer.effectAllowed = 'move'
-                    e.dataTransfer.setData('text/plain', poll.id)
-                  }}
-                  onDragOver={e => {
-                    if (poll.status !== 'prepared') return
-                    e.preventDefault()
-                    e.dataTransfer.dropEffect = 'move'
-                    setDragOverId(poll.id)
-                  }}
-                  onDragLeave={() => setDragOverId(null)}
-                  onDrop={e => {
-                    e.preventDefault()
-                    setDragOverId(null)
-                    const draggedId = e.dataTransfer.getData('text/plain')
-                    if (draggedId === poll.id) return
-                    const ids = meeting.polls.map(p => p.id)
-                    const fromIdx = ids.indexOf(draggedId)
-                    const toIdx = ids.indexOf(poll.id)
-                    if (fromIdx === -1 || toIdx === -1) return
-                    const reordered = [...ids]
-                    reordered.splice(fromIdx, 1)
-                    reordered.splice(toIdx, 0, draggedId)
-                    reorderPolls(reordered)
-                  }}
-                  onDragEnd={() => setDragOverId(null)}
-                  style={{
-                    opacity: dragOverId === poll.id ? 0.6 : 1,
-                    transition: 'opacity 0.15s',
-                    cursor: poll.status === 'prepared' && meeting.phase !== 'archived' ? 'grab' : 'default',
-                  }}
-                >
-                  <PollCard
-                    poll={poll}
-                    idx={idx}
-                    activePoll={activePoll}
-                    attendeeCount={attendeeCount}
-                    canStart={canStart(poll)}
-                    onStart={() => startPoll(poll.id)}
-                    onClose={() => closePoll(poll.id)}
-                    onEdit={() => openEditPoll(poll)}
-                    onDelete={() => deletePoll(poll.id)}
-                    onManualVote={() => setShowManualVoteModal(true)}
-                    getVoteCount={getVoteCount}
-                    isActive={activePoll?.id === poll.id}
-                    phase={meeting.phase}
-                    confirmClosePollId={confirmClosePollId}
-                    setConfirmClosePollId={setConfirmClosePollId}
-                    isDraggable={poll.status === 'prepared' && meeting.phase !== 'archived'}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Agenda (collapsible) */}
-          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            <button
-              onClick={() => setAgendaOpen(o => !o)}
-              style={{ width: '100%', background: 'none', border: 'none', padding: '16px 24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: '0.9rem', color: 'var(--color-charcoal)' }}
-            >
-              <span>{t('common.agenda')}</span>
-              <span style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)' }}>
-                {agendaOpen ? '▼' : '▶'}
-              </span>
-            </button>
-            {agendaOpen && (
-              <div style={{ padding: '0 24px 20px', borderTop: '1px solid var(--color-sand)' }}>
-                <AgendaHtml html={meeting.agenda} style={{ marginTop: 16 }} />
-              </div>
-            )}
-          </div>
-
-          {/* Notes (collapsible, in_session only) */}
-          {meeting.phase === 'in_session' && (
-            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-              <button
-                onClick={() => setNotulistOpen(o => !o)}
-                style={{ width: '100%', background: 'none', border: 'none', padding: '16px 24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: '0.9rem', color: 'var(--color-charcoal)' }}
+            {/* Agenda (collapsible) */}
+            <Card className={styles.collapsibleCard}>
+              <Button
+                variant="secondary"
+                className={styles.collapsibleToggle}
+                onClick={() => setAgendaOpen(o => !o)}
               >
-                <span>{t('minutes.section_title')}</span>
-                <span style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)' }}>
-                  {notulistOpen ? '▼' : '▶'}
-                </span>
-              </button>
-              {notulistOpen && (
-                <div style={{ padding: '0 24px 20px', borderTop: '1px solid var(--color-sand)' }}>
-                  <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <label style={{ fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>
-                      {t('minutes.assign_notulist')}
-                    </label>
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <select
-                        className="input"
-                        value={notulistDraft}
-                        onChange={e => setNotulistDraft(e.target.value)}
-                        style={{ fontSize: '0.9rem', width: 'auto', minWidth: 160, flex: '0 1 260px' }}
-                      >
-                        <option value="">{t('minutes.notulist_none')}</option>
-                        {(members || []).filter(m => m.ename).map(m => (
-                          <option key={m.id} value={m.ename}>{memberDisplayName(m)}</option>
-                        ))}
-                      </select>
-                      <button
-                        className="btn-primary"
-                        style={{ fontSize: '0.85rem', padding: '7px 14px', whiteSpace: 'nowrap' }}
-                        onClick={() => handleAssignNotulist(notulistDraft)}
-                        disabled={notulistDraft === notulistEname}
-                      >
-                        {t('minutes.assign_btn')}
-                      </button>
-                    </div>
-                    {notulistEname && (
-                      <div style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)' }}>
-                        {t('minutes.notulist_assigned', { name: (() => { const m = (members || []).find(m => m.ename === notulistEname); return m ? memberDisplayName(m) : notulistEname })() })}
-                      </div>
-                    )}
-                  </div>
+                <span>{t('common.agenda')}</span>
+                <span className={styles.collapsibleChevron}>{agendaOpen ? '▼' : '▶'}</span>
+              </Button>
+              {agendaOpen && (
+                <div className={styles.collapsibleBody}>
+                  <AgendaHtml html={meeting.agenda} style={{ marginTop: 16 }} />
                 </div>
               )}
-            </div>
-          )}
+            </Card>
+
+            {/* Notes (collapsible, in_session only) */}
+            {meeting.phase === 'in_session' && (
+              <Card className={styles.collapsibleCard}>
+                <Button
+                  variant="secondary"
+                  className={styles.collapsibleToggle}
+                  onClick={() => setNotulistOpen(o => !o)}
+                >
+                  <span>{t('minutes.section_title')}</span>
+                  <span className={styles.collapsibleChevron}>{notulistOpen ? '▼' : '▶'}</span>
+                </Button>
+                {notulistOpen && (
+                  <div className={styles.collapsibleBody}>
+                    <div className={styles.notesForm}>
+                      <Label size="sm">{t('minutes.assign_notulist')}</Label>
+                      <div className={styles.notesSelectRow}>
+                        <Select
+                          className={styles.notulistSelect}
+                          value={notulistDraft}
+                          onChange={e => setNotulistDraft(e.target.value)}
+                        >
+                          <option value="">{t('minutes.notulist_none')}</option>
+                          {(members || []).filter(m => m.ename).map(m => (
+                            <option key={m.id} value={m.ename}>{memberDisplayName(m)}</option>
+                          ))}
+                        </Select>
+                        <Button
+                          variant="primary"
+                          className={styles.notesAssignBtn}
+                          onClick={() => handleAssignNotulist(notulistDraft)}
+                          disabled={notulistDraft === notulistEname}
+                        >
+                          {t('minutes.assign_btn')}
+                        </Button>
+                      </div>
+                      {notulistEname && (
+                        <div className={styles.notesCurrentText}>
+                          {t('minutes.notulist_assigned', { name: (() => { const mem = (members || []).find(m => m.ename === notulistEname); return mem ? memberDisplayName(mem) : notulistEname })() })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </Card>
+            )}
           </div>
         </div>
       </div>
 
       {/* Quick check-in modal — member picker */}
       {showCheckInModal && (
-        <div className="modal-overlay" onClick={() => { setShowCheckInModal(false); setSelectedMemberId(''); setMemberSearch('') }}>
-          <div className="modal" style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
-            <h3 style={{ margin: '0 0 16px', fontFamily: 'var(--font-title)', fontSize: '1.1rem' }}>
+        <Modal
+          className={styles.modalCheckIn}
+          onOverlayClick={() => { setShowCheckInModal(false); setSelectedMemberId(''); setMemberSearch('') }}
+        >
+          <div className={styles.modalTitle}>
+            <Heading as="h3" fontSize="1.1rem">
               {t('facilitate.modal_add_without_app_title')}
-            </h3>
-            <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.85rem', margin: '0 0 16px' }}>
-              {t('facilitate.modal_add_without_app_hint')}
-            </p>
-            {members.length > 0 ? (
-              <>
-                <div style={{ marginBottom: 16 }}>
-                  <input
-                    className="input"
-                    autoFocus
-                    value={memberSearch}
-                    onChange={e => { setMemberSearch(e.target.value); setSelectedMemberId('') }}
-                    placeholder={t('facilitate.member_search_placeholder')}
-                  />
-                </div>
-                <div style={{ maxHeight: 240, overflowY: 'auto', border: '1px solid var(--color-sand)', borderRadius: 8, marginBottom: 16 }}>
-                  {members
-                    .filter(m => !meeting.checkedIn.some(c =>
-                      (m.ename && c.ename && c.ename === m.ename) ||
-                      (c.member_id && c.member_id === m.id)
-                    ))
-                    .filter(m => !memberSearch || memberDisplayName(m).toLowerCase().includes(memberSearch.toLowerCase()))
-                    .map(m => (
-                      <button
-                        key={m.id}
-                        onClick={() => setSelectedMemberId(m.id)}
-                        style={{
-                          width: '100%', padding: '10px 14px', background: selectedMemberId === m.id ? 'rgba(196,98,45,0.08)' : 'white',
-                          border: 'none', borderBottom: '1px solid var(--color-sand)', cursor: 'pointer',
-                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                          fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', color: 'var(--color-charcoal)',
-                          textAlign: 'left',
-                        }}
-                      >
-                        <span>{memberDisplayName(m)}</span>
-                        {m.is_aspirant && (
-                          <span style={{ fontSize: '0.68rem', background: 'rgba(196,98,45,0.12)', color: 'var(--color-terracotta)', borderRadius: 4, padding: '1px 6px', fontWeight: 600 }}>
-                            {t('facilitate.aspirant_badge')}
-                          </span>
-                        )}
-                      </button>
-                    ))
-                  }
-                </div>
-              </>
-            ) : (
-              <div style={{ marginBottom: 16, color: 'var(--color-charcoal-light)', fontSize: '0.85rem' }}>
-                {t('settings.members_empty')}
-              </div>
-            )}
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button className="btn-primary" onClick={handleQuickCheckIn} disabled={!selectedMemberId}>
-                {t('common.add')}
-              </button>
-              <button className="btn-secondary" onClick={() => { setShowCheckInModal(false); setSelectedMemberId(''); setMemberSearch('') }}>{t('common.cancel')}</button>
-            </div>
+            </Heading>
           </div>
-        </div>
+          <p className={styles.modalHint}>
+            {t('facilitate.modal_add_without_app_hint')}
+          </p>
+          {members.length > 0 ? (
+            <>
+              <div className={styles.memberSearchBox}>
+                <Input
+                  autoFocus
+                  value={memberSearch}
+                  onChange={e => { setMemberSearch(e.target.value); setSelectedMemberId('') }}
+                  placeholder={t('facilitate.member_search_placeholder')}
+                />
+              </div>
+              <div className={styles.memberListBox}>
+                {members
+                  .filter(m => !meeting.checkedIn.some(c =>
+                    (m.ename && c.ename && c.ename === m.ename) ||
+                    (c.member_id && c.member_id === m.id)
+                  ))
+                  .filter(m => !memberSearch || memberDisplayName(m).toLowerCase().includes(memberSearch.toLowerCase()))
+                  .map(m => (
+                    <Button
+                      key={m.id}
+                      variant="secondary"
+                      className={styles.memberBtn}
+                      onClick={() => setSelectedMemberId(m.id)}
+                      style={{ background: selectedMemberId === m.id ? 'rgba(196,98,45,0.08)' : 'white' }}
+                    >
+                      <span>{memberDisplayName(m)}</span>
+                      {m.is_aspirant && (
+                        <Badge variant="orange">{t('facilitate.aspirant_badge')}</Badge>
+                      )}
+                    </Button>
+                  ))
+                }
+              </div>
+            </>
+          ) : (
+            <div className={styles.modalHint}>
+              {t('settings.members_empty')}
+            </div>
+          )}
+          <div className={styles.modalActions}>
+            <Button variant="primary" onClick={handleQuickCheckIn} disabled={!selectedMemberId}>
+              {t('common.add')}
+            </Button>
+            <Button variant="secondary" onClick={() => { setShowCheckInModal(false); setSelectedMemberId(''); setMemberSearch('') }}>
+              {t('common.cancel')}
+            </Button>
+          </div>
+        </Modal>
       )}
 
       {/* Manual vote modal */}
       {showManualVoteModal && activePoll && (
-        <div className="modal-overlay" onClick={() => setShowManualVoteModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <h3 style={{ margin: '0 0 6px', fontFamily: 'var(--font-title)', fontSize: '1.1rem' }}>
+        <Modal onOverlayClick={() => setShowManualVoteModal(false)}>
+          <div className={styles.modalTitleSm}>
+            <Heading as="h3" fontSize="1.1rem">
               {t('facilitate.modal_manual_vote_title')}
-            </h3>
-            <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.82rem', margin: '0 0 16px' }}>
-              {t('facilitate.modal_manual_vote_hint')}
-            </p>
+            </Heading>
+          </div>
+          <p className={styles.modalHintSm}>
+            {t('facilitate.modal_manual_vote_hint')}
+          </p>
 
-            {/* Cast votes list — all votes with delete button */}
-            {activePoll.allVotes?.length > 0 && (
-              <div style={{ marginBottom: 16, border: '1px solid var(--color-sand)', borderRadius: 8, overflow: 'hidden' }}>
-                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '8px 12px', background: 'var(--color-cream)', borderBottom: '1px solid var(--color-sand)' }}>
-                  {t('facilitate.cast_votes')}
-                </div>
-                {activePoll.allVotes.map(v => {
-                  const optLabel = activePoll.options[activePoll._optionIds?.indexOf(v.option_id)] ?? v.option_id
-                  const label = v.on_behalf_of_name ? `📜 ${v.on_behalf_of_name} (→ ${v.voter_name})` : v.voter_name
-                  return (
-                    <div key={v.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 12px', borderBottom: '1px solid var(--color-sand)', gap: 8 }}>
-                      <span style={{ fontSize: '0.88rem', color: 'var(--color-charcoal)', flex: 1 }}>{label}</span>
-                      <span style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', background: 'var(--color-sand)', padding: '2px 8px', borderRadius: 4 }}>{optLabel}</span>
-                      <button
-                        onClick={() => { deleteVote(activePoll.id, v.id); }}
-                        title={t('common.delete')}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-red)', fontSize: '0.85rem', padding: '2px 4px', flexShrink: 0 }}
-                      >✕</button>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-            <div style={{ marginBottom: 12 }}>
-              <label>{t('facilitate.member_name_optional')}</label>
-              <select className="input" value={manualVoteName} onChange={e => setManualVoteName(e.target.value)}>
-                <option value="">— {t('facilitate.member_search_placeholder')}</option>
-                {meeting.checkedIn.filter(c => !c.isAspirant).map(c => {
-                  const voted = c.name in (activePoll?.votes ?? {}) || (activePoll?.manualVotes ?? []).some(v => v.name.toLowerCase() === c.name.toLowerCase())
-                  return (
-                    <option key={c.name} value={c.name} disabled={voted}>
-                      {c.name}{voted ? ' ✓' : ''}
-                    </option>
-                  )
-                })}
-                {meeting.confirmedMandates.map(m => {
-                  const voted = activePoll?.onBehalfVoters?.has(m.from)
-                  return (
-                    <option key={`mandate-${m.from}`} value={`mandate:${m.from}:${m.to}`} disabled={voted}>
-                      📜 {m.from} → {m.to}{voted ? ' ✓' : ''}
-                    </option>
-                  )
-                })}
-              </select>
+          {/* Cast votes list — all votes with delete button */}
+          {activePoll.allVotes?.length > 0 && (
+            <div className={styles.castVotesBox}>
+              <div className={styles.castVotesHeader}>{t('facilitate.cast_votes')}</div>
+              {activePoll.allVotes.map(v => {
+                const optLabel = activePoll.options[activePoll._optionIds?.indexOf(v.option_id)] ?? v.option_id
+                const label = v.on_behalf_of_name ? `📜 ${v.on_behalf_of_name} (→ ${v.voter_name})` : v.voter_name
+                return (
+                  <div key={v.id} className={styles.castVoteRow}>
+                    <span className={styles.castVoteName}>{label}</span>
+                    <span className={styles.castVoteOpt}>{optLabel}</span>
+                    <Button
+                      variant="secondary"
+                      className={styles.deleteVoteBtn}
+                      onClick={() => { deleteVote(activePoll.id, v.id) }}
+                      title={t('common.delete')}
+                    >✕</Button>
+                  </div>
+                )
+              })}
             </div>
-            <div style={{ marginBottom: 20 }}>
-              <label>{t('facilitate.vote_label')}</label>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {activePoll.options.map(opt => (
-                  <button
-                    key={opt}
-                    onClick={() => setManualVoteOption(opt)}
-                    style={{
-                      flex: 1, padding: '12px 8px', borderRadius: 8, border: `2px solid ${manualVoteOption === opt ? 'var(--color-terracotta)' : 'var(--color-sand-dark)'}`,
-                      background: manualVoteOption === opt ? 'rgba(196,98,45,0.08)' : 'white',
-                      cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: '0.9rem',
-                      color: manualVoteOption === opt ? 'var(--color-terracotta)' : 'var(--color-charcoal)',
-                      transition: 'all 0.15s',
-                    }}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button className="btn-primary" onClick={handleManualVote} disabled={!manualVoteOption || !manualVoteName}>
-                {t('facilitate.register_vote')}
-              </button>
-              <button className="btn-secondary" onClick={() => setShowManualVoteModal(false)}>{t('common.cancel')}</button>
+          )}
+          <div style={{ marginBottom: 12 }}>
+            <Label>{t('facilitate.member_name_optional')}</Label>
+            <Select value={manualVoteName} onChange={e => setManualVoteName(e.target.value)}>
+              <option value="">— {t('facilitate.member_search_placeholder')}</option>
+              {meeting.checkedIn.filter(c => !c.isAspirant).map(c => {
+                const voted = c.name in (activePoll?.votes ?? {}) || (activePoll?.manualVotes ?? []).some(v => v.name.toLowerCase() === c.name.toLowerCase())
+                return (
+                  <option key={c.name} value={c.name} disabled={voted}>
+                    {c.name}{voted ? ' ✓' : ''}
+                  </option>
+                )
+              })}
+              {meeting.confirmedMandates.map(m => {
+                const voted = activePoll?.onBehalfVoters?.has(m.from)
+                return (
+                  <option key={`mandate-${m.from}`} value={`mandate:${m.from}:${m.to}`} disabled={voted}>
+                    📜 {m.from} → {m.to}{voted ? ' ✓' : ''}
+                  </option>
+                )
+              })}
+            </Select>
+          </div>
+          <div>
+            <Label>{t('facilitate.vote_label')}</Label>
+            <div className={styles.voteOptRow}>
+              {activePoll.options.map(opt => (
+                <Button
+                  key={opt}
+                  variant="secondary"
+                  className={styles.voteOptBtn}
+                  onClick={() => setManualVoteOption(opt)}
+                  style={{
+                    border: `2px solid ${manualVoteOption === opt ? 'var(--color-terracotta)' : 'var(--color-sand-dark)'}`,
+                    background: manualVoteOption === opt ? 'rgba(196,98,45,0.08)' : 'white',
+                    color: manualVoteOption === opt ? 'var(--color-terracotta)' : 'var(--color-charcoal)',
+                  }}
+                >
+                  {opt}
+                </Button>
+              ))}
             </div>
           </div>
-        </div>
+          <div className={styles.modalActions}>
+            <Button variant="primary" onClick={handleManualVote} disabled={!manualVoteOption || !manualVoteName}>
+              {t('facilitate.register_vote')}
+            </Button>
+            <Button variant="secondary" onClick={() => setShowManualVoteModal(false)}>{t('common.cancel')}</Button>
+          </div>
+        </Modal>
       )}
 
       {/* Add mandate modal */}
       {showMandateModal && (
-        <div className="modal-overlay" onClick={() => setShowMandateModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <h3 style={{ margin: '0 0 16px', fontFamily: 'var(--font-title)', fontSize: '1.1rem' }}>
+        <Modal onOverlayClick={() => setShowMandateModal(false)}>
+          <div className={styles.modalTitle}>
+            <Heading as="h3" fontSize="1.1rem">
               {t('facilitate.add_mandate')}
-            </h3>
-            {(() => {
-              const alreadyGrantedEnames = new Set(meeting.confirmedMandates.filter(m => m.fromEname).map(m => m.fromEname.toLowerCase()))
-              // Granter = community members who are absent and haven't already granted
-              const granterOptions = (members || []).filter(m => {
-                const alreadyCheckedIn = meeting.checkedIn.some(c =>
-                  (m.ename && c.ename && c.ename === m.ename) ||
-                  (c.member_id && c.member_id === m.id)
-                )
-                const alreadyGranted = m.ename && alreadyGrantedEnames.has(m.ename.toLowerCase())
-                return !alreadyCheckedIn && !alreadyGranted
-              })
-              // Proxy = checked-in non-aspirants
-              const proxyOptions = meeting.checkedIn.filter(c => !c.isAspirant)
-              return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
-                  <div>
-                    <label>{t('facilitate.granter')}</label>
-                    <select className="input" autoFocus value={mandateFrom} onChange={e => setMandateFrom(e.target.value)}>
-                      <option value="">— {t('facilitate.granter_placeholder')} —</option>
-                      {granterOptions.map(m => (
-                        <option key={m.id} value={memberDisplayName(m)}>{memberDisplayName(m)}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label>{t('facilitate.proxy')}</label>
-                    <select className="input" value={mandateTo} onChange={e => setMandateTo(e.target.value)}>
-                      <option value="">— {t('facilitate.proxy_placeholder')} —</option>
-                      {proxyOptions.map(c => (
-                        <option key={c.id} value={c.member_id ?? c.id}>{c.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label>{t('common.note_optional')}</label>
-                    <input className="input" value={mandateNote} onChange={e => setMandateNote(e.target.value)} placeholder={t('facilitate.note_placeholder')} />
-                  </div>
-                </div>
-              )
-            })()}
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button className="btn-primary" onClick={handleAddMandate} disabled={!mandateTo.trim()}>
-                {t('common.add')}
-              </button>
-              <button className="btn-secondary" onClick={() => setShowMandateModal(false)}>{t('common.cancel')}</button>
-            </div>
+            </Heading>
           </div>
-        </div>
+          {(() => {
+            const alreadyGrantedEnames = new Set(meeting.confirmedMandates.filter(m => m.fromEname).map(m => m.fromEname.toLowerCase()))
+            // Granter = community members who are absent and haven't already granted
+            const granterOptions = (members || []).filter(m => {
+              const alreadyCheckedIn = meeting.checkedIn.some(c =>
+                (m.ename && c.ename && c.ename === m.ename) ||
+                (c.member_id && c.member_id === m.id)
+              )
+              const alreadyGranted = m.ename && alreadyGrantedEnames.has(m.ename.toLowerCase())
+              return !alreadyCheckedIn && !alreadyGranted
+            })
+            // Proxy = checked-in non-aspirants
+            const proxyOptions = meeting.checkedIn.filter(c => !c.isAspirant)
+            return (
+              <div className={styles.mandateModalFields}>
+                <div className={styles.fieldBlock}>
+                  <Label>{t('facilitate.granter')}</Label>
+                  <Select autoFocus value={mandateFrom} onChange={e => setMandateFrom(e.target.value)}>
+                    <option value="">— {t('facilitate.granter_placeholder')} —</option>
+                    {granterOptions.map(m => (
+                      <option key={m.id} value={memberDisplayName(m)}>{memberDisplayName(m)}</option>
+                    ))}
+                  </Select>
+                </div>
+                <div className={styles.fieldBlock}>
+                  <Label>{t('facilitate.proxy')}</Label>
+                  <Select value={mandateTo} onChange={e => setMandateTo(e.target.value)}>
+                    <option value="">— {t('facilitate.proxy_placeholder')} —</option>
+                    {proxyOptions.map(c => (
+                      <option key={c.id} value={c.member_id ?? c.id}>{c.name}</option>
+                    ))}
+                  </Select>
+                </div>
+                <div className={styles.fieldBlock}>
+                  <Label>{t('common.note_optional')}</Label>
+                  <Input value={mandateNote} onChange={e => setMandateNote(e.target.value)} placeholder={t('facilitate.note_placeholder')} />
+                </div>
+              </div>
+            )
+          })()}
+          <div className={styles.modalActions}>
+            <Button variant="primary" onClick={handleAddMandate} disabled={!mandateTo.trim()}>
+              {t('common.add')}
+            </Button>
+            <Button variant="secondary" onClick={() => setShowMandateModal(false)}>{t('common.cancel')}</Button>
+          </div>
+        </Modal>
       )}
 
       {/* Add/Edit poll modal */}
       {showAddPollModal && (
-        <div className="modal-overlay" onClick={() => setShowAddPollModal(false)}>
-          <div className="modal" style={{ maxWidth: 500 }} onClick={e => e.stopPropagation()}>
-            <h3 style={{ margin: '0 0 20px', fontFamily: 'var(--font-title)', fontSize: '1.1rem' }}>
+        <Modal
+          className={styles.modalPoll}
+          onOverlayClick={() => setShowAddPollModal(false)}
+        >
+          <div className={styles.modalTitle}>
+            <Heading as="h3" fontSize="1.1rem">
               {editingPoll ? t('facilitate.poll_edit_title') : t('facilitate.poll_add_title')}
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 20 }}>
-              <div>
-                <label>{t('facilitate.motion_text_label')}</label>
-                <textarea
-                  className="input"
-                  rows={3}
-                  value={newPoll.title}
-                  onChange={e => setNewPoll(p => ({ ...p, title: e.target.value }))}
-                  placeholder={t('facilitate.motion_text_placeholder')}
-                />
-              </div>
-              <div>
-                <label>{t('facilitate.vote_options_label')}</label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {newPoll.options.map((opt, i) => (
-                    <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <input
-                        className="input"
-                        value={opt}
-                        onChange={e => setNewPoll(p => ({ ...p, options: p.options.map((o, j) => j === i ? e.target.value : o) }))}
-                        placeholder={t('facilitate.option_placeholder', { number: i + 1 })}
-                      />
-                      {newPoll.options.length > 2 && (
-                        <button
-                          onClick={() => setNewPoll(p => ({ ...p, options: p.options.filter((_, j) => j !== i) }))}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-red)', fontSize: '1rem', padding: '4px' }}
-                        >✕</button>
-                      )}
-                    </div>
-                  ))}
-                  {newPoll.options.length < 4 && (
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <input
-                        className="input"
-                        value={customOption}
-                        onChange={e => setCustomOption(e.target.value)}
-                        placeholder={t('facilitate.new_option_placeholder')}
-                        onKeyDown={e => { if (e.key === 'Enter' && customOption.trim()) { setNewPoll(p => ({ ...p, options: [...p.options, customOption.trim()] })); setCustomOption('') }}}
-                      />
-                      <button
-                        className="btn-secondary"
-                        style={{ padding: '8px 14px', whiteSpace: 'nowrap' }}
-                        onClick={() => { if (customOption.trim()) { setNewPoll(p => ({ ...p, options: [...p.options, customOption.trim()] })); setCustomOption('') }}}
-                      >+ {t('common.add')}</button>
-                    </div>
-                  )}
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    {[
-                      { label: t('facilitate.preset_voor_tegen'), options: [t('facilitate.preset_voor'), t('facilitate.preset_tegen'), t('facilitate.preset_onthouding')] },
-                      { label: t('facilitate.preset_ja_nee'), options: [t('facilitate.preset_ja'), t('facilitate.preset_nee')] },
-                    ].map((preset, i) => (
-                      <button
-                        key={i}
-                        className="btn-secondary"
-                        style={{ fontSize: '0.75rem', padding: '4px 10px' }}
-                        onClick={() => setNewPoll(p => ({ ...p, options: preset.options }))}
-                      >
-                        {preset.label}
-                      </button>
-                    ))}
+            </Heading>
+          </div>
+          <div className={styles.pollModalFields}>
+            <div className={styles.fieldBlock}>
+              <Label>{t('facilitate.motion_text_label')}</Label>
+              <Textarea
+                rows={3}
+                value={newPoll.title}
+                onChange={e => setNewPoll(p => ({ ...p, title: e.target.value }))}
+                placeholder={t('facilitate.motion_text_placeholder')}
+              />
+            </div>
+            <div className={styles.fieldBlock}>
+              <Label>{t('facilitate.vote_options_label')}</Label>
+              <div className={styles.optionsList}>
+                {newPoll.options.map((opt, i) => (
+                  <div key={i} className={styles.optionInputRow}>
+                    <Input
+                      value={opt}
+                      onChange={e => setNewPoll(p => ({ ...p, options: p.options.map((o, j) => j === i ? e.target.value : o) }))}
+                      placeholder={t('facilitate.option_placeholder', { number: i + 1 })}
+                    />
+                    {newPoll.options.length > 2 && (
+                      <Button
+                        variant="secondary"
+                        className={styles.removeOptBtn}
+                        onClick={() => setNewPoll(p => ({ ...p, options: p.options.filter((_, j) => j !== i) }))}
+                      >✕</Button>
+                    )}
                   </div>
+                ))}
+                {newPoll.options.length < 4 && (
+                  <div className={styles.addOptRow}>
+                    <Input
+                      value={customOption}
+                      onChange={e => setCustomOption(e.target.value)}
+                      placeholder={t('facilitate.new_option_placeholder')}
+                      onKeyDown={e => { if (e.key === 'Enter' && customOption.trim()) { setNewPoll(p => ({ ...p, options: [...p.options, customOption.trim()] })); setCustomOption('') }}}
+                    />
+                    <Button
+                      variant="secondary"
+                      className={styles.addOptBtn}
+                      onClick={() => { if (customOption.trim()) { setNewPoll(p => ({ ...p, options: [...p.options, customOption.trim()] })); setCustomOption('') }}}
+                    >+ {t('common.add')}</Button>
+                  </div>
+                )}
+                <div className={styles.presetRow}>
+                  {[
+                    { label: t('facilitate.preset_voor_tegen'), options: [t('facilitate.preset_voor'), t('facilitate.preset_tegen'), t('facilitate.preset_onthouding')] },
+                    { label: t('facilitate.preset_ja_nee'), options: [t('facilitate.preset_ja'), t('facilitate.preset_nee')] },
+                  ].map((preset, i) => (
+                    <Button
+                      key={i}
+                      variant="secondary"
+                      className={styles.presetBtn}
+                      onClick={() => setNewPoll(p => ({ ...p, options: preset.options }))}
+                    >
+                      {preset.label}
+                    </Button>
+                  ))}
                 </div>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button className="btn-primary" onClick={handleSaveNewPoll} disabled={!newPoll.title.trim() || newPoll.options.filter(o => o.trim()).length < 2}>
-                {editingPoll ? t('common.save') : t('facilitate.create_poll')}
-              </button>
-              <button className="btn-secondary" onClick={() => { setShowAddPollModal(false); setEditingPoll(null) }}>{t('common.cancel')}</button>
-            </div>
           </div>
-        </div>
+          <div className={styles.modalActions}>
+            <Button variant="primary" onClick={handleSaveNewPoll} disabled={!newPoll.title.trim() || newPoll.options.filter(o => o.trim()).length < 2}>
+              {editingPoll ? t('common.save') : t('facilitate.create_poll')}
+            </Button>
+            <Button variant="secondary" onClick={() => { setShowAddPollModal(false); setEditingPoll(null) }}>{t('common.cancel')}</Button>
+          </div>
+        </Modal>
       )}
     </div>
   )
@@ -885,80 +866,61 @@ function PollCard({ poll, idx, activePoll, attendeeCount, canStart, onStart, onC
 
   return (
     <div
+      className={styles.pollCard}
       style={{
-        position: 'relative',
         border: `2px solid ${isActive ? 'var(--color-terracotta)' : 'var(--color-sand)'}`,
-        borderRadius: 10,
-        padding: 18,
         paddingLeft: isDraggable ? 28 : 18,
         background: isActive ? 'rgba(196,98,45,0.03)' : 'white',
-        transition: 'all 0.2s',
       }}
     >
       {isDraggable && (
-        <div style={{
-          position: 'absolute', left: 6, top: '50%', transform: 'translateY(-50%)',
-          color: 'var(--color-charcoal-light)', fontSize: '1rem', lineHeight: 1,
-          cursor: 'grab', userSelect: 'none', opacity: 0.4,
-        }}>
-          ⠿
-        </div>
+        <div className={styles.pollDragHandle}>⠿</div>
       )}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-charcoal-light)' }}>
+      <div className={styles.pollHeader}>
+        <div className={styles.pollInfo}>
+          <div className={styles.pollNumRow}>
+            <span className={styles.pollNum}>
               {t('facilitate.poll_number', { number: idx + 1 })}
             </span>
-            {poll.status === 'active' && <span className="badge badge-orange animate-pulse-soft">{t('facilitate.poll_live')}</span>}
-            {poll.status === 'closed' && <span className="badge badge-gray">{t('facilitate.poll_closed_badge')}</span>}
-            {poll.status === 'prepared' && <span className="badge badge-gray">{t('facilitate.poll_queue')}</span>}
+            {poll.status === 'active' && <Badge variant="orange" className="animate-pulse-soft">{t('facilitate.poll_live')}</Badge>}
+            {poll.status === 'closed' && <Badge variant="gray">{t('facilitate.poll_closed_badge')}</Badge>}
+            {poll.status === 'prepared' && <Badge variant="gray">{t('facilitate.poll_queue')}</Badge>}
           </div>
-          <p style={{ margin: 0, fontSize: '0.92rem', color: 'var(--color-charcoal)', lineHeight: 1.5 }}>
-            {poll.title}
-          </p>
-          <div style={{ marginTop: 6, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <p className={styles.pollTitle}>{poll.title}</p>
+          <div className={styles.pollOpts}>
             {poll.options.map(o => (
-              <span key={o} style={{ padding: '2px 8px', background: 'var(--color-sand)', borderRadius: 4, fontSize: '0.75rem', color: 'var(--color-charcoal-light)' }}>{o}</span>
+              <span key={o} className={styles.pollOptPill}>{o}</span>
             ))}
           </div>
         </div>
         {poll.status === 'prepared' && phase !== 'archived' && (
-          <div style={{ display: 'flex', gap: 6 }}>
-            <button onClick={onEdit} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--color-charcoal-light)', padding: '4px 6px' }}>✏️</button>
-            <button onClick={onDelete} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--color-red)', padding: '4px 6px' }}>🗑️</button>
+          <div className={styles.pollCardBtns}>
+            <Button variant="secondary" className={styles.pollEditBtn} onClick={onEdit}>✏️</Button>
+            <Button variant="secondary" className={styles.pollDeleteBtn} onClick={onDelete}>🗑️</Button>
           </div>
         )}
       </div>
 
       {/* Active poll live counter */}
       {poll.status === 'active' && (
-        <div style={{ marginBottom: 12 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-            <span style={{ fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>
+        <div className={styles.pollLiveCounter}>
+          <div className={styles.voteStats}>
+            <span className={styles.voteCountText}>
               {t('facilitate.votes_of', { count: voteCount, total: attendeeCount })}
             </span>
-            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--color-terracotta)' }}>{pct}%</span>
+            <span className={styles.votePct}>{pct}%</span>
           </div>
-          <div className="progress-bar">
-            <div className="progress-bar-fill" style={{ width: `${pct}%` }} />
-          </div>
+          <ProgressBar value={pct} />
         </div>
       )}
 
       {/* Closed result */}
       {poll.status === 'closed' && poll.result && (
-        <div style={{ marginBottom: 12 }}>
-          <div style={{ marginBottom: 8 }}>
-            <span
-              style={{ display: 'none' }}
-            >
-            </span>
-          </div>
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+        <div className={styles.pollResult}>
+          <div className={styles.tallyRow}>
             {Object.entries(poll.result.tally).map(([option, count]) => (
-              <span key={option} style={{ fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>
-                {option}: <strong style={{ color: 'var(--color-charcoal)' }}>{count}</strong>
+              <span key={option} className={styles.tallyItem}>
+                {option}: <strong className={styles.tallyCount}>{count}</strong>
               </span>
             ))}
           </div>
@@ -966,36 +928,36 @@ function PollCard({ poll, idx, activePoll, attendeeCount, canStart, onStart, onC
       )}
 
       {/* Actions */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      <div className={styles.pollActions}>
         {canStart && (
-          <button className="btn-primary" style={{ fontSize: '0.82rem', padding: '7px 14px' }} onClick={onStart}>
+          <Button variant="primary" className={styles.btnPollAction} onClick={onStart}>
             {t('facilitate.start_poll')}
-          </button>
+          </Button>
         )}
         {isActive && (
           <>
             {confirmClosePollId === poll.id ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: '0.82rem', color: 'var(--color-charcoal)' }}>{t('common.confirm_question')}</span>
-                <button className="btn-danger" style={{ fontSize: '0.82rem', padding: '5px 12px' }} onClick={() => { setConfirmClosePollId(null); onClose() }}>
+              <div className={styles.pollConfirmRow}>
+                <span className={styles.confirmText}>{t('common.confirm_question')}</span>
+                <Button variant="danger" className={styles.btnSm} onClick={() => { setConfirmClosePollId(null); onClose() }}>
                   {t('common.yes')}
-                </button>
-                <button className="btn-secondary" style={{ fontSize: '0.82rem', padding: '5px 12px' }} onClick={() => setConfirmClosePollId(null)}>
+                </Button>
+                <Button variant="secondary" className={styles.btnSm} onClick={() => setConfirmClosePollId(null)}>
                   {t('common.cancel')}
-                </button>
+                </Button>
               </div>
             ) : (
-              <button className="btn-danger" style={{ fontSize: '0.82rem', padding: '7px 14px' }} onClick={() => setConfirmClosePollId(poll.id)}>
+              <Button variant="danger" className={styles.btnPollAction} onClick={() => setConfirmClosePollId(poll.id)}>
                 {t('facilitate.close_poll')}
-              </button>
+              </Button>
             )}
-            <button className="btn-secondary" style={{ fontSize: '0.82rem', padding: '7px 14px' }} onClick={onManualVote}>
+            <Button variant="secondary" className={styles.btnPollAction} onClick={onManualVote}>
               {t('facilitate.add_vote')}
-            </button>
+            </Button>
           </>
         )}
         {!canStart && poll.status === 'prepared' && !activePoll && phase === 'in_session' && (
-          <span style={{ fontSize: '0.8rem', color: 'var(--color-charcoal-light)', padding: '7px 0' }}>
+          <span className={styles.pollWaitText}>
             {t('facilitate.wait_for_poll')}
           </span>
         )}
@@ -1007,8 +969,8 @@ function PollCard({ poll, idx, activePoll, attendeeCount, canStart, onStart, onC
 function LoadingScreen() {
   const { t } = useTranslation()
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-cream)', color: 'var(--color-charcoal-light)' }}>
-      {t('common.loading')}
+    <div className={styles.loadingScreen}>
+      <Loading>{t('common.loading')}</Loading>
     </div>
   )
 }
