@@ -14,4 +14,4 @@
   gap: var(--space-16);
 }
 
-.backLink { color: #2563EB; }
+.backLink { color: var(--color-charcoal); }

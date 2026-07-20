@@ -162,6 +162,13 @@
   padding-top: 14px;
 }
 
+/* AgendaHtml wrapper — replaces inline style={{ marginTop, fontSize, lineHeight }} */
+.agendaHtml {
+  margin-top: 10px;
+  font-size: 0.83rem;
+  line-height: 1.7;
+}
+
 /* Ghost button — strips all btn-* visual decoration */
 .ghostBtn {
   background: none !important;

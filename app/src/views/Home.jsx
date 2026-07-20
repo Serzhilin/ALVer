@@ -326,7 +326,9 @@ export default function Home() {
                       <span>{t('common.agenda')}</span>
                     </Button>
                     {agendaOpen && (
-                      <AgendaHtml html={agenda} style={{ marginTop: 10, fontSize: '0.83rem', lineHeight: 1.7 }} />
+                      <div className={styles.agendaHtml}>
+                        <AgendaHtml html={agenda} />
+                      </div>
                     )}
                   </div>
                 )}

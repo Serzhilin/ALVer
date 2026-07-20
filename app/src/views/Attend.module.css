@@ -123,6 +123,7 @@
   padding: var(--space-12) var(--space-16);
   background: rgba(196, 98, 45, 0.08);
   border: 1px solid rgba(196, 98, 45, 0.2);
+  border-radius: 10px;
 }
 
 .aspirantText {
@@ -136,6 +137,7 @@
   padding: var(--space-12) var(--space-16);
   background: rgba(45, 98, 196, 0.06);
   border: 1.5px solid rgba(45, 98, 196, 0.2);
+  border-radius: 10px;
 }
 
 .mandateText {
@@ -337,6 +339,7 @@
   padding: var(--space-16) var(--space-20);
   background: rgba(45, 122, 74, 0.08);
   border: 2px solid rgba(45, 122, 74, 0.3);
+  border-radius: 10px;
 }
 
 .voteCastText {
@@ -350,6 +353,7 @@
   padding: var(--space-16) 18px;
   background: rgba(45, 98, 196, 0.05);
   border: 1.5px solid rgba(45, 98, 196, 0.2);
+  border-radius: 10px;
 }
 
 .mandateVoteTitle {
@@ -386,6 +390,7 @@
   padding: var(--space-12) var(--space-16);
   background: rgba(45, 98, 196, 0.05);
   border: 1px solid rgba(45, 98, 196, 0.2);
+  border-radius: 10px;
 }
 
 .mandateVoteDoneText {
@@ -406,12 +411,14 @@
   height: 5px;
   background: var(--color-sand);
   overflow: hidden;
+  border-radius: 3px;
 }
 
 .progressFill {
   height: 100%;
   background: var(--color-terracotta);
   transition: width 0.5s;
+  border-radius: 3px;
 }
 
 .progressLabel {

@@ -1,0 +1,506 @@
+/* Display view – projector/big-screen – ecommons-ui migration */
+
+/* ── Loading state ──────────────────────────────────────────────────────── */
+.displayLoading {
+  min-height: 100vh;
+  background: var(--color-cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Root shell (background + color set inline — runtime-dynamic) ────────── */
+.displayRoot {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3vw;
+  position: relative;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  font-size: 1.2vw;
+}
+
+/* ── Night-mode radial gradient overlay ─────────────────────────────────── */
+.nightOverlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 40%, rgba(196,98,45,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 70%, rgba(212,136,74,0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* ── Greeting flash overlay ─────────────────────────────────────────────── */
+.greetingFlash {
+  position: absolute;
+  inset: 0;
+  background: rgba(196,98,45,0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 10;
+}
+
+.greetingEmoji {
+  font-size: 8vw;
+  margin-bottom: 3vh;
+}
+
+.greetingText {
+  font-size: 6vw;
+  font-family: var(--font-title);
+  font-weight: 600;
+  text-align: center;
+  padding: 0 8vw;
+  line-height: 1.2;
+}
+
+/* ── SSE reconnecting badge ─────────────────────────────────────────────── */
+.reconnectBadge {
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  background: rgba(245,158,11,0.9);
+  color: white;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* ── Bottom-left brand tag ──────────────────────────────────────────────── */
+.brandTag {
+  position: absolute;
+  bottom: 20px;
+  left: 32px;
+  opacity: 0.35;
+}
+
+.brandLogo {
+  height: 28px;
+  object-fit: contain;
+}
+
+/* ── Draft phase: logo only ─────────────────────────────────────────────── */
+.draftLogoWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.draftLogo {
+  height: 20vh;
+  max-width: 40vw;
+  object-fit: contain;
+  opacity: 0.7;
+}
+
+.draftLogoFallback {
+  height: 20vh;
+  max-width: 40vw;
+  object-fit: contain;
+  opacity: 0.4;
+}
+
+/* ── CheckinDisplay ─────────────────────────────────────────────────────── */
+
+.checkinRoot {
+  width: 90vw;
+  display: flex;
+  flex-direction: column;
+  gap: 4vh;
+}
+
+.checkinLogoRow {
+  display: flex;
+  justify-content: center;
+}
+
+.checkinLogo {
+  height: 8vh;
+  max-width: 25vw;
+  object-fit: contain;
+}
+
+.checkinLogoFallback {
+  height: 8vh;
+  max-width: 25vw;
+  object-fit: contain;
+  opacity: 0.8;
+}
+
+.checkinCols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5vw;
+  align-items: start;
+}
+
+.checkinLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4vh;
+}
+
+.checkinQrOuter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2vh;
+}
+
+.checkinQrFrame {
+  background: white;
+  padding: 2vw;
+}
+
+.checkinQrImg {
+  display: block;
+  width: 18vw;
+  height: 18vw;
+}
+
+.checkinQrPlaceholder {
+  width: 18vw;
+  height: 18vw;
+  background: rgba(0,0,0,0.04);
+}
+
+.checkinScanText {
+  font-size: 1.4vw;
+  margin: 0;
+  text-align: center;
+}
+
+.checkinStats {
+  display: flex;
+  gap: 3vw;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.statDivider {
+  width: 1px;
+  align-self: stretch;
+}
+
+.checkinRight {
+  display: flex;
+  flex-direction: column;
+  gap: 3vh;
+}
+
+.checkinTitle {
+  font-family: var(--font-title);
+  font-size: 3.5vw;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.checkinMetaList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5vh;
+}
+
+.checkinMetaRow {
+  display: flex;
+  gap: 1vw;
+  align-items: center;
+  font-size: 1.6vw;
+}
+
+.checkinAgendaSection {
+  padding-top: 2vh;
+}
+
+.checkinAgendaLabel {
+  font-size: 1vw;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1.5vh;
+}
+
+.checkinAgendaHtml {
+  font-size: 1.4vw;
+  line-height: 1.9;
+}
+
+/* ── Stat sub-component ─────────────────────────────────────────────────── */
+
+.stat {
+  text-align: center;
+}
+
+.statValue {
+  font-size: 5vw;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 1.2vw;
+  margin-top: 0.8vh;
+}
+
+/* ── VotingDisplay ──────────────────────────────────────────────────────── */
+
+.votingRoot {
+  width: 70vw;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.4s ease;
+}
+
+.votingLogoRow {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 3vh;
+}
+
+.votingLogo {
+  height: 7vh;
+  max-width: 20vw;
+  object-fit: contain;
+}
+
+.votingLogoFallback {
+  height: 7vh;
+  max-width: 20vw;
+  object-fit: contain;
+  opacity: 0.7;
+}
+
+.votingTitle {
+  font-family: var(--font-title);
+  font-size: 3.5vw;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0 0 3vh;
+  text-align: center;
+}
+
+.votingProgressSection {
+  margin-bottom: 4vh;
+}
+
+.votingProgressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1vh;
+}
+
+.votingCountMain {
+  font-size: 2vw;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.votingCountSub {
+  font-size: 1.2vw;
+  font-weight: 400;
+}
+
+.votingPct {
+  font-size: 1.2vw;
+}
+
+.votingTrack {
+  height: 0.8vh;
+  overflow: hidden;
+}
+
+.votingFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-terracotta), var(--color-amber));
+  transition: width 0.5s ease;
+}
+
+.votingChartArea {
+  width: 100%;
+}
+
+.votingNumbersGrid {
+  display: flex;
+  gap: 2vw;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.votingNumberCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5vh;
+  padding: 3vh 4vw;
+  min-width: 10vw;
+}
+
+.votingNumberCount {
+  font-size: 6vw;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.votingNumberOpt {
+  font-size: 1.5vw;
+}
+
+/* ── ResultDisplay ──────────────────────────────────────────────────────── */
+
+.resultRoot {
+  width: 80vw;
+}
+
+.resultHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 4vh;
+  gap: 2vw;
+}
+
+.resultLogoWrap {
+  flex-shrink: 0;
+}
+
+.resultLogo {
+  height: 6vh;
+  max-width: 15vw;
+  object-fit: contain;
+}
+
+.resultLogoFallback {
+  height: 6vh;
+  max-width: 15vw;
+  object-fit: contain;
+  opacity: 0.7;
+}
+
+.resultTitle {
+  margin: 0;
+  font-size: 1.4vw;
+  flex: 1;
+  text-align: center;
+}
+
+.resultSpacer {
+  width: 15vw;
+  flex-shrink: 0;
+}
+
+.resultTally {
+  display: flex;
+  justify-content: center;
+  gap: 5vw;
+  flex-wrap: wrap;
+}
+
+.resultTallyItem {
+  text-align: center;
+}
+
+.resultTallyCount {
+  font-size: 7vw;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.resultTallyOpt {
+  font-size: 1.5vw;
+  margin-top: 1vh;
+}
+
+/* ── BetweenItems ───────────────────────────────────────────────────────── */
+
+.betweenRoot {
+  text-align: center;
+  width: 60vw;
+}
+
+.betweenLogoRow {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 3vh;
+}
+
+.betweenLogo {
+  height: 7vh;
+  max-width: 20vw;
+  object-fit: contain;
+}
+
+.betweenMeetingName {
+  font-size: 1.2vw;
+  margin-bottom: 2vh;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.betweenTitle {
+  font-family: var(--font-title);
+  font-size: 4vw;
+  margin: 0 0 5vh;
+}
+
+.betweenStats {
+  display: flex;
+  justify-content: center;
+  gap: 4vw;
+}
+
+.betweenStatValue {
+  font-size: 5vw;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.betweenStatLabel {
+  font-size: 1.2vw;
+  margin-top: 1vh;
+}
+
+/* ── ClosedDisplay ──────────────────────────────────────────────────────── */
+
+.closedRoot {
+  text-align: center;
+  width: 60vw;
+}
+
+.closedTitle {
+  font-family: var(--font-title);
+  font-size: 3.5vw;
+  margin: 0 0 1vh;
+}
+
+.closedSubtitle {
+  margin: 0 0 4vh;
+  font-size: 1.4vw;
+}
+
+.closedPollsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.closedPollRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+}
+
+.closedPollRowTitle {
+  font-size: 0.9rem;
+  text-align: left;
+  flex: 1;
+}

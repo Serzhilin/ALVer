@@ -9,6 +9,8 @@ import VoteBar     from '../components/charts/VoteBar'
 import VotePie     from '../components/charts/VotePie'
 import VoteBubbles from '../components/charts/VoteBubbles'
 import { CHART_COLORS_NIGHT, CHART_COLORS_DAY } from '../components/charts/chartUtils'
+import { Loading } from '@ecommons/ui'
+import styles from './Display.module.css'
 
 export default function Display() {
   const { id } = useParams()
@@ -58,7 +60,11 @@ export default function Display() {
     prevActivePoll.current = activePoll?.id
   }, [activePoll])
 
-  if (!meeting) return <div style={{ minHeight: '100vh', background: 'var(--color-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-charcoal-light)' }}>{t('common.loading')}</div>
+  if (!meeting) return (
+    <div className={styles.displayLoading}>
+      <Loading>{t('common.loading')}</Loading>
+    </div>
+  )
 
   const phase = meeting.phase
   const isCheckin = phase === 'open'
@@ -67,8 +73,8 @@ export default function Display() {
 
   const isDark = screenTheme === 'night'
   const theme = isDark
-    ? { bg: '#1A1612', text: 'white', muted: 'rgba(255,255,255,0.5)' }
-    : { bg: 'var(--color-cream)', text: 'var(--color-charcoal)', muted: 'rgba(44,42,39,0.45)' }
+    ? { bg: '#1A1612', text: 'white' }
+    : { bg: 'var(--color-cream)', text: 'var(--color-charcoal)' }
 
   const chartColors = isDark ? CHART_COLORS_NIGHT : CHART_COLORS_DAY
 
@@ -77,44 +83,15 @@ export default function Display() {
   const lastClosedPoll = closedPolls[closedPolls.length - 1]
 
   return (
-    <div style={{
-      width: '100vw',
-      height: '100vh',
-      background: theme.bg,
-      color: theme.text,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '3vw',
-      position: 'relative',
-      overflow: 'hidden',
-      fontFamily: 'Inter, sans-serif',
-      fontSize: '1.2vw',
-    }}>
+    <div className={styles.displayRoot} style={{ background: theme.bg, color: theme.text }}>
       {/* Background texture — night mode only */}
-      {isDark && <div style={{
-        position: 'absolute', inset: 0,
-        background: 'radial-gradient(ellipse at 30% 40%, rgba(196,98,45,0.08) 0%, transparent 60%), radial-gradient(ellipse at 70% 70%, rgba(212,136,74,0.05) 0%, transparent 50%)',
-        pointerEvents: 'none',
-      }} />}
+      {isDark && <div className={styles.nightOverlay} />}
 
       {/* Greeting flash */}
       {showGreeting && greeting && (
-        <div
-          className="greeting-flash"
-          style={{
-            position: 'absolute', inset: 0,
-            background: 'rgba(196,98,45,0.95)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexDirection: 'column',
-            zIndex: 10,
-          }}
-        >
-          <div style={{ fontSize: '8vw', marginBottom: '3vh' }}>👋</div>
-          <div style={{ fontSize: '6vw', fontFamily: 'var(--font-title)', fontWeight: 600, textAlign: 'center', padding: '0 8vw', lineHeight: 1.2 }}>
-            {greeting}
-          </div>
+        <div className={styles.greetingFlash}>
+          <div className={styles.greetingEmoji}>👋</div>
+          <div className={styles.greetingText}>{greeting}</div>
         </div>
       )}
 
@@ -140,10 +117,10 @@ export default function Display() {
 
       {/* Draft — just the logo */}
       {phase === 'draft' && !showGreeting && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className={styles.draftLogoWrapper}>
           {community?.logo_url
-            ? <img src={community.logo_url} alt="logo" style={{ height: '20vh', maxWidth: '40vw', objectFit: 'contain', opacity: 0.7 }} />
-            : <img src="/logo.png" alt="ALVer" style={{ height: '20vh', maxWidth: '40vw', objectFit: 'contain', opacity: 0.4 }} />
+            ? <img src={community.logo_url} alt="logo" className={styles.draftLogo} />
+            : <img src="/logo.png" alt="ALVer" className={styles.draftLogoFallback} />
           }
         </div>
       )}
@@ -155,14 +132,14 @@ export default function Display() {
 
       {/* SSE reconnection indicator */}
       {!sseConnected && (
-        <div style={{ position: 'absolute', top: 16, right: 24, background: 'rgba(245,158,11,0.9)', color: 'white', borderRadius: 6, padding: '4px 12px', fontSize: '0.75rem', fontWeight: 500 }}>
+        <div className={styles.reconnectBadge}>
           {t('common.reconnecting')}
         </div>
       )}
 
       {/* Bottom left brand tag */}
-      <div style={{ position: 'absolute', bottom: 20, left: 32, opacity: 0.35 }}>
-        <img src="/logo.png" alt="ALVer" style={{ height: 28, objectFit: 'contain' }} />
+      <div className={styles.brandTag}>
+        <img src="/logo.png" alt="ALVer" className={styles.brandLogo} />
       </div>
     </div>
   )
@@ -211,68 +188,70 @@ function CheckinDisplay({ meeting, attendeeCount, community, meetingId, communit
   const expectedCount = (meeting.preRegistrations || []).length
 
   return (
-    <div style={{ width: '90vw', display: 'flex', flexDirection: 'column', gap: '4vh' }}>
+    <div className={styles.checkinRoot}>
       {/* Logo */}
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
+      <div className={styles.checkinLogoRow}>
         {community?.logo_url
-          ? <img src={community.logo_url} alt="logo" style={{ height: '8vh', maxWidth: '25vw', objectFit: 'contain' }} />
-          : <img src="/logo.png" alt="ALVer" style={{ height: '8vh', maxWidth: '25vw', objectFit: 'contain', opacity: 0.8 }} />
+          ? <img src={community.logo_url} alt="logo" className={styles.checkinLogo} />
+          : <img src="/logo.png" alt="ALVer" className={styles.checkinLogoFallback} />
         }
       </div>
 
       {/* Two columns */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5vw', alignItems: 'start' }}>
+      <div className={styles.checkinCols}>
 
         {/* Left: QR + stats */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4vh' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2vh' }}>
-            <div style={{ background: 'white', padding: '2vw', borderRadius: 16, boxShadow: '0 0 60px rgba(196,98,45,0.25)' }}>
+        <div className={styles.checkinLeft}>
+          <div className={styles.checkinQrOuter}>
+            <div className={styles.checkinQrFrame}>
               {qrDataUrl
-                ? <img src={qrDataUrl} alt="QR check-in" style={{ display: 'block', width: '18vw', height: '18vw' }} />
-                : <div style={{ width: '18vw', height: '18vw', background: 'rgba(0,0,0,0.04)', borderRadius: 4 }} />
+                ? <img src={qrDataUrl} alt="QR check-in" className={styles.checkinQrImg} />
+                : <div className={styles.checkinQrPlaceholder} />
               }
             </div>
-            <p style={{ color: c.faint, fontSize: '1.4vw', margin: 0, textAlign: 'center' }}>
+            <p className={styles.checkinScanText} style={{ color: c.faint }}>
               {t('display.scan_checkin')}
             </p>
           </div>
 
           {/* Stats */}
-          <div style={{ display: 'flex', gap: '3vw', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div className={styles.checkinStats}>
             <Stat value={expectedCount} label={t('facilitate.expected')} color={c.statDim} labelColor={c.statLabel} />
-            <div style={{ width: 1, background: c.divider }} />
+            <div className={styles.statDivider} style={{ background: c.divider }} />
             <Stat value={meeting.checkedIn.length} label={t('display.present')} color="var(--color-terracotta)" labelColor={c.statLabel} />
-            <div style={{ width: 1, background: c.divider }} />
+            <div className={styles.statDivider} style={{ background: c.divider }} />
             <Stat value={meeting.confirmedMandates.length} label={t('display.mandates')} color={c.statMain} labelColor={c.statLabel} />
           </div>
         </div>
 
         {/* Right: event info */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '3vh' }}>
-          <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '3.5vw', color: c.title, margin: 0, lineHeight: 1.2 }}>
+        <div className={styles.checkinRight}>
+          <h1 className={styles.checkinTitle} style={{ color: c.title }}>
             {meeting.name}
           </h1>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5vh' }}>
+          <div className={styles.checkinMetaList}>
             {dateStr && (
-              <div style={{ display: 'flex', gap: '1vw', alignItems: 'center', color: c.meta, fontSize: '1.6vw' }}>
+              <div className={styles.checkinMetaRow} style={{ color: c.meta }}>
                 <span>📅</span><span>{dateStr}</span>
               </div>
             )}
-            <div style={{ display: 'flex', gap: '1vw', alignItems: 'center', color: c.meta, fontSize: '1.6vw' }}>
+            <div className={styles.checkinMetaRow} style={{ color: c.meta }}>
               <span>🕐</span><span>{meeting.time}{meeting.end_time ? ` – ${meeting.end_time}` : ''}</span>
             </div>
-            <div style={{ display: 'flex', gap: '1vw', alignItems: 'center', color: c.meta, fontSize: '1.6vw' }}>
+            <div className={styles.checkinMetaRow} style={{ color: c.meta }}>
               <span>📍</span><span>{meeting.location}</span>
             </div>
           </div>
 
           {meeting.agenda && (
-            <div style={{ borderTop: `1px solid ${c.divider}`, paddingTop: '2vh' }}>
-              <div style={{ fontSize: '1vw', fontWeight: 600, color: c.muted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1.5vh' }}>
+            <div className={styles.checkinAgendaSection} style={{ borderTop: `1px solid ${c.divider}` }}>
+              <div className={styles.checkinAgendaLabel} style={{ color: c.muted }}>
                 {t('common.agenda')}
               </div>
-              <AgendaHtml html={meeting.agenda} style={{ fontSize: '1.4vw', color: c.agendaText, lineHeight: 1.9 }} />
+              <div className={styles.checkinAgendaHtml} style={{ color: c.agendaText }}>
+                <AgendaHtml html={meeting.agenda} />
+              </div>
             </div>
           )}
         </div>
@@ -283,9 +262,9 @@ function CheckinDisplay({ meeting, attendeeCount, community, meetingId, communit
 
 function Stat({ value, label, color, labelColor }) {
   return (
-    <div style={{ textAlign: 'center' }}>
-      <div style={{ fontSize: '5vw', fontWeight: 700, color, lineHeight: 1 }}>{value}</div>
-      <div style={{ color: labelColor, fontSize: '1.2vw', marginTop: '0.8vh' }}>{label}</div>
+    <div className={styles.stat}>
+      <div className={styles.statValue} style={{ color }}>{value}</div>
+      <div className={styles.statLabel} style={{ color: labelColor }}>{label}</div>
     </div>
   )
 }
@@ -299,47 +278,38 @@ function VotingDisplay({ poll, attendeeCount, displayMode, community, chartColor
   const trackColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(44,42,39,0.12)'
 
   return (
-    <div style={{ width: '70vw', display: 'flex', flexDirection: 'column', gap: 0, animation: 'slideIn 0.4s ease' }}>
+    <div className={styles.votingRoot}>
       {/* Logo — centered, top */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '3vh' }}>
+      <div className={styles.votingLogoRow}>
         {community?.logo_url
-          ? <img src={community.logo_url} alt="logo" style={{ height: '7vh', maxWidth: '20vw', objectFit: 'contain' }} />
-          : <img src="/logo.png" alt="ALVer" style={{ height: '7vh', maxWidth: '20vw', objectFit: 'contain', opacity: 0.7 }} />
+          ? <img src={community.logo_url} alt="logo" className={styles.votingLogo} />
+          : <img src="/logo.png" alt="ALVer" className={styles.votingLogoFallback} />
         }
       </div>
 
       {/* Poll title */}
-      <h1 style={{
-        fontFamily: 'var(--font-title)',
-        fontSize: '3.5vw',
-        fontWeight: 600,
-        color: textColor,
-        lineHeight: 1.2,
-        margin: '0 0 3vh',
-        textAlign: 'center',
-      }}>
+      <h1 className={styles.votingTitle} style={{ color: textColor }}>
         {poll.title}
       </h1>
 
       {/* Vote count + progress bar */}
-      <div style={{ marginBottom: '4vh' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1vh' }}>
-          <div style={{ fontSize: '2vw', fontWeight: 700, color: textColor, lineHeight: 1 }}>
-            {totalVotes} <span style={{ fontSize: '1.2vw', color: mutedColor, fontWeight: 400 }}>{t('display.of_total', { total: attendeeCount })}</span>
+      <div className={styles.votingProgressSection}>
+        <div className={styles.votingProgressHeader}>
+          <div className={styles.votingCountMain} style={{ color: textColor }}>
+            {totalVotes}{' '}
+            <span className={styles.votingCountSub} style={{ color: mutedColor }}>
+              {t('display.of_total', { total: attendeeCount })}
+            </span>
           </div>
-          <div style={{ color: mutedColor, fontSize: '1.2vw' }}>{pct}%</div>
+          <div className={styles.votingPct} style={{ color: mutedColor }}>{pct}%</div>
         </div>
-        <div style={{ height: '0.8vh', background: trackColor, borderRadius: 4, overflow: 'hidden' }}>
-          <div style={{
-            height: '100%', borderRadius: 4,
-            background: 'linear-gradient(90deg, var(--color-terracotta), var(--color-amber))',
-            width: `${pct}%`, transition: 'width 0.5s ease',
-          }} />
+        <div className={styles.votingTrack} style={{ background: trackColor }}>
+          <div className={styles.votingFill} style={{ width: `${pct}%` }} />
         </div>
       </div>
 
       {/* Chart area — full width of container */}
-      <div style={{ width: '100%' }}>
+      <div className={styles.votingChartArea}>
         {displayMode === 'bars'    && <VoteBar     poll={poll} colors={chartColors} isDark={isDark} />}
         {displayMode === 'pie'     && <VotePie     poll={poll} colors={chartColors} isDark={isDark} />}
         {displayMode === 'bubbles' && <VoteBubbles poll={poll} colors={chartColors} isDark={isDark} />}
@@ -349,19 +319,16 @@ function VotingDisplay({ poll, attendeeCount, displayMode, community, chartColor
             const idx = poll._optionIds?.indexOf(optionId)
             if (idx != null && idx !== -1) tally[poll.options[idx]]++
           }
+          const textClr = isDark ? 'white' : 'black'
           return (
-            <div style={{ display: 'flex', gap: '2vw', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <div className={styles.votingNumbersGrid}>
               {poll.options.map((opt, i) => (
-                <div key={opt} style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5vh',
-                  padding: '3vh 4vw', borderRadius: 16,
-                  background: chartColors[i] ?? chartColors[chartColors.length - 1],
-                  minWidth: '10vw',
-                }}>
-                  <span style={{ fontSize: '6vw', fontWeight: 700, color: isDark ? 'white' : 'black', lineHeight: 1 }}>
+                <div key={opt} className={styles.votingNumberCard}
+                  style={{ background: chartColors[i] ?? chartColors[chartColors.length - 1] }}>
+                  <span className={styles.votingNumberCount} style={{ color: textClr }}>
                     {tally[opt]}
                   </span>
-                  <span style={{ fontSize: '1.5vw', color: isDark ? 'white' : 'black' }}>
+                  <span className={styles.votingNumberOpt} style={{ color: textClr }}>
                     {opt}
                   </span>
                 </div>
@@ -386,25 +353,25 @@ function ResultDisplay({ poll, community, isDark }) {
   }, [])
 
   return (
-    <div style={{ width: '80vw' }}>
+    <div className={styles.resultRoot}>
       {/* Header row */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 0 4vh', gap: '2vw' }}>
-        <div style={{ flexShrink: 0 }}>
+      <div className={styles.resultHeaderRow}>
+        <div className={styles.resultLogoWrap}>
           {community?.logo_url
-            ? <img src={community.logo_url} alt="logo" style={{ height: '6vh', maxWidth: '15vw', objectFit: 'contain' }} />
-            : <img src="/logo.png" alt="ALVer" style={{ height: '6vh', maxWidth: '15vw', objectFit: 'contain', opacity: 0.7 }} />
+            ? <img src={community.logo_url} alt="logo" className={styles.resultLogo} />
+            : <img src="/logo.png" alt="ALVer" className={styles.resultLogoFallback} />
           }
         </div>
-        <p style={{ color: mutedColor, margin: 0, fontSize: '1.4vw', flex: 1, textAlign: 'center' }}>{poll.title}</p>
-        <div style={{ width: '15vw', flexShrink: 0 }} />
+        <p className={styles.resultTitle} style={{ color: mutedColor }}>{poll.title}</p>
+        <div className={styles.resultSpacer} />
       </div>
 
       {showBreakdown && (
-        <div className="animate-fade-in" style={{ display: 'flex', justifyContent: 'center', gap: '5vw', flexWrap: 'wrap' }}>
+        <div className={`animate-fade-in ${styles.resultTally}`}>
           {Object.entries(poll.result.tally).map(([opt, count]) => (
-            <div key={opt} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '7vw', fontWeight: 700, color: textColor, lineHeight: 1 }}>{count}</div>
-              <div style={{ color: mutedColor, fontSize: '1.5vw', marginTop: '1vh' }}>{opt}</div>
+            <div key={opt} className={styles.resultTallyItem}>
+              <div className={styles.resultTallyCount} style={{ color: textColor }}>{count}</div>
+              <div className={styles.resultTallyOpt} style={{ color: mutedColor }}>{opt}</div>
             </div>
           ))}
         </div>
@@ -420,22 +387,22 @@ function BetweenItems({ meeting, attendeeCount, community, isDark }) {
   const amberColor = isDark ? 'var(--color-amber)' : 'var(--color-terracotta)'
 
   return (
-    <div style={{ textAlign: 'center', width: '60vw' }}>
+    <div className={styles.betweenRoot}>
       {community?.logo_url && (
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '3vh' }}>
-          <img src={community.logo_url} alt="logo" style={{ height: '7vh', maxWidth: '20vw', objectFit: 'contain' }} />
+        <div className={styles.betweenLogoRow}>
+          <img src={community.logo_url} alt="logo" className={styles.betweenLogo} />
         </div>
       )}
-      <div style={{ fontSize: '1.2vw', color: mutedColor, marginBottom: '2vh', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+      <div className={styles.betweenMeetingName} style={{ color: mutedColor }}>
         {meeting.name}
       </div>
-      <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '4vw', color: textColor, margin: '0 0 5vh' }}>
+      <h1 className={styles.betweenTitle} style={{ color: textColor }}>
         {t('display.session_ongoing')}
       </h1>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '4vw' }}>
+      <div className={styles.betweenStats}>
         <div>
-          <div style={{ fontSize: '5vw', fontWeight: 700, color: amberColor, lineHeight: 1 }}>{attendeeCount}</div>
-          <div style={{ color: mutedColor, fontSize: '1.2vw', marginTop: '1vh' }}>{t('display.eligible')}</div>
+          <div className={styles.betweenStatValue} style={{ color: amberColor }}>{attendeeCount}</div>
+          <div className={styles.betweenStatLabel} style={{ color: mutedColor }}>{t('display.eligible')}</div>
         </div>
       </div>
     </div>
@@ -451,21 +418,17 @@ function ClosedDisplay({ meeting, isDark }) {
   const closedPolls = meeting.polls.filter(p => p.status === 'closed' && p.result)
 
   return (
-    <div style={{ textAlign: 'center', width: '60vw' }}>
-      <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '3.5vw', color: textColor, margin: '0 0 1vh' }}>
+    <div className={styles.closedRoot}>
+      <h1 className={styles.closedTitle} style={{ color: textColor }}>
         {t('display.meeting_closed')}
       </h1>
-      <p style={{ color: mutedColor, margin: '0 0 4vh', fontSize: '1.4vw' }}>{meeting.name}</p>
+      <p className={styles.closedSubtitle} style={{ color: mutedColor }}>{meeting.name}</p>
       {closedPolls.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div className={styles.closedPollsList}>
           {closedPolls.map(poll => (
-            <div key={poll.id} style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '14px 24px',
-              background: cardBg, borderRadius: 10,
-              border: `1px solid ${cardBorder}`,
-            }}>
-              <span style={{ fontSize: '0.9rem', color: mutedColor, textAlign: 'left', flex: 1 }}>{poll.title}</span>
+            <div key={poll.id} className={styles.closedPollRow}
+              style={{ background: cardBg, border: `1px solid ${cardBorder}` }}>
+              <span className={styles.closedPollRowTitle} style={{ color: mutedColor }}>{poll.title}</span>
             </div>
           ))}
         </div>
