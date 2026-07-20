@@ -508,6 +508,18 @@
   display: flex;
   align-items: center;
   gap: var(--space-6);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+@media (hover: hover) {
+  .upcomingRowOuter:hover .upcomingRowBtns {
+    opacity: 1;
+  }
+}
+@media (hover: none) {
+  .upcomingRowBtns {
+    opacity: 1;
+  }
 }
 
 /* Card with no padding (e.g. meeting rows container) */

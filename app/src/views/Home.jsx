@@ -701,26 +701,20 @@ function CurrentMeetingCard({ meeting: m, navigate, formatDate, onEdit, t, commu
 
 function UpcomingRow({ meeting: m, last, formatDate, onEdit, isFacilitator, navigate, t, communitySlug }) {
   return (
-    <div className={`upcoming-row ${styles.upcomingRowOuter}`} style={{ borderBottom: last ? 'none' : '1px solid var(--color-sand)' }}>
+    <div className={styles.upcomingRowOuter} style={{ borderBottom: last ? 'none' : '1px solid var(--color-sand)' }}>
       <div className={styles.upcomingRowLeft}>
         <div className={styles.upcomingRowName}>{m.name}</div>
         <div className={styles.upcomingRowMeta}>{formatDate(m.date)} · 📍 {m.location}</div>
       </div>
       <div className={styles.upcomingRowBtns}>
         {isFacilitator && (
-          <button
-            className="upcoming-row-btn"
-            onClick={() => navigate(`/${communitySlug}/meeting/${m.id}/facilitate`)}
-          >
+          <Button variant="ghost" onClick={() => navigate(`/${communitySlug}/meeting/${m.id}/facilitate`)}>
             {t('facilitate.facilitate')}
-          </button>
+          </Button>
         )}
-        <button
-          className="upcoming-row-btn"
-          onClick={onEdit}
-        >
+        <Button variant="ghost" onClick={onEdit}>
           {t('common.edit')}
-        </button>
+        </Button>
       </div>
     </div>
   )
