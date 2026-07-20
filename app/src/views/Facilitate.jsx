@@ -243,11 +243,7 @@ export default function Facilitate() {
           <div className={styles.leftCol}>
             <Card className={styles.sideCard}>
               <div className={styles.sectionHeaderRow}>
-                <div className={styles.sectionH3}>
-                  <Heading as="h3" fontSize="0.95rem" fontWeight={600}>
-                    {t('facilitate.attendees')}
-                  </Heading>
-                </div>
+                <h3 className={styles.sectionH3}>{t('facilitate.attendees')}</h3>
               </div>
 
               {/* Pre-registered but not yet checked in */}
@@ -255,7 +251,7 @@ export default function Facilitate() {
                 const pending = meeting.preRegistrations.filter(pr => !meeting.checkedIn.some(c => c.name.toLowerCase() === pr.name.toLowerCase()))
                 if (pending.length === 0) return null
                 return (
-                  <div style={{ marginBottom: 12 }}>
+                  <div className={styles.mb12}>
                     <div className={styles.listLabelRow}>
                       <span>{t('facilitate.expected')}</span>
                       <Badge variant="gray">{pending.length}</Badge>
@@ -272,7 +268,7 @@ export default function Facilitate() {
 
               {/* Declined */}
               {meeting.declines?.length > 0 && (
-                <div style={{ marginBottom: 12 }}>
+                <div className={styles.mb12}>
                   <div className={styles.listLabelRow}>
                     <span>{t('facilitate.declined') || 'Afgemeld'}</span>
                     <Badge variant="gray">{meeting.declines.length}</Badge>
@@ -337,11 +333,7 @@ export default function Facilitate() {
             {/* Mandates */}
             <Card className={styles.sideCard}>
               <div className={styles.sectionHeaderRow}>
-                <div className={styles.sectionH3}>
-                  <Heading as="h3" fontSize="0.95rem" fontWeight={600}>
-                    {t('facilitate.mandates')}
-                  </Heading>
-                </div>
+                <h3 className={styles.sectionH3}>{t('facilitate.mandates')}</h3>
                 <div className={styles.listLabelActions}>
                   <Badge variant="blue">{meeting.confirmedMandates.length}</Badge>
                   <Button variant="secondary" className={styles.addBtn} onClick={() => setShowMandateModal(true)}>+</Button>
@@ -417,11 +409,7 @@ export default function Facilitate() {
                 className={styles.pollsHeaderRow}
                 style={{ marginBottom: meeting.phase !== 'in_session' && meeting.phase !== 'archived' ? 4 : 20 }}
               >
-                <div className={styles.pollsH3}>
-                  <Heading as="h3" fontSize="1rem" fontWeight={600}>
-                    {t('facilitate.polls')}
-                  </Heading>
-                </div>
+                <h3 className={styles.pollsH3}>{t('facilitate.polls')}</h3>
                 {meeting.phase !== 'archived' && (
                   <Button
                     variant="secondary"
@@ -514,7 +502,7 @@ export default function Facilitate() {
               </Button>
               {agendaOpen && (
                 <div className={styles.collapsibleBody}>
-                  <AgendaHtml html={meeting.agenda} style={{ marginTop: 16 }} />
+                  <div className={styles.agendaWrap}><AgendaHtml html={meeting.agenda} /></div>
                 </div>
               )}
             </Card>
@@ -666,7 +654,7 @@ export default function Facilitate() {
               })}
             </div>
           )}
-          <div style={{ marginBottom: 12 }}>
+          <div className={styles.mb12}>
             <Label>{t('facilitate.member_name_optional')}</Label>
             <Select value={manualVoteName} onChange={e => setManualVoteName(e.target.value)}>
               <option value="">— {t('facilitate.member_search_placeholder')}</option>

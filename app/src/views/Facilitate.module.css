@@ -83,6 +83,7 @@
   text-decoration: none;
   display: inline-flex;
   align-items: center;
+  border-radius: 8px;
 }
 
 /* Theme toggle — ghost appearance, overrides btn-secondary */
@@ -151,8 +152,7 @@
   margin-bottom: 14px;
 }
 
-/* Heading wrapper: strip margin from Heading component */
-.sectionH3 h3 {
+.sectionH3 {
   margin: 0;
   font-family: var(--font-sans);
   font-weight: 600;
@@ -347,6 +347,7 @@
   border: 1px solid var(--color-sand, #e8e0d5);
   padding: 6px;
   margin-bottom: 16px;
+  border-radius: 10px;
 }
 
 .vizBarLabel {
@@ -385,7 +386,7 @@
   justify-content: space-between;
 }
 
-.pollsH3 h3 {
+.pollsH3 {
   margin: 0;
   font-family: var(--font-sans);
   font-weight: 600;
@@ -424,6 +425,7 @@
   position: relative;
   padding: 18px;
   transition: all 0.2s;
+  border-radius: 10px;
 }
 
 .pollDragHandle {
@@ -483,6 +485,7 @@
   background: var(--color-sand);
   font-size: 0.75rem;
   color: var(--color-charcoal-light);
+  border-radius: 4px;
 }
 
 .pollCardBtns {
@@ -656,6 +659,10 @@
   color: var(--color-charcoal-light);
 }
 
+/* ── Utility spacing ─────────────────────────────────────────────────────── */
+.mb12 { margin-bottom: 12px; }
+.agendaWrap { margin-top: 16px; }
+
 /* ── Loading screen ───────────────────────────────────────────────────────── */
 .loadingScreen {
   min-height: 100vh;
@@ -710,6 +717,7 @@
   overflow-y: auto;
   border: 1px solid var(--color-sand);
   margin-bottom: 16px;
+  border-radius: 8px;
 }
 
 .memberSearchBox {
@@ -744,6 +752,7 @@
   margin-bottom: 16px;
   border: 1px solid var(--color-sand);
   overflow: hidden;
+  border-radius: 8px;
 }
 
 .castVotesHeader {
@@ -777,6 +786,7 @@
   color: var(--color-charcoal-light);
   background: var(--color-sand);
   padding: 2px 8px;
+  border-radius: 4px;
 }
 
 .deleteVoteBtn {
