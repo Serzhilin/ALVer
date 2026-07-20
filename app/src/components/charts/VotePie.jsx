@@ -60,7 +60,7 @@ export default function VotePie({ poll, colors = CHART_COLORS_NIGHT, isDark = tr
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {entries.map(([label, count], i) => (
           <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: '0.95rem', color: textColor }}>
-            <div style={{ width: 12, height: 12, borderRadius: 3, background: colors[i] ?? colors[colors.length - 1], flexShrink: 0 }} />
+            <div style={{ width: 12, height: 12, borderRadius: 0, background: colors[i] ?? colors[colors.length - 1], flexShrink: 0 }} />
             <span>{label}</span>
             <span style={{ marginLeft: 'auto', fontWeight: 700, color: boldColor, paddingLeft: 16 }}>{count}</span>
           </div>

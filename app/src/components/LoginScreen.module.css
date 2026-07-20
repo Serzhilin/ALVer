@@ -131,7 +131,6 @@
 
 .infoBox {
   background: rgba(0, 0, 0, 0.04);
-  border-radius: 8px;
   padding: var(--space-12) var(--space-16);
   font-size: 0.85rem;
   color: var(--color-charcoal-light);

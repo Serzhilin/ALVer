@@ -165,7 +165,6 @@
   justify-content: center;
   font-weight: 700;
   font-size: 0.95rem;
-  border-radius: 8px;
 }
 
 .tallyLabel {
@@ -198,6 +197,7 @@
   background: none !important;
   border: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
   padding: 0 !important;
   cursor: pointer;
 }
@@ -206,6 +206,7 @@
   transform: none !important;
   background: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
   color: var(--color-charcoal) !important;
 }
 

@@ -12,7 +12,7 @@ function ToolbarBtn({ onClick, active, title, children }) {
       style={{
         background: active ? 'var(--color-terracotta)' : 'transparent',
         color: active ? 'white' : 'var(--color-charcoal)',
-        border: 'none', borderRadius: 5, padding: '3px 7px',
+        border: 'none', borderRadius: 0, padding: '3px 7px',
         cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600,
         lineHeight: 1.4, transition: 'background 0.1s',
       }}
@@ -83,7 +83,7 @@ export default function RichTextEditor({ value, onChange }) {
   )
 
   const inlineEditor = (
-    <div style={{ border: '1.5px solid var(--color-sand-dark)', borderRadius: 8, overflow: 'hidden', background: 'white' }}>
+    <div style={{ border: '1.5px solid var(--color-sand-dark)', borderRadius: 0, overflow: 'hidden', background: 'white' }}>
       <Toolbar editor={editor} extraRight={expandBtn} />
       <EditorContent
         editor={editor}
@@ -107,7 +107,7 @@ export default function RichTextEditor({ value, onChange }) {
           onMouseDown={() => setFullscreen(false)}
         >
           <div
-            style={{ width: '100%', maxWidth: 860, height: '80vh', display: 'flex', flexDirection: 'column', background: 'white', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.2)' }}
+            style={{ width: '100%', maxWidth: 860, height: '80vh', display: 'flex', flexDirection: 'column', background: 'white', borderRadius: 0, overflow: 'hidden' }}
             onMouseDown={e => e.stopPropagation()}
           >
             <Toolbar editor={editor} extraRight={expandBtn} />

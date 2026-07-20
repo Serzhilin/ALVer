@@ -83,7 +83,6 @@
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  border-radius: 8px;
 }
 
 /* Theme toggle — ghost appearance, overrides btn-secondary */
@@ -95,11 +94,13 @@
   padding: 9px 20px !important;
   font-size: 0.9rem !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
 .themeToggle:hover {
   transform: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
   color: var(--color-charcoal) !important;
 }
 
@@ -168,12 +169,14 @@
   padding: 1px 7px !important;
   line-height: 18px !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
   font-weight: 400 !important;
 }
 
 .addBtn:hover {
   transform: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
 /* ── List section labels ──────────────────────────────────────────────────── */
@@ -265,6 +268,7 @@
   background: none !important;
   border: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
   color: var(--color-red) !important;
   font-size: 0.78rem !important;
   padding: 2px 6px !important;
@@ -274,12 +278,14 @@
 .inlineYesBtn:hover {
   transform: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
 .inlineCancelBtn {
   background: none !important;
   border: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
   color: var(--color-charcoal-light) !important;
   font-size: 0.78rem !important;
   padding: 2px 6px !important;
@@ -289,12 +295,14 @@
 .inlineCancelBtn:hover {
   transform: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
 .removeBtn {
   background: none !important;
   border: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
   color: var(--color-charcoal-light) !important;
   font-size: 0.8rem !important;
   padding: 2px 4px !important;
@@ -305,6 +313,7 @@
 .removeBtn:hover {
   transform: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
   color: var(--color-red) !important;
 }
 
@@ -347,7 +356,6 @@
   border: 1px solid var(--color-sand, #e8e0d5);
   padding: 6px;
   margin-bottom: 16px;
-  border-radius: 10px;
 }
 
 .vizBarLabel {
@@ -371,12 +379,14 @@
   font-size: 0.8rem !important;
   border: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
   transition: all 0.15s !important;
 }
 
 .modeBtn:hover {
   transform: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
 /* ── Polls section header ─────────────────────────────────────────────────── */
@@ -425,7 +435,6 @@
   position: relative;
   padding: 18px;
   transition: all 0.2s;
-  border-radius: 10px;
 }
 
 .pollDragHandle {
@@ -485,7 +494,6 @@
   background: var(--color-sand);
   font-size: 0.75rem;
   color: var(--color-charcoal-light);
-  border-radius: 4px;
 }
 
 .pollCardBtns {
@@ -497,6 +505,7 @@
   background: none !important;
   border: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
   font-size: 0.8rem !important;
   color: var(--color-charcoal-light) !important;
   padding: 4px 6px !important;
@@ -505,12 +514,14 @@
 .pollEditBtn:hover {
   transform: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
 .pollDeleteBtn {
   background: none !important;
   border: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
   font-size: 0.8rem !important;
   color: var(--color-red) !important;
   padding: 4px 6px !important;
@@ -519,6 +530,7 @@
 .pollDeleteBtn:hover {
   transform: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
 /* Live vote counter */
@@ -599,6 +611,7 @@
   background: none !important;
   border: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
   padding: 16px 24px !important;
   cursor: pointer;
   display: flex !important;
@@ -613,6 +626,7 @@
 .collapsibleToggle:hover {
   transform: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
   background: none !important;
   color: var(--color-charcoal) !important;
 }
@@ -717,7 +731,6 @@
   overflow-y: auto;
   border: 1px solid var(--color-sand);
   margin-bottom: 16px;
-  border-radius: 8px;
 }
 
 .memberSearchBox {
@@ -739,12 +752,14 @@
   color: var(--color-charcoal) !important;
   text-align: left;
   box-shadow: none !important;
+  border-radius: 0 !important;
   font-weight: 400 !important;
 }
 
 .memberBtn:hover {
   transform: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
 /* Cast votes list */
@@ -752,7 +767,6 @@
   margin-bottom: 16px;
   border: 1px solid var(--color-sand);
   overflow: hidden;
-  border-radius: 8px;
 }
 
 .castVotesHeader {
@@ -786,13 +800,13 @@
   color: var(--color-charcoal-light);
   background: var(--color-sand);
   padding: 2px 8px;
-  border-radius: 4px;
 }
 
 .deleteVoteBtn {
   background: none !important;
   border: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
   color: var(--color-red) !important;
   font-size: 0.85rem !important;
   padding: 2px 4px !important;
@@ -802,6 +816,7 @@
 .deleteVoteBtn:hover {
   transform: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
 /* Vote option pick buttons */
@@ -819,11 +834,13 @@
   font-size: 0.9rem !important;
   transition: all 0.15s !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
 .voteOptBtn:hover {
   transform: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
 /* Form field helpers in modals */
@@ -848,6 +865,7 @@
   background: none !important;
   border: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
   color: var(--color-red) !important;
   font-size: 1rem !important;
   padding: 4px !important;
@@ -856,6 +874,7 @@
 .removeOptBtn:hover {
   transform: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
 .addOptRow {
