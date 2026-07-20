@@ -114,13 +114,17 @@ export default function Facilitate() {
     setShowManualVoteModal(false)
   }
 
-  function handleAddMandate() {
+  async function handleAddMandate() {
     if (mandateTo.trim()) {
-      addMandate(mandateTo.trim(), mandateNote.trim(), mandateFrom.trim())
-      setMandateFrom('')
-      setMandateTo('')
-      setMandateNote('')
-      setShowMandateModal(false)
+      try {
+        await addMandate(mandateTo.trim(), mandateNote.trim(), mandateFrom.trim())
+        setMandateFrom('')
+        setMandateTo('')
+        setMandateNote('')
+        setShowMandateModal(false)
+      } catch (e) {
+        alert(e?.message ?? 'Failed to add mandate')
+      }
     }
   }
 
@@ -733,7 +737,7 @@ export default function Facilitate() {
                   <Select autoFocus value={mandateFrom} onChange={e => setMandateFrom(e.target.value)}>
                     <option value="">— {t('facilitate.granter_placeholder')} —</option>
                     {granterOptions.map(m => (
-                      <option key={m.id} value={memberDisplayName(m)}>{memberDisplayName(m)}</option>
+                      <option key={m.id} value={m.id}>{memberDisplayName(m)}</option>
                     ))}
                   </Select>
                 </div>
