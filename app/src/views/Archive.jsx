@@ -53,9 +53,11 @@ export default function Archive() {
         {!isAvailable && (
           <Card className={styles.notAvailableCard}>
             <div className={styles.notAvailableIcon}>🔒</div>
-            <Heading as="h2" fontSize="1.1rem" style={{ margin: '0 0 8px' }}>
-              {t('archive.not_available_title')}
-            </Heading>
+            <div className={styles.notAvailableTitle}>
+              <Heading as="h2" fontSize="1.1rem">
+                {t('archive.not_available_title')}
+              </Heading>
+            </div>
             <p className={styles.notAvailableHint}>{t('archive.not_available_hint')}</p>
           </Card>
         )}
@@ -90,7 +92,9 @@ export default function Archive() {
           <hr className="divider" />
 
           <div className={styles.agendaSection}>
-            <SectionLabel style={{ marginBottom: 8 }}>{t('common.agenda')}</SectionLabel>
+            <div className={styles.agendaLabel}>
+              <SectionLabel>{t('common.agenda')}</SectionLabel>
+            </div>
             <AgendaHtml html={meeting.agenda} />
           </div>
         </Card>
@@ -156,9 +160,11 @@ export default function Archive() {
             className={styles.collapseBtn}
             onClick={() => setAttendeesOpen(o => !o)}
           >
-            <Heading as="h2" fontSize="1.1rem" style={{ margin: 0 }}>
-              {t('archive.attendees_count', { count: meeting.checkedIn.length })}
-            </Heading>
+            <div className={styles.collapseHeading}>
+              <Heading as="h2" fontSize="1.1rem">
+                {t('archive.attendees_count', { count: meeting.checkedIn.length })}
+              </Heading>
+            </div>
             <span className={styles.collapseChevron}>{attendeesOpen ? '▼' : '▶'}</span>
           </Button>
         </div>
@@ -183,9 +189,11 @@ export default function Archive() {
                 className={styles.collapseBtn}
                 onClick={() => setMandatesOpen(o => !o)}
               >
-                <Heading as="h2" fontSize="1.1rem" style={{ margin: 0 }}>
-                  {t('archive.mandates_count', { count: meeting.confirmedMandates.length })}
-                </Heading>
+                <div className={styles.collapseHeading}>
+                  <Heading as="h2" fontSize="1.1rem">
+                    {t('archive.mandates_count', { count: meeting.confirmedMandates.length })}
+                  </Heading>
+                </div>
                 <span className={styles.collapseChevron}>{mandatesOpen ? '▼' : '▶'}</span>
               </Button>
             </div>
@@ -216,9 +224,11 @@ export default function Archive() {
               onClick={() => setMinutesOpen(o => !o)}
             >
               <div className={styles.minutesTitleRow}>
-                <Heading as="h2" fontSize="1.1rem" style={{ margin: 0 }}>
-                  {t('minutes.section_title')}
-                </Heading>
+                <div className={styles.collapseHeading}>
+                  <Heading as="h2" fontSize="1.1rem">
+                    {t('minutes.section_title')}
+                  </Heading>
+                </div>
                 {meeting.minutes_status === 'draft' && isMinutesEditor && (
                   <Badge variant="gray">{t('minutes.draft_badge')}</Badge>
                 )}

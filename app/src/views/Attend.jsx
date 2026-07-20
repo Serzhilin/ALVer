@@ -88,9 +88,11 @@ export default function Attend() {
       return (
         <div className={styles.lockedScreen}>
           <div className={styles.lockedIcon}>🔒</div>
-          <Heading as="h2" fontSize="1.1rem" fontWeight={600} style={{ margin: '0 0 10px' }}>
-            {meeting.name}
-          </Heading>
+          <div className={styles.lockedTitle}>
+            <Heading as="h2" fontSize="1.1rem" fontWeight={600}>
+              {meeting.name}
+            </Heading>
+          </div>
           <p className={styles.lockedHint}>{t('attend.session_locked_hint')}</p>
           <p className={styles.lockedSub}>{t('attend.session_locked_sub')}</p>
         </div>
@@ -125,9 +127,11 @@ export default function Attend() {
             ? <img src={community.logo_url} alt="logo" className={styles.loginLogo} />
             : <div className={styles.loginBrand}>ALVer</div>
           }
-          <Heading as="h1" fontSize="1.6rem" color="white" style={{ margin: 0, lineHeight: 1.2 }}>
-            {meeting.name}
-          </Heading>
+          <div className={styles.heroTitle}>
+            <Heading as="h1" fontSize="1.6rem" color="white">
+              {meeting.name}
+            </Heading>
+          </div>
           <div className={styles.loginMetaList}>
             {dateStr && (
               <div className={styles.loginMetaRow}>
@@ -261,9 +265,11 @@ function WaitingScreen({ meeting, dateStr, amAspirant, t }) {
     <div className={styles.waitingRoot}>
       <Card className={styles.waitingInfoCard}>
         <div className={styles.waitingIcon}>⏳</div>
-        <Heading as="h2" fontSize="1.1rem" fontWeight={600} style={{ margin: '0 0 8px' }}>
-          {t('attend.not_started_title')}
-        </Heading>
+        <div className={styles.waitingTitle}>
+          <Heading as="h2" fontSize="1.1rem" fontWeight={600}>
+            {t('attend.not_started_title')}
+          </Heading>
+        </div>
         <p className={styles.waitingSubtitle}>{t('attend.not_started_hint')}</p>
         <div className={styles.waitingMetaList}>
           {dateStr && (
@@ -311,7 +317,7 @@ function VoteCard({ poll, votedPolls, myMandate, myName, onVote, attendeeCount, 
         <span className={`animate-pulse-soft ${styles.votePulseDot}`} />
       </div>
 
-      <Card className={styles.voteBody}>
+      <div className={styles.voteBody}>
         <p className={styles.voteTitle}>{poll.title}</p>
 
         {!myVote ? (
@@ -377,7 +383,7 @@ function VoteCard({ poll, votedPolls, myMandate, myName, onVote, attendeeCount, 
             {t('attend.votes_progress', { cast: totalVotes, total: attendeeCount })}
           </span>
         </div>
-      </Card>
+      </div>
     </div>
   )
 }
@@ -396,7 +402,7 @@ function ClosedPollResult({ poll, votedPolls, t }) {
         <div className={styles.closedTally}>
           {Object.entries(poll.result.tally).map(([option, count]) => (
             <span key={option} className={styles.tallyOption}>
-              {option}: <strong style={{ color: 'var(--color-charcoal)' }}>{count}</strong>
+              {option}: <strong className={styles.tallyCount}>{count}</strong>
             </span>
           ))}
           {myVote && (
@@ -450,9 +456,11 @@ function ClosedMeetingScreen({ meeting, votedPolls, onArchive, t }) {
     <div className={styles.closedMeetingRoot}>
       <Card className={styles.closedMeetingCard}>
         <div className={styles.closedMeetingIcon}>🎉</div>
-        <Heading as="h2" fontSize="1.1rem" fontWeight={600} style={{ margin: '0 0 6px' }}>
-          {t('attend.meeting_closed_title')}
-        </Heading>
+        <div className={styles.closedTitle}>
+          <Heading as="h2" fontSize="1.1rem" fontWeight={600}>
+            {t('attend.meeting_closed_title')}
+          </Heading>
+        </div>
         {closedPolls.length > 0 && (
           <p className={styles.closedMeetingHint}>{t('attend.meeting_closed_hint')}</p>
         )}
