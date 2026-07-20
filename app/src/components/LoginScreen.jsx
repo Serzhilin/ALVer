@@ -107,7 +107,7 @@ export default function LoginScreen({ onSuccess, nameOption = false, onNameConti
         {status === 'waiting' && !isMobile && qrDataUrl && (
           <div className={styles.qrArea}>
             <div className={styles.qrBox}>
-              <img src={qrDataUrl} alt="QR code" width={200} height={200} style={{ display: 'block' }} />
+              <img src={qrDataUrl} alt="QR code" width={200} height={200} className={styles.qrImg} />
             </div>
           </div>
         )}
@@ -124,6 +124,15 @@ export default function LoginScreen({ onSuccess, nameOption = false, onNameConti
             <p className={styles.expiryTitle}>{t('auth.code_validity')}</p>
             <p className={styles.expiryHint}>{t('auth.code_expired_hint')}</p>
           </div>
+        )}
+
+        {/* W3DS info */}
+        <div className={styles.infoBox}>
+          {t('auth.w3ds_info')}
+        </div>
+
+        {import.meta.env.DEV && offer && (
+          <p className={styles.devOffer}>{offer}</p>
         )}
 
       </div>
@@ -143,14 +152,15 @@ export default function LoginScreen({ onSuccess, nameOption = false, onNameConti
               placeholder={t('common.name_placeholder')}
               onKeyDown={e => e.key === 'Enter' && nameInput.trim() && onNameContinue(nameInput.trim())}
             />
-            <Button
-              variant="secondary"
-              style={{ width: '100%' }}
-              disabled={!nameInput.trim()}
-              onClick={() => onNameContinue(nameInput.trim())}
-            >
-              {t('auth.continue_as_guest')}
-            </Button>
+            <div className={styles.fullWidthBtn}>
+              <Button
+                variant="secondary"
+                disabled={!nameInput.trim()}
+                onClick={() => onNameContinue(nameInput.trim())}
+              >
+                {t('auth.continue_as_guest')}
+              </Button>
+            </div>
           </div>
         </>
       )}
@@ -160,11 +170,11 @@ export default function LoginScreen({ onSuccess, nameOption = false, onNameConti
       <div className={styles.footer}>
         <span className={styles.footerLabel}>Project of</span>
         <a href="https://ecommons.space" target="_blank" rel="noopener noreferrer">
-          <img src="/eCommons.svg" alt="eCommons" style={{ height: 28, opacity: 0.75 }} />
+          <img src="/eCommons.svg" alt="eCommons" className={styles.footerLogoEcommons} />
         </a>
         <span className={styles.footerAnd}>and</span>
         <a href="https://metastate.foundation" target="_blank" rel="noopener noreferrer">
-          <img src="/metastate.png" alt="Metastate" style={{ height: 28, opacity: 0.85 }} />
+          <img src="/metastate.png" alt="Metastate" className={styles.footerLogoMetastate} />
         </a>
       </div>
 

@@ -67,3 +67,7 @@
   color: var(--color-charcoal-light);
   margin: var(--space-8) 0 20px;
 }
+
+.fullWidthBtn {
+  width: 100%;
+}

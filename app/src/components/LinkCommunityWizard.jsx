@@ -148,9 +148,11 @@ export default function LinkCommunityWizard({ onLinked, onCancel }) {
       <p className={styles.successDesc}>
         {t('community_link.success_description', { defaultValue: 'You are now the first facilitator of this community in ALVer.' })}
       </p>
-      <Button variant="primary" style={{ width: '100%' }} onClick={() => onLinked(linked)}>
-        {t('community_link.enter_btn', { defaultValue: 'Enter community' })}
-      </Button>
+      <div className={styles.fullWidthBtn}>
+        <Button variant="primary" onClick={() => onLinked(linked)}>
+          {t('community_link.enter_btn', { defaultValue: 'Enter community' })}
+        </Button>
+      </div>
     </div>
   )
 }

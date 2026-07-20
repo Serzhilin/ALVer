@@ -55,9 +55,12 @@ export default function CommunityPicker({ communities, onSelect, isFacilitatorSe
         {communities.map(c => (
           <Card
             key={c.id}
-            style={{ border: `2px solid ${c.primary_color || 'var(--color-sand, #e8e0d5)'}` }}
+            role="button"
+            tabIndex={0}
+            style={{ border: `2px solid ${c.primary_color || 'var(--color-sand, #e8e0d5)'}`, cursor: 'pointer' }}
             className={styles.communityCard}
             onClick={() => onSelect(c.id)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(c.id); } }}
           >
             <Avatar
               src={c.logo_url || undefined}
@@ -84,13 +87,14 @@ export default function CommunityPicker({ communities, onSelect, isFacilitatorSe
             />
           ) : (
             <div className={styles.linkBtnWrap}>
-              <Button
-                variant="secondary"
-                style={{ width: '100%' }}
-                onClick={() => setShowLinkWizard(true)}
-              >
-                + {t('community_link.title', { defaultValue: 'Link community' })}
-              </Button>
+              <div className={styles.fullWidthBtn}>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowLinkWizard(true)}
+                >
+                  + {t('community_link.title', { defaultValue: 'Link community' })}
+                </Button>
+              </div>
             </div>
           )}
         </>
