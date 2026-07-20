@@ -9,6 +9,9 @@
     "db:reset": "npm run db:down && docker volume rm alver_alver-postgres-data 2>/dev/null; npm run db:up",
     "demo:reset": "bash scripts/reset-demo.sh"
   },
+  "dependencies": {
+    "@ecommons/ui": "git+ssh://git@codeberg.org/eCommons/ecommons-ui.git#main"
+  },
   "devDependencies": {
     "concurrently": "^9.1.2"
   }
