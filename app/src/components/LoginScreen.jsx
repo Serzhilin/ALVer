@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import QRCode from 'qrcode'
 import { getAuthOffer, subscribeToAuthSession, pollAuthSessionResult } from '../api/client'
 import { useTranslation } from 'react-i18next'
+import { Loading, ErrorText, Input, Button } from '@ecommons/ui'
+import styles from './LoginScreen.module.css'
 
 
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
@@ -66,16 +68,16 @@ export default function LoginScreen({ onSuccess, nameOption = false, onNameConti
   }, [])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, width: '100%' }}>
+    <div className={styles.container}>
 
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, color: 'var(--color-charcoal-light)', textAlign: 'center', width: '100%' }}>
+      <div className={styles.inner}>
 
         {/* Instruction */}
-        <p style={{ margin: 0, fontSize: '1rem', lineHeight: 1.5 }}>
+        <p className={styles.instruction}>
           {isMobile ? (
             <>
               {t('auth.mobile_instruction_pre')}{' '}
-              <a href="https://play.google.com/store/apps/details?id=foundation.metastate.eid_wallet" target="_blank" rel="noreferrer" style={{ fontWeight: 700, color: 'var(--color-charcoal)', textDecoration: 'underline' }}>
+              <a href="https://play.google.com/store/apps/details?id=foundation.metastate.eid_wallet" target="_blank" rel="noreferrer" className={styles.appLink}>
                 {t('auth.eid_app_link')}
               </a>
               {' '}{t('auth.mobile_instruction_post')}
@@ -83,7 +85,7 @@ export default function LoginScreen({ onSuccess, nameOption = false, onNameConti
           ) : (
             <>
               {t('auth.desktop_instruction_pre')}{' '}
-              <a href="https://play.google.com/store/apps/details?id=foundation.metastate.eid_wallet" target="_blank" rel="noreferrer" style={{ fontWeight: 700, color: 'var(--color-charcoal)', textDecoration: 'underline' }}>
+              <a href="https://play.google.com/store/apps/details?id=foundation.metastate.eid_wallet" target="_blank" rel="noreferrer" className={styles.appLink}>
                 {t('auth.eid_app_link')}
               </a>
               {' '}{t('auth.desktop_instruction_post')}
@@ -93,95 +95,74 @@ export default function LoginScreen({ onSuccess, nameOption = false, onNameConti
 
         {/* QR / deep link area */}
         {status === 'loading' && (
-          <div style={{ width: 220, height: 220, background: 'var(--color-sand)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ color: 'var(--color-charcoal-light)', fontSize: '0.85rem' }}>{t('auth.loading_qr')}</span>
-          </div>
+          <Loading style={{ width: 220, height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {t('auth.loading_qr')}
+          </Loading>
         )}
 
         {status === 'error' && (
-          <p style={{ color: 'var(--color-red)', fontSize: '0.9rem' }}>
-            {t('auth.offer_error')}
-          </p>
+          <ErrorText as="p">{t('auth.offer_error')}</ErrorText>
         )}
 
         {status === 'waiting' && !isMobile && qrDataUrl && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-            <div style={{ padding: 12, background: 'white', borderRadius: 10, border: '1px solid var(--color-sand)', display: 'inline-block' }}>
+          <div className={styles.qrArea}>
+            <div className={styles.qrBox}>
               <img src={qrDataUrl} alt="QR code" width={200} height={200} style={{ display: 'block' }} />
             </div>
-            {import.meta.env.DEV && offer && (
-              <p style={{ margin: 0, fontSize: '0.7rem', color: 'var(--color-charcoal-light)', wordBreak: 'break-all', textAlign: 'center', maxWidth: 260 }}>{offer}</p>
-            )}
           </div>
         )}
 
         {status === 'waiting' && isMobile && offer && (
-          <a
-            href={offer}
-            style={{
-              display: 'inline-flex', justifyContent: 'center', padding: '12px 28px',
-              background: '#2563EB', color: 'white', borderRadius: 8, fontWeight: 600,
-              fontSize: '1rem', textDecoration: 'none', width: '100%', boxSizing: 'border-box',
-            }}
-          >
+          <a href={offer} className={styles.walletBtn}>
             {t('auth.open_wallet_btn')}
           </a>
         )}
 
         {/* Expiry note */}
         {status === 'waiting' && (
-          <div style={{ fontSize: '0.85rem' }}>
-            <p style={{ margin: '0 0 2px', fontWeight: 700, color: 'var(--color-charcoal)' }}>
-              {t('auth.code_validity')}
-            </p>
-            <p style={{ margin: 0 }}>{t('auth.code_expired_hint')}</p>
+          <div className={styles.expiryNote}>
+            <p className={styles.expiryTitle}>{t('auth.code_validity')}</p>
+            <p className={styles.expiryHint}>{t('auth.code_expired_hint')}</p>
           </div>
         )}
-
-        {/* W3DS info box */}
-        <div style={{ background: 'rgba(0,0,0,0.04)', borderRadius: 8, padding: '12px 16px', fontSize: '0.82rem', lineHeight: 1.6, textAlign: 'left', color: 'var(--color-charcoal-light)' }}>
-          {t('auth.w3ds_info')}
-        </div>
 
       </div>
 
       {/* Name fallback */}
       {nameOption && onNameContinue && (
         <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%' }}>
-            <div style={{ flex: 1, height: 1, background: 'var(--color-sand)' }} />
-            <span style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', whiteSpace: 'nowrap' }}>
-              {t('auth.or_name')}
-            </span>
-            <div style={{ flex: 1, height: 1, background: 'var(--color-sand)' }} />
+          <div className={styles.divider}>
+            <div className={styles.dividerLine} />
+            <span className={styles.dividerLabel}>{t('auth.or_name')}</span>
+            <div className={styles.dividerLine} />
           </div>
-          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <input
-              className="input"
+          <div className={styles.nameSection}>
+            <Input
               value={nameInput}
               onChange={e => setNameInput(e.target.value)}
               placeholder={t('common.name_placeholder')}
               onKeyDown={e => e.key === 'Enter' && nameInput.trim() && onNameContinue(nameInput.trim())}
             />
-            <button
-              className="btn-secondary"
-              style={{ width: '100%', justifyContent: 'center', fontSize: '0.88rem' }}
+            <Button
+              variant="secondary"
+              style={{ width: '100%' }}
               disabled={!nameInput.trim()}
               onClick={() => onNameContinue(nameInput.trim())}
             >
               {t('auth.continue_as_guest')}
-            </button>
+            </Button>
           </div>
         </>
       )}
 
+
       {/* Footer: Project of eCommons + Metastate */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, width: '100%', paddingTop: 4 }}>
-        <span style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', whiteSpace: 'nowrap' }}>Project of</span>
+      <div className={styles.footer}>
+        <span className={styles.footerLabel}>Project of</span>
         <a href="https://ecommons.space" target="_blank" rel="noopener noreferrer">
           <img src="/eCommons.svg" alt="eCommons" style={{ height: 28, opacity: 0.75 }} />
         </a>
-        <span style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)' }}>and</span>
+        <span className={styles.footerAnd}>and</span>
         <a href="https://metastate.foundation" target="_blank" rel="noopener noreferrer">
           <img src="/metastate.png" alt="Metastate" style={{ height: 28, opacity: 0.85 }} />
         </a>

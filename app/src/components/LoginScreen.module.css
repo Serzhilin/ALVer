@@ -1,0 +1,116 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-16);
+  color: var(--color-charcoal-light);
+  text-align: center;
+  width: 100%;
+}
+
+.instruction {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.appLink {
+  font-weight: 700;
+  color: var(--color-charcoal);
+  text-decoration: underline;
+}
+
+.qrArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.qrBox {
+  padding: 12px;
+  background: white;
+  border: 1px solid var(--color-sand);
+  display: inline-block;
+}
+
+.walletBtn {
+  display: inline-flex;
+  justify-content: center;
+  padding: var(--space-12) var(--space-28);
+  background: #2563EB;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.expiryNote {
+  font-size: 0.85rem;
+}
+
+.expiryTitle {
+  margin: 0 0 2px;
+  font-weight: 700;
+  color: var(--color-charcoal);
+}
+
+.expiryHint {
+  margin: 0;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  width: 100%;
+}
+
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  background: var(--color-sand);
+}
+
+.dividerLabel {
+  font-size: 0.78rem;
+  color: var(--color-charcoal-light);
+  white-space: nowrap;
+}
+
+.nameSection {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-12);
+  width: 100%;
+  padding-top: var(--space-4);
+}
+
+.footerLabel {
+  font-size: 0.78rem;
+  color: var(--color-charcoal-light);
+  white-space: nowrap;
+}
+
+.footerAnd {
+  font-size: 0.78rem;
+  color: var(--color-charcoal-light);
+}
