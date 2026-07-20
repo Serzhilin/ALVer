@@ -30,6 +30,10 @@ export class Member {
     @Column({ nullable: true })
     last_name!: string | null;
 
+    /** Raw displayName from eVault User ontology. */
+    @Column({ nullable: true })
+    display_name!: string | null;
+
     /** Avatar URL from eVault profile. Shown in Members form. */
     @Column({ nullable: true })
     avatar_url!: string | null;

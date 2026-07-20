@@ -24,7 +24,8 @@ export class MinutesController {
             if (!isFacilitator) return res.status(403).json({ error: "Forbidden" });
 
             const notulist_ename = req.body.notulist_ename ?? null;
-            await this.repo.update(meeting.id, { notulist_ename });
+            meeting.notulist_ename = notulist_ename;
+            await this.repo.save(meeting);
 
             logger.info({ meetingId: meeting.id, notulist_ename, assignedBy: ename }, "notulist assigned");
             sseService.emit(meeting.id, "notulist_assigned", { notulist_ename });
@@ -46,10 +47,9 @@ export class MinutesController {
             const { html } = req.body;
             if (typeof html !== "string") return res.status(400).json({ error: "html is required" });
 
-            await this.repo.update(meeting.id, {
-                minutes_html: html,
-                minutes_status: "draft",
-            });
+            meeting.minutes_html = html;
+            meeting.minutes_status = "draft";
+            await this.repo.save(meeting);
             res.status(204).send();
         } catch (e: any) {
             res.status(500).json({ error: e.message });
@@ -68,7 +68,8 @@ export class MinutesController {
                 return res.status(400).json({ error: "No minutes content to publish" });
             }
 
-            await this.repo.update(meeting.id, { minutes_status: "published" });
+            meeting.minutes_status = "published";
+            await this.repo.save(meeting);
             logger.info({ meetingId: meeting.id, publishedBy: req.user!.ename }, "minutes published");
             sseService.emit(meeting.id, "minutes_published", { meetingId: meeting.id });
             res.json({ minutes_status: "published" });

@@ -85,11 +85,14 @@ export class MandateService {
         const mandate = await this.repo.findOneByOrFail({ id: mandateId });
         // Hard delete: remove mandate and any mandate vote cast on behalf of this granter
         const voteRepo = AppDataSource.getRepository((await import("../database/entities/Vote")).Vote);
-        await voteRepo.delete({
-            meeting_id: mandate.meeting_id,
-            on_behalf_of_name: mandate.granter_name,
+        const onBehalfVotes = await voteRepo.find({
+            where: {
+                meeting_id: mandate.meeting_id,
+                on_behalf_of_name: mandate.granter_name,
+            },
         });
-        await this.repo.delete(mandateId);
+        if (onBehalfVotes.length > 0) await voteRepo.remove(onBehalfVotes);
+        await this.repo.remove(mandate);
     }
 
     async revokeByGranterEname(meetingId: string, granterEname: string): Promise<void> {

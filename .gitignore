@@ -19,5 +19,8 @@ api/dist/
 .DS_Store
 .claude/
 
+# Runtime databases
+api/data/alver.db
+
 # Local docs
 DEPLOY.md

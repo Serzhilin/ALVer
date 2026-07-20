@@ -46,8 +46,8 @@ export default defineConfig({
         name: 'ALVer',
         short_name: 'ALVer',
         description: 'Cooperative meeting management and e-voting',
-        theme_color: '#C4622D',
-        background_color: '#FAF8F5',
+        theme_color: '#E8262B',
+        background_color: '#FFFFFF',
         display: 'standalone',
         start_url: '/',
         scope: '/',
@@ -67,6 +67,11 @@ export default defineConfig({
       },
     }),
   ],
+  resolve: {
+    // Force all React imports to the same instance — prevents dual-React
+    // when @ecommons/ui (in root node_modules) resolves react separately.
+    dedupe: ['react', 'react-dom'],
+  },
   server: {
     port: 5174,
     host: true,

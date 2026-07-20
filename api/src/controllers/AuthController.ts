@@ -24,7 +24,8 @@ function serializeMember(ename: string, member: import("../database/entities/Mem
         ename,
         firstName: member?.app_first_name ?? null,
         lastName: member?.app_last_name ?? null,
-        displayName: member ? appDisplayName(member) : ename,
+        displayName: member?.display_name ?? (member ? appDisplayName(member) : ename),
+        avatarUrl: member?.avatar_url ?? null,
     };
 }
 
@@ -105,6 +106,7 @@ export async function epassportLogin(req: Request, res: Response) {
             await cs.updateMemberEvaultFields(member.id, {
                 first_name: profile.first_name,
                 last_name: profile.last_name,
+                display_name: profile.display_name,
                 avatar_url: profile.avatar_url ?? null,
             });
         }

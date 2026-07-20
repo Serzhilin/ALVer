@@ -3,6 +3,31 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getValueByPath = getValueByPath;
 exports.fromGlobal = fromGlobal;
 exports.toGlobal = toGlobal;
+const resolver_1 = require("../w3ds/resolver");
+const uri_1 = require("../w3ds/uri");
+/**
+ * Matches the `__file(<path>)` directive with an optional `,<alias>` suffix.
+ * `__file()` lets a mapped field carry a file (single value or array): on
+ * `toGlobal` each value is uploaded and replaced with a `w3ds://file` URI; on
+ * `fromGlobal` each URI is dereferenced back to a public URL.
+ */
+const FILE_DIRECTIVE_RE = /^__file\((.+?)\)(?:,(.+))?$/;
+/**
+ * Dereferences a single file value: a `w3ds://file` URI becomes its public
+ * object-storage URL; any other value is passed through unchanged.
+ */
+async function dereferenceFileValue(value, evaultClient, fieldKey) {
+    if (!(0, uri_1.isFileUri)(value) || !evaultClient)
+        return value;
+    try {
+        const dereferenced = await (0, resolver_1.dereferenceFileUri)(value, evaultClient);
+        return dereferenced.publicUrl;
+    }
+    catch (error) {
+        console.error(`Failed to dereference file URI for "${fieldKey ?? "?"}":`, error);
+        return value;
+    }
+}
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 function getValueByPath(obj, path) {
     // Handle array mapping case (e.g., "images[].src")
@@ -92,12 +117,24 @@ async function extractOwnerEvaultSinglePath(data, ownerEnamePath) {
     }
     return value || null;
 }
-async function fromGlobal({ data, mapping, mappingStore, }) {
+async function fromGlobal({ data, mapping, mappingStore, evaultClient, }) {
     const result = {};
     for (const [localKey, globalPathRaw] of Object.entries(mapping.localToUniversalMap)) {
         let value;
         const targetKey = localKey;
         let tableRef = null;
+        const fileMatch = globalPathRaw.match(FILE_DIRECTIVE_RE);
+        if (fileMatch) {
+            const [, localPath, alias] = fileMatch;
+            const uriValue = getValueByPath(data, alias ?? localPath);
+            if (Array.isArray(uriValue)) {
+                result[localKey] = await Promise.all(uriValue.map((v) => dereferenceFileValue(v, evaultClient, localKey)));
+            }
+            else {
+                result[localKey] = await dereferenceFileValue(uriValue, evaultClient, localKey);
+            }
+            continue;
+        }
         const internalFnMatch = globalPathRaw.match(/^__(\w+)\((.+)\)$/);
         if (internalFnMatch) {
             const [, outerFn, innerExpr] = internalFnMatch;
@@ -192,12 +229,33 @@ context) {
         return undefined;
     }
 }
-async function toGlobal({ data, mapping, mappingStore, }) {
+async function toGlobal({ data, mapping, mappingStore, evaultClient, }) {
     const result = {};
+    // Resolved up-front so the `__file()` directive can upload to the owner eVault.
+    const ownerEvault = await extractOwnerEvault(data, mapping.ownerEnamePath);
     for (const [localKey, globalPathRaw] of Object.entries(mapping.localToUniversalMap)) {
         // biome-ignore lint/suspicious/noExplicitAny: <explanation>
         let value;
         let targetKey = globalPathRaw;
+        const fileMatch = globalPathRaw.match(FILE_DIRECTIVE_RE);
+        if (fileMatch) {
+            const [, localPath, alias] = fileMatch;
+            const fileTargetKey = alias ?? localPath;
+            const rawVal = getValueByPath(data, localPath);
+            if (evaultClient && ownerEvault) {
+                if (Array.isArray(rawVal)) {
+                    result[fileTargetKey] = await Promise.all(rawVal.map((v) => (0, resolver_1.referenceFileValue)(v, ownerEvault, evaultClient)));
+                }
+                else {
+                    result[fileTargetKey] = await (0, resolver_1.referenceFileValue)(rawVal, ownerEvault, evaultClient);
+                }
+            }
+            else {
+                // No client/owner available — pass the value through unchanged.
+                result[fileTargetKey] = rawVal;
+            }
+            continue;
+        }
         if (globalPathRaw.includes(",")) {
             const [_, alias] = globalPathRaw.split(",");
             targetKey = alias;
@@ -296,7 +354,6 @@ async function toGlobal({ data, mapping, mappingStore, }) {
         }
         result[targetKey] = value;
     }
-    const ownerEvault = await extractOwnerEvault(data, mapping.ownerEnamePath);
     return {
         ownerEvault,
         data: result,

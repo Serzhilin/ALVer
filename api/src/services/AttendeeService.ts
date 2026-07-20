@@ -32,15 +32,14 @@ export class AttendeeService {
         if (attendee && attendee.status === "checked_in") return attendee;
 
         if (attendee) {
-            await this.repo.update(attendee.id, {
-                status: "checked_in",
-                checked_in_at: new Date(),
-                method: "app",
-                attendee_name: name,
-                attendee_ename: ename,
-                member_id: member?.id ?? attendee.member_id,
-                is_aspirant: member?.is_aspirant ?? attendee.is_aspirant,
-            });
+            attendee.status = "checked_in";
+            attendee.checked_in_at = new Date();
+            attendee.method = "app";
+            attendee.attendee_name = name;
+            attendee.attendee_ename = ename;
+            attendee.member_id = member?.id ?? attendee.member_id;
+            attendee.is_aspirant = member?.is_aspirant ?? attendee.is_aspirant;
+            attendee = await this.repo.save(attendee);
         } else {
             attendee = this.repo.create({
                 meeting_id: meetingId,
@@ -90,16 +89,15 @@ export class AttendeeService {
         if (attendee && attendee.status === "checked_in") return attendee;
 
         if (attendee) {
-            await this.repo.update(attendee.id, {
-                status: "checked_in",
-                checked_in_at: new Date(),
-                method: "manual",
-                manual_note: note,
-                attendee_name: name,
-                attendee_ename: member.ename ?? attendee.attendee_ename,
-                member_id: memberId,
-                is_aspirant: member.is_aspirant,
-            });
+            attendee.status = "checked_in";
+            attendee.checked_in_at = new Date();
+            attendee.method = "manual";
+            attendee.manual_note = note;
+            attendee.attendee_name = name;
+            attendee.attendee_ename = member.ename ?? attendee.attendee_ename;
+            attendee.member_id = memberId;
+            attendee.is_aspirant = member.is_aspirant;
+            attendee = await this.repo.save(attendee);
         } else {
             attendee = this.repo.create({
                 meeting_id: meetingId,
@@ -140,8 +138,9 @@ export class AttendeeService {
         let attendee = await this.repo.findOne({ where: { meeting_id: meetingId, attendee_ename: ename } });
         if (attendee) {
             if (attendee.status === "checked_in") return attendee;
-            await this.repo.update(attendee.id, { status: "declined", attendee_name: name });
-            attendee = await this.repo.findOneByOrFail({ id: attendee.id });
+            attendee.status = "declined";
+            attendee.attendee_name = name;
+            attendee = await this.repo.save(attendee);
         } else {
             attendee = this.repo.create({
                 meeting_id: meetingId,
@@ -179,8 +178,10 @@ export class AttendeeService {
         let attendee = await this.repo.findOne({ where: { meeting_id: meetingId, attendee_ename: ename } });
         if (attendee) {
             if (attendee.status === "checked_in") return attendee;
-            await this.repo.update(attendee.id, { status: "expected", attendee_name: name, member_id: member?.id ?? attendee.member_id });
-            attendee = await this.repo.findOneByOrFail({ id: attendee.id });
+            attendee.status = "expected";
+            attendee.attendee_name = name;
+            attendee.member_id = member?.id ?? attendee.member_id;
+            attendee = await this.repo.save(attendee);
         } else {
             attendee = this.repo.create({
                 meeting_id: meetingId,
@@ -221,11 +222,14 @@ export class AttendeeService {
     }
 
     async update(attendeeId: string, data: Partial<Attendee>): Promise<Attendee> {
-        await this.repo.update(attendeeId, data);
-        return this.repo.findOneByOrFail({ id: attendeeId });
+        const attendee = await this.repo.findOneByOrFail({ id: attendeeId });
+        Object.assign(attendee, data);
+        return this.repo.save(attendee);
     }
 
     async delete(attendeeId: string): Promise<void> {
-        await this.repo.delete(attendeeId);
+        const attendee = await this.repo.findOneBy({ id: attendeeId });
+        if (!attendee) return;
+        await this.repo.remove(attendee);
     }
 }

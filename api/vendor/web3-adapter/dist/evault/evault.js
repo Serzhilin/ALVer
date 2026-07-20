@@ -51,6 +51,20 @@ const UPDATE_META_ENVELOPE = `
     }
   }
 `;
+const UPLOAD_FILE = `
+  mutation UploadFile($input: UploadFileInput!) {
+    uploadFile(input: $input) {
+      uri
+      metaEnvelopeId
+      publicUrl
+      errors {
+        field
+        message
+        code
+      }
+    }
+  }
+`;
 class EVaultClient {
     constructor(registryUrl, platform) {
         this.registryUrl = registryUrl;
@@ -200,7 +214,7 @@ class EVaultClient {
         const client = new graphql_request_1.GraphQLClient(endpoint, {
             headers: {
                 authorization: `Bearer ${token}`,
-                "X-ENAME": w3id,
+                "X-ENAME": w3id.startsWith("@") ? w3id : `@${w3id}`,
             },
         });
         // Cache the client and endpoint for this specific w3id
@@ -359,7 +373,7 @@ class EVaultClient {
             return response.storeMetaEnvelope.metaEnvelope.id;
         });
     }
-    async storeReference(referenceId, w3id) {
+    async storeReference(referenceId, w3id, acl) {
         return this.withRetry(async () => {
             const client = await this.ensureClient(w3id);
             const response = await client
@@ -369,7 +383,7 @@ class EVaultClient {
                     payload: {
                         _by_reference: referenceId,
                     },
-                    acl: ["*"],
+                    acl: acl ?? ["*"],
                 },
             })
                 .catch(() => null);
@@ -379,6 +393,45 @@ class EVaultClient {
                 }
                 throw new Error("Failed to store reference");
             }
+        });
+    }
+    /**
+     * Uploads a file to the owner eVault's object storage and returns the
+     * resulting `w3ds://file` URI alongside the public object-storage URL.
+     */
+    async uploadFile(w3id, input) {
+        return this.withRetry(async () => {
+            if (this.isDisposed) {
+                throw new Error("EVaultClient has been disposed");
+            }
+            const client = await this.ensureClient(w3id).catch((error) => {
+                throw new Error(`Failed to establish client connection: ${error instanceof Error ? error.message : String(error)}`);
+            });
+            const response = await this.withTimeout(w3id, () => client.request(UPLOAD_FILE, {
+                input: {
+                    filename: input.filename,
+                    contentType: input.contentType,
+                    content: input.content,
+                    acl: input.acl ?? ["*"],
+                },
+            })).catch((error) => {
+                throw new Error(`Failed to upload file: ${error instanceof Error ? error.message : String(error)}`);
+            });
+            const result = response?.uploadFile;
+            if (!result) {
+                throw new Error("Failed to upload file: Invalid response");
+            }
+            if (result.errors && result.errors.length > 0) {
+                throw new Error(`Failed to upload file: ${result.errors.map((e) => e.message).join("; ")}`);
+            }
+            if (!result.uri || !result.metaEnvelopeId || !result.publicUrl) {
+                throw new Error("Failed to upload file: incomplete response");
+            }
+            return {
+                uri: result.uri,
+                metaEnvelopeId: result.metaEnvelopeId,
+                publicUrl: result.publicUrl,
+            };
         });
     }
     async fetchMetaEnvelope(id, w3id) {

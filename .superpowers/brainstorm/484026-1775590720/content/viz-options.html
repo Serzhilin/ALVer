@@ -1,0 +1,160 @@
+<h2>Vote visualization options</h2>
+<p class="subtitle">Pick the third visualization (pie chart is already decided). Which one to pair it with?<br>All three shown with the same example poll: <strong>"Approve the budget proposal"</strong> — For 14 · Against 4 · Abstain 3</p>
+
+<style>
+  .viz-demo {
+    background: #1A1612;
+    border-radius: 14px;
+    padding: 28px 24px 24px;
+    margin: 0;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+  .viz-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  .poll-title {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.65);
+    text-align: center;
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+
+  /* --- BAR CHART --- */
+  .bars { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; }
+  .bar-name { width: 80px; text-align: right; font-size: 0.85rem; color: rgba(255,255,255,0.6); flex-shrink: 0; }
+  .bar-track { flex: 1; height: 28px; background: rgba(255,255,255,0.07); border-radius: 6px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 10px; font-size: 0.85rem; font-weight: 600; color: white; transition: width 0.6s ease; }
+  .bar-count { width: 28px; text-align: right; font-size: 0.9rem; font-weight: 700; color: rgba(255,255,255,0.8); flex-shrink: 0; }
+
+  /* --- PIE CHART (SVG) --- */
+  .pie-wrap { display: flex; align-items: center; gap: 28px; }
+  .pie-legend { display: flex; flex-direction: column; gap: 10px; }
+  .pie-legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: rgba(255,255,255,0.7); }
+  .pie-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+  /* --- BUBBLE / PEOPLE --- */
+  .bubble-grid { display: flex; gap: 24px; align-items: flex-end; justify-content: center; }
+  .bubble-col { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .bubble-circle {
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; font-weight: 700; color: white; flex-shrink: 0;
+  }
+  .bubble-opt { font-size: 0.85rem; color: rgba(255,255,255,0.55); text-align: center; }
+  .bubble-num { font-size: 1.6rem; font-weight: 700; color: white; line-height: 1; }
+</style>
+
+<div class="cards">
+
+  <!-- OPTION A: Horizontal bar chart -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="viz-demo">
+        <div class="viz-label">Horizontal bar chart</div>
+        <div class="poll-title">Approve the budget proposal</div>
+        <div class="bars" style="max-width:340px;width:100%">
+          <div class="bar-row">
+            <span class="bar-name">For</span>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:66%;background:linear-gradient(90deg,#C4622D,#D4884A)">14</div>
+            </div>
+            <span class="bar-count">14</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-name">Against</span>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:19%;background:rgba(255,255,255,0.18)">4</div>
+            </div>
+            <span class="bar-count">4</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-name">Abstain</span>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:14%;background:rgba(255,255,255,0.10)">3</div>
+            </div>
+            <span class="bar-count">3</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Horizontal bars</h3>
+      <p>Classic, instantly readable at a distance. Each option gets a bar scaled to its share. Works great with 2–5 options. Labels and numbers both visible.</p>
+    </div>
+  </div>
+
+  <!-- OPTION B: Pie chart -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="viz-demo">
+        <div class="viz-label">Pie chart</div>
+        <div class="poll-title">Approve the budget proposal</div>
+        <div class="pie-wrap">
+          <svg width="130" height="130" viewBox="0 0 32 32">
+            <!-- For: 14/21 = 66.7% → stroke-dasharray 66.7 33.3 -->
+            <circle r="14" cx="16" cy="16" fill="transparent" stroke="#C4622D" stroke-width="6"
+              stroke-dasharray="41.9 20.7" stroke-dashoffset="25" transform="rotate(-90 16 16)"/>
+            <!-- Against: 4/21 = 19% → 11.9 -->
+            <circle r="14" cx="16" cy="16" fill="transparent" stroke="rgba(255,255,255,0.35)" stroke-width="6"
+              stroke-dasharray="11.9 50.7" stroke-dashoffset="-16.9" transform="rotate(-90 16 16)"/>
+            <!-- Abstain: 3/21 = 14.3% → 9.0 -->
+            <circle r="14" cx="16" cy="16" fill="transparent" stroke="rgba(255,255,255,0.15)" stroke-width="6"
+              stroke-dasharray="9.0 53.6" stroke-dashoffset="-28.8" transform="rotate(-90 16 16)"/>
+            <text x="16" y="18" text-anchor="middle" fill="white" font-size="5" font-weight="700">67%</text>
+          </svg>
+          <div class="pie-legend">
+            <div class="pie-legend-item"><div class="pie-dot" style="background:#C4622D"></div> For — 14</div>
+            <div class="pie-legend-item"><div class="pie-dot" style="background:rgba(255,255,255,0.35)"></div> Against — 4</div>
+            <div class="pie-legend-item"><div class="pie-dot" style="background:rgba(255,255,255,0.15)"></div> Abstain — 3</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Pie / donut chart</h3>
+      <p>Shows proportions at a glance. The dominant option's slice immediately communicates majority. Centre shows the leading percentage. Clean on a projector.</p>
+    </div>
+  </div>
+
+  <!-- OPTION C: Bubble sizes -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="viz-demo">
+        <div class="viz-label">Proportional bubbles</div>
+        <div class="poll-title">Approve the budget proposal</div>
+        <div class="bubble-grid">
+          <div class="bubble-col">
+            <div class="bubble-circle" style="width:110px;height:110px;background:#C4622D;font-size:2.2rem">14</div>
+            <div class="bubble-opt">For</div>
+          </div>
+          <div class="bubble-col">
+            <div class="bubble-circle" style="width:56px;height:56px;background:rgba(255,255,255,0.22);font-size:1.2rem">4</div>
+            <div class="bubble-opt">Against</div>
+          </div>
+          <div class="bubble-col">
+            <div class="bubble-circle" style="width:48px;height:48px;background:rgba(255,255,255,0.12);font-size:1rem">3</div>
+            <div class="bubble-opt">Abstain</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Proportional bubbles</h3>
+      <p>Area of each circle is proportional to the vote count. Very visual and dramatic — the winning option dominates the space. Unusual and memorable. Works best with 2–4 options.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px">You already decided on pie chart. Which of the other two do you want as the third option — or do you want all three available?</p>

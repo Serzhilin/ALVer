@@ -4,6 +4,18 @@ export interface MetaEnvelope {
     data: Record<string, any>;
     w3id: string;
 }
+export interface UploadFileInput {
+    filename: string;
+    contentType: string;
+    /** Base64-encoded file content (raw base64 or a data: URI). */
+    content: string;
+    acl?: string[];
+}
+export interface UploadFileResult {
+    uri: string;
+    metaEnvelopeId: string;
+    publicUrl: string;
+}
 export declare class EVaultClient {
     private registryUrl;
     private platform;
@@ -69,7 +81,12 @@ export declare class EVaultClient {
      */
     clearCache(): void;
     storeMetaEnvelope(envelope: MetaEnvelope): Promise<string>;
-    storeReference(referenceId: string, w3id: string): Promise<void>;
+    storeReference(referenceId: string, w3id: string, acl?: string[]): Promise<void>;
+    /**
+     * Uploads a file to the owner eVault's object storage and returns the
+     * resulting `w3ds://file` URI alongside the public object-storage URL.
+     */
+    uploadFile(w3id: string, input: UploadFileInput): Promise<UploadFileResult>;
     fetchMetaEnvelope(id: string, w3id: string): Promise<MetaEnvelope>;
     updateMetaEnvelopeById(id: string, envelope: MetaEnvelope): Promise<void>;
 }

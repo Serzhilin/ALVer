@@ -80,8 +80,8 @@ export class MeetingService {
             m => m.status === "open" && m.date < today
         );
         if (stale.length > 0) {
-            await Promise.all(stale.map(m => this.repo.update(m.id, { status: "archived" })));
             stale.forEach(m => { m.status = "archived"; });
+            await Promise.all(stale.map(m => this.repo.save(m)));
             const attendanceSvc = new AttendanceService();
             for (const m of stale) {
                 attendanceSvc.recordForMeeting(m.id).catch(err =>
@@ -94,7 +94,10 @@ export class MeetingService {
     }
 
     async update(id: string, data: Partial<Meeting>): Promise<Meeting> {
-        await this.repo.update(id, data);
+        const meeting = await this.repo.findOneBy({ id });
+        if (!meeting) throw new Error("Meeting not found");
+        Object.assign(meeting, data);
+        await this.repo.save(meeting);
         const updated = await this.findById(id);
         if (!updated) throw new Error("Meeting not found");
 
@@ -107,7 +110,7 @@ export class MeetingService {
     async delete(id: string): Promise<void> {
         const meeting = await this.repo.findOneBy({ id });
         if (!meeting) throw new Error("Meeting not found");
-        await this.repo.delete(id);
+        await this.repo.remove(meeting);
     }
 
     async transitionStatus(id: string, status: MeetingStatus): Promise<Meeting> {
@@ -119,7 +122,8 @@ export class MeetingService {
             throw new Error(`Invalid status transition: ${meeting.status} → ${status}`);
         }
 
-        await this.repo.update(id, { status });
+        meeting.status = status;
+        await this.repo.save(meeting);
         const updated = await this.findById(id);
         if (!updated) throw new Error("Meeting not found after update");
 
@@ -146,7 +150,8 @@ export class MeetingService {
         if (meeting.status !== "archived") throw new Error("Only archived meetings can be reopened");
         const today = new Date().toISOString().slice(0, 10);
         if (meeting.date !== today) throw new Error("Can only reopen a meeting on its scheduled date");
-        await this.repo.update(id, { status: "in_session" });
+        meeting.status = "in_session";
+        await this.repo.save(meeting);
         const updated = await this.findById(id);
         if (!updated) throw new Error("Meeting not found after update");
         sseService.emit(id, "meeting_status_changed", { meetingId: id, status: "in_session" });

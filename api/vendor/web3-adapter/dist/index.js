@@ -36,7 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Web3Adapter = void 0;
+exports.Web3Adapter = exports.EVaultClient = void 0;
 exports.spinUpEVault = spinUpEVault;
 exports.createGroupEVault = createGroupEVault;
 const fs = __importStar(require("node:fs/promises"));
@@ -47,6 +47,8 @@ const db_1 = require("./db");
 const evault_1 = require("./evault/evault");
 const logging_1 = require("./logging");
 const mapper_1 = require("./mapper/mapper");
+var evault_2 = require("./evault/evault");
+Object.defineProperty(exports, "EVaultClient", { enumerable: true, get: function () { return evault_2.EVaultClient; } });
 /**
  * Standalone function to spin up an eVault
  * @param registryUrl - URL of the registry service
@@ -152,7 +154,7 @@ async function createGroupManifestWithRetry(registryUrl, w3id, groupData, maxRet
             `;
             const result = await client.request(STORE_META_ENVELOPE, {
                 input: {
-                    ontology: "a8bfb7cf-3200-4b25-9ea9-ee41100f212e", // GroupManifest schema ID
+                    ontology: "a8bfb7cf-3200-4b25-9ea9-ee41100f212e", // GroupManifest schema ID (upstream bug: was Chat UUID 550e8400-...0003)
                     payload: groupManifest,
                     acl: ["*"],
                 },
@@ -218,15 +220,16 @@ class Web3Adapter {
                 data,
                 mapping: this.mapping[tableName],
                 mappingStore: this.mappingDb,
+                evaultClient: this.evaultClient,
             });
-            this.evaultClient
+            await this.evaultClient
                 .updateMetaEnvelopeById(existingGlobalId, {
                 id: existingGlobalId,
                 w3id: global.ownerEvault,
                 data: global.data,
                 schemaId: this.mapping[tableName].schemaId,
             })
-                .catch(() => console.error("failed to sync update"));
+                .catch((err) => { throw err; });
             logging_1.logger.info({
                 tableName,
                 id: existingGlobalId,
@@ -243,6 +246,7 @@ class Web3Adapter {
             data,
             mapping: this.mapping[tableName],
             mappingStore: this.mappingDb,
+            evaultClient: this.evaultClient,
         });
         let globalId;
         if (global.ownerEvault) {
@@ -286,6 +290,7 @@ class Web3Adapter {
             data,
             mapping,
             mappingStore: this.mappingDb,
+            evaultClient: this.evaultClient,
         });
         return local;
     }

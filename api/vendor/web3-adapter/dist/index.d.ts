@@ -1,6 +1,8 @@
 import { MappingDatabase } from "./db";
 import { EVaultClient } from "./evault/evault";
 import type { IMapping } from "./mapper/mapper.types";
+export { EVaultClient } from "./evault/evault";
+export type { MetaEnvelope, UploadFileInput, UploadFileResult, } from "./evault/evault";
 /**
  * Standalone function to spin up an eVault
  * @param registryUrl - URL of the registry service

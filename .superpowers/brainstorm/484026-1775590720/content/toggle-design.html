@@ -1,0 +1,209 @@
+<h2>Toggle toolbar — Polls tab</h2>
+<p class="subtitle">How the visualization switcher looks at the top of the Polls tab on the facilitator screen.<br>Tap a mode — it updates the projector screen instantly.</p>
+
+<style>
+  .sim-frame {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid #e8e0d5;
+    max-width: 560px;
+    margin: 0 auto;
+    font-family: Inter, sans-serif;
+  }
+  .sim-tab-bar {
+    display: flex;
+    border-bottom: 1px solid #e8e0d5;
+    background: #faf8f5;
+  }
+  .sim-tab {
+    padding: 12px 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #888;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+  }
+  .sim-tab.active {
+    color: #C4622D;
+    border-bottom-color: #C4622D;
+    font-weight: 600;
+  }
+  .sim-body {
+    padding: 16px;
+  }
+
+  /* --- THE TOGGLE TOOLBAR --- */
+  .viz-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f3ede6;
+    border-radius: 10px;
+    padding: 6px;
+    margin-bottom: 16px;
+  }
+  .viz-label-text {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #b08060;
+    padding: 0 6px;
+    flex-shrink: 0;
+  }
+  .viz-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 7px 8px;
+    border-radius: 7px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #888;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .viz-btn.selected {
+    background: white;
+    color: #C4622D;
+    font-weight: 700;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+  }
+  .viz-btn svg {
+    flex-shrink: 0;
+  }
+
+  /* --- POLL CARD BELOW --- */
+  .poll-card {
+    border: 1.5px solid #f0a060;
+    border-radius: 10px;
+    padding: 14px 16px;
+    background: #fff8f4;
+  }
+  .poll-live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #fff0e6;
+    color: #C4622D;
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+  .poll-title-text {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #2c2c2c;
+    margin-bottom: 12px;
+  }
+  .poll-progress-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .poll-progress-track {
+    flex: 1;
+    height: 6px;
+    background: #ead9cc;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .poll-progress-fill {
+    height: 100%;
+    width: 67%;
+    background: linear-gradient(90deg, #C4622D, #D4884A);
+    border-radius: 3px;
+  }
+  .poll-tally {
+    display: flex;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #999;
+  }
+  .poll-tally-item strong { color: #2c2c2c; }
+  .close-btn {
+    margin-top: 10px;
+    padding: 7px 16px;
+    background: #C4622D;
+    color: white;
+    border: none;
+    border-radius: 7px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+</style>
+
+<div class="mockup">
+  <div class="mockup-header">Facilitator screen — Polls tab (poll live)</div>
+  <div class="mockup-body" style="padding:0">
+    <div class="sim-frame">
+      <div class="sim-tab-bar">
+        <div class="sim-tab">Attendees</div>
+        <div class="sim-tab active">Polls</div>
+        <div class="sim-tab">Mandates</div>
+      </div>
+      <div class="sim-body">
+
+        <!-- THE TOOLBAR -->
+        <div class="viz-toolbar">
+          <span class="viz-label-text">Screen</span>
+          <button class="viz-btn selected">
+            <!-- numbers icon -->
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="currentColor" opacity=".8"/><rect x="8" y="1" width="5" height="5" rx="1" fill="currentColor" opacity=".8"/><rect x="1" y="8" width="5" height="5" rx="1" fill="currentColor" opacity=".3"/><rect x="8" y="8" width="5" height="5" rx="1" fill="currentColor" opacity=".3"/></svg>
+            Numbers
+          </button>
+          <button class="viz-btn">
+            <!-- bars icon -->
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="5" width="3" height="8" rx="1" fill="currentColor"/><rect x="5.5" y="2" width="3" height="11" rx="1" fill="currentColor"/><rect x="10" y="7" width="3" height="6" rx="1" fill="currentColor"/></svg>
+            Bars
+          </button>
+          <button class="viz-btn">
+            <!-- pie icon -->
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M7 7 L7 1 A6 6 0 0 1 13 7 Z" fill="currentColor" opacity=".8"/></svg>
+            Pie
+          </button>
+          <button class="viz-btn">
+            <!-- bubbles icon -->
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="5" cy="7" r="4" fill="currentColor" opacity=".8"/><circle cx="10.5" cy="8.5" r="2.5" fill="currentColor" opacity=".5"/></svg>
+            Bubbles
+          </button>
+        </div>
+
+        <!-- ACTIVE POLL CARD -->
+        <div class="poll-card">
+          <div class="poll-live-badge">⬤ Live</div>
+          <div class="poll-title-text">Approve the budget proposal</div>
+          <div class="poll-progress-row">
+            <div class="poll-progress-track"><div class="poll-progress-fill"></div></div>
+            <span style="font-size:0.82rem;color:#C4622D;font-weight:700">14 / 21</span>
+          </div>
+          <div class="poll-tally">
+            <span><strong>For:</strong> 14</span>
+            <span><strong>Against:</strong> 4</span>
+            <span><strong>Abstain:</strong> 3</span>
+          </div>
+          <button class="close-btn">⏹ Close poll</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top: 20px">
+  "Numbers" is selected — the projector shows the current number-only view.<br>
+  Tapping "Bars", "Pie", or "Bubbles" switches the projector screen instantly via SSE.<br><br>
+  Does this layout feel right? Any changes to the toolbar style or placement?
+</p>
