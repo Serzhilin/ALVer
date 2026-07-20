@@ -21,19 +21,12 @@ export default function FacilitatorHeader({ backTo, title, liveIndicator, right 
   const [showSettings, setShowSettings] = useState(false)
   const [showMembers, setShowMembers] = useState(false)
 
-  // When there's a community logo, both logos speak for themselves.
-  // When there's no community logo, show the community name as text.
-  const defaultTitle = community?.logo_url
-    ? undefined
-    : (community?.name ?? undefined)
+  const defaultTitle = community?.logo_url ? undefined : (community?.name ?? undefined)
 
   return (
     <>
       <AppHeader
-        appLogo="/logo.png"
         logo={community?.logo_url}
-        centerLogo
-        backTo={backTo}
         title={title ?? defaultTitle}
         liveIndicator={liveIndicator}
         user={user}
