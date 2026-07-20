@@ -29,7 +29,7 @@ export default function SettingsModal({ onClose }) {
   const [logo, setLogo] = useState(community?.logo_url || null)
   const [color, setColor] = useState(community?.primary_color || '#C4622D')
   const [hexInput, setHexInput] = useState(community?.primary_color || '#C4622D')
-  const [font, setFont] = useState(community?.title_font || 'var(--font-title)')
+  const [font, setFont] = useState(community?.title_font || 'Barlow Condensed')
   const [saveError, setSaveError] = useState(null)
 
   function handleLogoUpload(e) {
@@ -364,7 +364,6 @@ function LocationForm({ form, setF, onSave, onCancel, t }) {
   return (
     <div
       className={styles.locationForm}
-      style={{ border: '1px solid var(--color-terracotta)' }}
     >
       <div className={styles.locationFormFields}>
         <Input autoFocus value={form.name} onChange={e => setF('name', e.target.value)} placeholder={t('settings.location_name_placeholder')} />

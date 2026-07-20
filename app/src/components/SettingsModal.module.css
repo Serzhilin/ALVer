@@ -160,11 +160,13 @@
   border: 1px solid rgba(196, 45, 45, 0.3);
   color: #c42d2d;
   font-size: 0.85rem;
+  border-radius: 8px;
 }
 
 /* ── Location card ── */
 .locationCard {
   padding: 12px 14px;
+  border-radius: 8px;
 }
 
 .locationCardTop {
@@ -241,6 +243,8 @@
 .locationForm {
   padding: 14px;
   background: rgba(196, 98, 45, 0.03);
+  border: 1px solid var(--color-terracotta);
+  border-radius: 8px;
 }
 
 .locationFormFields {

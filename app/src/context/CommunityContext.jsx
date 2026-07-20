@@ -4,13 +4,8 @@ import { useUser } from './UserContext'
 
 
 const TITLE_FONTS = [
-  'Playfair Display',
-  'Lora',
-  'Merriweather',
-  'Libre Baskerville',
-  'Inter',
-  'Nunito',
-  'Poppins',
+  { value: 'Barlow Condensed', label: 'Barlow Condensed' },
+  { value: 'Instrument Sans', label: 'Instrument Sans' },
 ]
 
 function applyTheme(community) {
@@ -21,7 +16,7 @@ function applyTheme(community) {
   // derive a slightly darker hover shade
   root.style.setProperty('--color-amber', color + 'CC')
 
-  const font = community.title_font || 'Playfair Display'
+  const font = community.title_font || 'Barlow Condensed'
   // inject Google Fonts link if not already present
   const linkId = `gfont-${font.replace(/\s+/g, '-')}`
   if (!document.getElementById(linkId)) {
