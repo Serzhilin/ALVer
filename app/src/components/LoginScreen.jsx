@@ -73,25 +73,28 @@ export default function LoginScreen({ onSuccess, nameOption = false, onNameConti
       <div className={styles.inner}>
 
         {/* Instruction */}
-        <p className={styles.instruction}>
-          {isMobile ? (
-            <>
-              {t('auth.mobile_instruction_pre')}{' '}
-              <a href="https://play.google.com/store/apps/details?id=foundation.metastate.eid_wallet" target="_blank" rel="noreferrer" className={styles.appLink}>
-                {t('auth.eid_app_link')}
-              </a>
-              {' '}{t('auth.mobile_instruction_post')}
-            </>
-          ) : (
-            <>
-              {t('auth.desktop_instruction_pre')}{' '}
-              <a href="https://play.google.com/store/apps/details?id=foundation.metastate.eid_wallet" target="_blank" rel="noreferrer" className={styles.appLink}>
-                {t('auth.eid_app_link')}
-              </a>
-              {' '}{t('auth.desktop_instruction_post')}
-            </>
-          )}
-        </p>
+        {status !== 'error' && (
+          <p className={styles.instruction}>
+            {isMobile ? (
+              <>
+                Download the{' '}
+                <a href="https://play.google.com/store/apps/details?id=foundation.metastate.eid_wallet" target="_blank" rel="noreferrer" className={styles.appLink}>
+                  eID wallet app
+                </a>
+                {' '}and tap the button below to sign in.
+              </>
+            ) : (
+              <>
+                To sign in, scan the QR code<br />
+                with the{' '}
+                <a href="https://play.google.com/store/apps/details?id=foundation.metastate.eid_wallet" target="_blank" rel="noreferrer" className={styles.appLink}>
+                  eID wallet
+                </a>
+                .
+              </>
+            )}
+          </p>
+        )}
 
         {/* QR / deep link area */}
         {status === 'loading' && (
@@ -121,19 +124,16 @@ export default function LoginScreen({ onSuccess, nameOption = false, onNameConti
         {/* Expiry note */}
         {status === 'waiting' && (
           <div className={styles.expiryNote}>
-            <p className={styles.expiryTitle}>{t('auth.code_validity')}</p>
-            <p className={styles.expiryHint}>{t('auth.code_expired_hint')}</p>
+            <p className={styles.expiryTitle}>Valid for 5 minutes</p>
+            <p className={styles.expiryHint}>If expired, refresh the page for a new code.</p>
           </div>
         )}
 
         {/* W3DS info */}
         <div className={styles.infoBox}>
-          {t('auth.w3ds_info')}
+          This app uses W3DS — a decentralised identity standard — to authenticate without passwords.
+          Your identity is stored in your wallet, never on our servers.
         </div>
-
-        {import.meta.env.DEV && offer && (
-          <p className={styles.devOffer}>{offer}</p>
-        )}
 
       </div>
 
