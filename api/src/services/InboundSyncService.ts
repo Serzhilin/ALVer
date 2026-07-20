@@ -90,12 +90,12 @@ export async function syncPollFromEvault(
         return;
     }
     const patch: Partial<Poll> = {};
-    if (data.title != null) patch.motion_text = data.title as string;
-    if (data.deadline != null) patch.closed_at = new Date(data.deadline as string);
-    if (Object.keys(patch).length > 0) {
-        await repo.update(localId, patch);
-        logger.info({ globalId, localId }, "[InboundSync] Poll updated");
-    }
+    if (data.title)    patch.motion_text = data.title as string;
+    if (data.deadline) patch.closed_at   = new Date(data.deadline as string);
+    if (Array.isArray(data.options)) patch.option_labels = data.options as string[];
+    if (patch && Object.keys(patch).length === 0) return;
+    await repo.update(localId, patch);
+    logger.info({ globalId, localId }, "[InboundSync] Poll updated");
 }
 
 export async function syncVoteFromEvault(
@@ -114,9 +114,25 @@ export async function syncVoteFromEvault(
         return;
     }
     const patch: Partial<Vote> = {};
-    if (data.voterId != null) patch.voter_ename = data.voterId as string;
-    if (Object.keys(patch).length > 0) {
-        await repo.update(localId, patch);
-        logger.info({ globalId, localId }, "[InboundSync] Vote updated");
+    if (data.voterId) patch.voter_ename = data.voterId as string;
+    if (data.userId)  patch.voter_meta_envelope_id = data.userId as string;
+    if (data.data)    patch.vote_data = data.data as Record<string, unknown>;
+
+    // Back-derive option_id from vote_data label if poll is available
+    if (data.data) {
+        const votePayload = data.data as { mode?: string; data?: string[] };
+        const label = votePayload.data?.[0];
+        if (label) {
+            const pollRepo = AppDataSource.getRepository(Poll);
+            const poll = await pollRepo.findOne({ where: { id: vote.poll_id } });
+            if (poll?.vote_options) {
+                const match = poll.vote_options.find((o: { id: string; label: string }) => o.label === label);
+                if (match) patch.option_id = match.id;
+            }
+        }
     }
+
+    if (Object.keys(patch).length === 0) return;
+    await repo.update(localId, patch);
+    logger.info({ globalId, localId }, "[InboundSync] Vote updated");
 }
