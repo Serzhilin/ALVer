@@ -153,9 +153,15 @@ export default function Home() {
                 </a>
               ))}
             </div>
+            <p className={styles.facilitatorHint}>
+              {t('home.facilitator_hint')}{' '}
+              <a href="/facilitator" className={styles.facilitatorLink}>
+                {t('home.facilitator_link')}
+              </a>
+            </p>
           </div>
 
-          {/* Right column: auth card + footer + facilitator hint */}
+          {/* Right column: auth card + footer */}
           <div>
             <Card style={{ padding: 'var(--space-28)' }}>
               <LoginScreen onSuccess={login} nameOption={false} showFooter={false} />
@@ -170,12 +176,6 @@ export default function Home() {
                 <img src="/metastate.png" alt="Metastate" style={{ height: 28, opacity: 0.85 }} />
               </a>
             </div>
-            <p className={styles.facilitatorHint}>
-              {t('home.facilitator_hint')}{' '}
-              <a href="/facilitator" className={styles.facilitatorLink}>
-                {t('home.facilitator_link')}
-              </a>
-            </p>
           </div>
 
         </div>

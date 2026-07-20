@@ -22,19 +22,17 @@
   max-width: 960px;
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-40);
+  gap: 40px;
   align-items: start;
 }
 @media (min-width: 768px) {
   .loginGrid {
     grid-template-columns: 1.1fr 400px;
-    gap: var(--space-64);
+    gap: 64px;
   }
 }
 
 .loginLeft {
-  padding-top: var(--space-28);
-  padding-bottom: var(--space-28);
   text-align: center;
 }
 @media (min-width: 768px) {
@@ -125,8 +123,8 @@
 }
 
 .facilitatorHint {
-  text-align: center;
-  margin-top: var(--space-20);
+  text-align: left;
+  margin-top: var(--space-32);
   font-size: 0.82rem;
   color: var(--color-charcoal-light);
 }
