@@ -70,6 +70,7 @@
   padding: 4px 12px;
   font-size: 0.75rem;
   font-weight: 500;
+  border-radius: 6px;
 }
 
 /* ── Bottom-left brand tag ──────────────────────────────────────────────── */
@@ -157,6 +158,8 @@
 .checkinQrFrame {
   background: white;
   padding: 2vw;
+  border-radius: 16px;
+  box-shadow: 0 0 60px rgba(196, 98, 45, 0.25);
 }
 
 .checkinQrImg {
@@ -169,6 +172,7 @@
   width: 18vw;
   height: 18vw;
   background: rgba(0,0,0,0.04);
+  border-radius: 4px;
 }
 
 .checkinScanText {
@@ -342,6 +346,7 @@
   gap: 1.5vh;
   padding: 3vh 4vw;
   min-width: 10vw;
+  border-radius: 16px;
 }
 
 .votingNumberCount {
@@ -497,6 +502,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 24px;
+  border-radius: 10px;
 }
 
 .closedPollRowTitle {
