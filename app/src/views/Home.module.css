@@ -514,6 +514,7 @@
 .upcomingBtn {
   background: none !important;
   border: 1px solid transparent !important;
+  transition: none !important;
 }
 
 .upcomingBtn:hover {
@@ -521,6 +522,7 @@
   box-shadow: none !important;
   border-radius: 0 !important;
   color: var(--color-charcoal-light) !important;
+  background: var(--color-sand) !important;
 }
 
 /* Card with no padding (e.g. meeting rows container) */
