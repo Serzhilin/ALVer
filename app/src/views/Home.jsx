@@ -133,7 +133,7 @@ export default function Home() {
               <p className={styles.subtitle}>{t('home.subtitle')}</p>
             </div>
           </div>
-          <Card style={{ padding: 'var(--space-28)' }}>
+          <Card className={styles.loginCard}>
             <LoginScreen onSuccess={login} nameOption={false} />
           </Card>
           <p className={styles.facilitatorHint}>
@@ -267,7 +267,7 @@ export default function Home() {
           </div>
 
           {meetingsLoading ? (
-            <Loading style={{ fontSize: '0.9rem' }}>{t('common.loading')}</Loading>
+            <div className={styles.loadingSmall}><Loading>{t('common.loading')}</Loading></div>
           ) : currentMeeting ? (
             <div className={styles.meetingStack}>
               {isLive && (
@@ -279,10 +279,11 @@ export default function Home() {
                 </div>
               )}
 
-              <div className={styles.meetingPanel}>
-                <h1 style={{ margin: '0 0 16px', fontSize: '1.5rem', fontFamily: 'var(--font-title)', color: 'var(--color-charcoal)', lineHeight: 1.2 }}>
-                  {currentMeeting.name}
-                </h1>
+              <div
+                className={styles.meetingPanel}
+                style={{ borderRadius: isLive ? '0 0 14px 14px' : 14 }}
+              >
+                <h1 className={styles.attendeeMeetingTitle}>{currentMeeting.name}</h1>
 
                 {/* Meeting meta */}
                 <div className={styles.meetingMeta}>
