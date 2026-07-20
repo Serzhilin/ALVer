@@ -1,0 +1,76 @@
+.modalInner {
+  max-width: 540px;
+  width: 100%;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-20);
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: var(--color-charcoal-light);
+  padding: var(--space-4);
+  line-height: 1;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: var(--space-20);
+}
+
+.dateGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.actionsLeft {
+  display: flex;
+  gap: 10px;
+}
+
+.deleteConfirm {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.deleteConfirmText {
+  font-size: 0.82rem;
+  color: var(--color-charcoal-light);
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--color-red);
+  font-weight: 600;
+  padding: 4px 8px;
+}
+
+.ghostBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--color-charcoal-light);
+  padding: 4px 8px;
+}

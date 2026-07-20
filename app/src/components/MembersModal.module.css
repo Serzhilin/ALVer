@@ -1,0 +1,264 @@
+.modalInner {
+  max-width: 520px;
+  width: 100%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-20);
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: var(--color-charcoal-light);
+  padding: var(--space-4);
+  line-height: 1;
+}
+
+.editForm {
+  margin-bottom: var(--space-20);
+  padding: var(--space-16);
+  background: var(--color-cream);
+  border: 1px solid var(--color-sand);
+}
+
+.editFormFields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nameRow {
+  display: flex;
+  gap: var(--space-8);
+}
+
+.nameInput {
+  flex: 1;
+}
+
+.evaultPanel {
+  margin-top: var(--space-8);
+  padding: 12px 16px;
+  background: var(--color-sand);
+}
+
+.evaultLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-charcoal-light);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: var(--space-8);
+}
+
+.evaultAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: var(--space-8);
+  display: block;
+}
+
+.evaultText {
+  font-size: 0.85rem;
+  color: var(--color-charcoal);
+}
+
+.evaultTextMt {
+  font-size: 0.85rem;
+  color: var(--color-charcoal);
+  margin-top: var(--space-4);
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.checkboxLabelDisabled {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: 0.88rem;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.selfNote {
+  font-size: 0.75rem;
+  color: var(--color-charcoal-light);
+}
+
+.formActions {
+  display: flex;
+  gap: var(--space-8);
+}
+
+.listContainer {
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.memberRows {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.memberRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  min-height: 38px;
+}
+
+.memberInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.memberNameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.memberName {
+  font-size: 0.92rem;
+  color: var(--color-charcoal);
+  font-weight: 500;
+}
+
+.noEidBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-sand-dark);
+  color: var(--color-charcoal-light);
+  font-size: 0.65rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.memberContacts {
+  display: flex;
+  gap: var(--space-8);
+  flex-wrap: wrap;
+}
+
+.memberContact {
+  font-size: 0.75rem;
+  color: var(--color-charcoal-light);
+}
+
+.rowActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  transition: opacity 0.15s;
+}
+
+.deleteConfirmInline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.deleteConfirmText {
+  font-size: 0.78rem;
+  color: var(--color-charcoal-light);
+  margin-right: var(--space-4);
+}
+
+.iconBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 3px 5px;
+  line-height: 1;
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--color-red);
+  font-weight: 700;
+  padding: 3px 6px;
+}
+
+.ghostBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--color-charcoal-light);
+  padding: 3px 6px;
+}
+
+.emptyText {
+  font-size: 0.85rem;
+  color: var(--color-charcoal-light);
+  margin: 0;
+}
+
+.groupEname {
+  margin-top: var(--space-16);
+  padding-top: 12px;
+  border-top: 1px solid var(--color-sand);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.groupEnameLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-charcoal-light);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  flex-shrink: 0;
+}
+
+.groupEnameValue {
+  font-size: 0.78rem;
+  color: var(--color-charcoal-light);
+  font-family: monospace;
+  word-break: break-all;
+}

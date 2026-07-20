@@ -1,6 +1,8 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCommunity, TITLE_FONTS } from '../context/CommunityContext'
+import { Modal, Button, Input, Select, Label, Heading, SectionLabel, ErrorText } from '@ecommons/ui'
+import styles from './SettingsModal.module.css'
 
 const EMPTY_LOC = { name: '', address: '' }
 
@@ -27,7 +29,7 @@ export default function SettingsModal({ onClose }) {
   const [logo, setLogo] = useState(community?.logo_url || null)
   const [color, setColor] = useState(community?.primary_color || '#C4622D')
   const [hexInput, setHexInput] = useState(community?.primary_color || '#C4622D')
-  const [font, setFont] = useState(community?.title_font || 'Playfair Display')
+  const [font, setFont] = useState(community?.title_font || 'var(--font-title)')
   const [saveError, setSaveError] = useState(null)
 
   function handleLogoUpload(e) {
@@ -160,53 +162,51 @@ export default function SettingsModal({ onClose }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" style={{ maxWidth: 500, maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-          <h3 style={{ margin: 0, fontFamily: 'var(--font-title)', fontSize: '1.2rem' }}>
+    <Modal onOverlayClick={onClose}>
+      <div className={styles.modalInner} onClick={e => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <Heading as="span" fontSize="1.2rem">
             ⚙️ {t('settings.title')}
-          </h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: 'var(--color-charcoal-light)', padding: 4 }}>✕</button>
+          </Heading>
+          <button onClick={onClose} className={styles.closeBtn}>✕</button>
         </div>
 
         {/* ── Organisation ── */}
         <SectionLabel>{t('settings.organisation_label')}</SectionLabel>
 
         {/* ── Cooperative name ── */}
-        <div style={{ marginBottom: 20 }}>
-          <label style={{ marginBottom: 8, display: 'block', fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>{t('settings.cooperative_name_label')}</label>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <input
-              className="input"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder={t('settings.cooperative_name_placeholder')}
-              style={{ flex: 1 }}
-            />
-            <button className="btn-secondary" style={{ fontSize: '0.85rem', padding: '6px 14px' }} onClick={saveName} disabled={nameSaving}>
+        <div className={styles.fieldRow}>
+          <Label size="sm">{t('settings.cooperative_name_label')}</Label>
+          <div className={styles.nameRow}>
+            <div className={styles.nameInput}>
+              <Input
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder={t('settings.cooperative_name_placeholder')}
+              />
+            </div>
+            <Button variant="secondary" onClick={saveName} disabled={nameSaving}>
               {t('common.save')}
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* ── Locations ── */}
-        <div style={{ marginBottom: 28 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <label style={{ display: 'block', fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>{t('settings.locations_label')}</label>
+        <div className={styles.locationsSection}>
+          <div className={styles.locationHeader}>
+            <Label size="sm">{t('settings.locations_label')}</Label>
             {editingLoc === null && (
-              <button className="btn-secondary" style={{ fontSize: '0.8rem', padding: '4px 12px' }} onClick={() => { setLocForm(EMPTY_LOC); setEditingLoc('new') }}>
+              <Button variant="secondary" onClick={() => { setLocForm(EMPTY_LOC); setEditingLoc('new') }}>
                 + {t('settings.location_add')}
-              </button>
+              </Button>
             )}
           </div>
 
           {locations.length === 0 && editingLoc !== 'new' && (
-            <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.85rem', margin: '0 0 12px' }}>
-              {t('settings.locations_empty')}
-            </p>
+            <p className={styles.emptyText}>{t('settings.locations_empty')}</p>
           )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div className={styles.locationList}>
             {locations.map(loc => (
               <div key={loc.id}>
                 {editingLoc === loc.id
@@ -221,39 +221,39 @@ export default function SettingsModal({ onClose }) {
           </div>
         </div>
 
-        <div style={{ borderTop: '1px solid var(--color-sand)', marginBottom: 28 }} />
+        <div className={styles.divider} />
 
         {/* ── Appearance ── */}
         <SectionLabel>{t('settings.appearance_label')}</SectionLabel>
 
         {/* Logo */}
-        <div style={{ marginBottom: 20 }}>
-          <label style={{ marginBottom: 8, display: 'block', fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>{t('settings.logo_label')}</label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div style={{ width: 80, height: 48, border: '1px solid var(--color-sand)', borderRadius: 8, background: 'var(--color-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+        <div className={styles.fieldRow}>
+          <Label size="sm">{t('settings.logo_label')}</Label>
+          <div className={styles.logoRow}>
+            <div className={styles.logoPreview}>
               {logo
-                ? <img src={logo} alt="logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                : <span style={{ fontSize: '1.5rem' }}>🏛️</span>
+                ? <img src={logo} alt="logo" className={styles.logoPreviewImg} />
+                : <span className={styles.logoPlaceholder}>🏛️</span>
               }
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <label className="btn-secondary" style={{ fontSize: '0.82rem', padding: '6px 12px', cursor: 'pointer' }}>
+            <div className={styles.logoBtns}>
+              <label className={styles.fileBtn}>
                 {t(logo ? 'settings.logo_replace' : 'settings.logo_upload')}
                 <input type="file" accept="image/svg+xml,image/png,image/jpeg" onChange={handleLogoUpload} style={{ display: 'none' }} />
               </label>
               {logo && (
-                <button className="btn-secondary" style={{ fontSize: '0.82rem', padding: '6px 12px', color: 'var(--color-red)' }} onClick={removeLogo}>
+                <Button variant="danger" onClick={removeLogo}>
                   {t('settings.logo_remove')}
-                </button>
+                </Button>
               )}
             </div>
           </div>
         </div>
 
         {/* Primary color */}
-        <div style={{ marginBottom: 20 }}>
-          <label style={{ marginBottom: 8, display: 'block', fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>{t('settings.primary_color_label')}</label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <div className={styles.fieldRow}>
+          <Label size="sm">{t('settings.primary_color_label')}</Label>
+          <div className={styles.colorPickerRow}>
             {PRESET_COLORS.map(c => (
               <button
                 key={c}
@@ -268,91 +268,91 @@ export default function SettingsModal({ onClose }) {
               />
             ))}
             {/* custom hex input */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 4 }}>
-              <div style={{ width: 22, height: 22, borderRadius: 4, background: color, border: '1px solid var(--color-sand-dark)', flexShrink: 0 }} />
-              <input
-                className="input"
-                value={hexInput}
-                onChange={e => handleHexInput(e.target.value)}
-                placeholder="#C4622D"
-                style={{ width: 88, fontSize: '0.8rem', padding: '4px 8px', fontFamily: 'monospace' }}
-              />
+            <div className={styles.hexInputGroup}>
+              <div className={styles.colorSwatch} style={{ background: color }} />
+              <div className={styles.hexInputWrap}>
+                <Input
+                  value={hexInput}
+                  onChange={e => handleHexInput(e.target.value)}
+                  placeholder="#C4622D"
+                />
+              </div>
             </div>
           </div>
         </div>
 
         {/* Title font */}
-        <div style={{ marginBottom: 28 }}>
-          <label style={{ marginBottom: 8, display: 'block', fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>{t('settings.title_font_label')}</label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <select
-              className="input"
-              value={font}
-              onChange={e => applyFont(e.target.value)}
-              style={{ flex: 1 }}
-            >
-              {TITLE_FONTS.map(f => (
-                <option key={f} value={f}>{f}</option>
-              ))}
-            </select>
-            <span style={{ fontFamily: `"${font}", serif`, fontSize: '1.1rem', color: 'var(--color-charcoal)', whiteSpace: 'nowrap' }}>
+        <div className={styles.fieldRow}>
+          <Label size="sm">{t('settings.title_font_label')}</Label>
+          <div className={styles.fontRow}>
+            <div className={styles.fontSelect}>
+              <Select
+                value={font}
+                onChange={e => applyFont(e.target.value)}
+              >
+                {TITLE_FONTS.map(f => (
+                  <option key={f.value} value={f.value}>{f.label}</option>
+                ))}
+              </Select>
+            </div>
+            <span className={styles.fontPreview} style={{ fontFamily: `"${font}", serif` }}>
               Aa Bb Cc
             </span>
           </div>
         </div>
 
         {saveError && (
-          <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(196,45,45,0.08)', border: '1px solid rgba(196,45,45,0.3)', borderRadius: 8, color: '#c42d2d', fontSize: '0.85rem' }}>
+          <div className={styles.saveError}>
             Could not save: {saveError}
           </div>
         )}
-        <button className="btn-primary" onClick={onClose}>{t('common.close')}</button>
+        <Button variant="primary" onClick={onClose}>{t('common.close')}</Button>
       </div>
-    </div>
-  )
-}
-
-function SectionLabel({ children }) {
-  return (
-    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>
-      {children}
-    </div>
+    </Modal>
   )
 }
 
 function LocationCard({ loc, onEdit, onDelete, onSetDefault, t }) {
   return (
-    <div style={{
-      border: `1px solid ${loc.isDefault ? 'var(--color-terracotta)' : 'var(--color-sand)'}`,
-      borderRadius: 8, padding: '12px 14px',
-      background: loc.isDefault ? 'rgba(196,98,45,0.04)' : 'white',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-        <div style={{ minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-            <span style={{ fontWeight: 600, fontSize: '0.92rem', color: 'var(--color-charcoal)' }}>{loc.name}</span>
+    <div
+      className={styles.locationCard}
+      style={{
+        border: `1px solid ${loc.isDefault ? 'var(--color-terracotta)' : 'var(--color-sand)'}`,
+        background: loc.isDefault ? 'rgba(196,98,45,0.04)' : 'white',
+      }}
+    >
+      <div className={styles.locationCardTop}>
+        <div className={styles.locationCardBody}>
+          <div className={styles.locationNameRow}>
+            <span className={styles.locationName}>{loc.name}</span>
             {loc.isDefault && (
-              <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--color-terracotta)', background: 'rgba(196,98,45,0.1)', padding: '1px 7px', borderRadius: 10 }}>
+              <span className={styles.locationDefaultBadge}>
                 {t('settings.location_default_badge')}
               </span>
             )}
           </div>
-          {loc.address && <div style={{ fontSize: '0.82rem', color: 'var(--color-charcoal-light)', marginBottom: loc.maps_url ? 4 : 0 }}>📍 {loc.address}</div>}
+          {loc.address && (
+            <div className={styles.locationAddress}>📍 {loc.address}</div>
+          )}
           {loc.maps_url && (
-            <a href={loc.maps_url} target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: '0.8rem', color: 'var(--color-terracotta)', textDecoration: 'none' }}
-              onClick={e => e.stopPropagation()}>
+            <a
+              href={loc.maps_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.locationMapsLink}
+              onClick={e => e.stopPropagation()}
+            >
               🗺️ {t('settings.location_maps_link')}
             </a>
           )}
         </div>
-        <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-          <IconBtn onClick={onEdit} title={t('common.edit')}>✏️</IconBtn>
-          <IconBtn onClick={onDelete} title={t('common.delete')}>🗑️</IconBtn>
+        <div className={styles.locationCardActions}>
+          <button onClick={onEdit} title={t('common.edit')} className={styles.iconBtn}>✏️</button>
+          <button onClick={onDelete} title={t('common.delete')} className={styles.iconBtn}>🗑️</button>
         </div>
       </div>
       {!loc.isDefault && (
-        <button onClick={onSetDefault} style={{ marginTop: 8, background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.78rem', color: 'var(--color-charcoal-light)', padding: 0 }}>
+        <button onClick={onSetDefault} className={styles.setDefaultBtn}>
           {t('settings.location_set_default')}
         </button>
       )}
@@ -362,24 +362,18 @@ function LocationCard({ loc, onEdit, onDelete, onSetDefault, t }) {
 
 function LocationForm({ form, setF, onSave, onCancel, t }) {
   return (
-    <div style={{ border: '1px solid var(--color-terracotta)', borderRadius: 8, padding: 14, background: 'rgba(196,98,45,0.03)' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
-        <input className="input" autoFocus value={form.name} onChange={e => setF('name', e.target.value)} placeholder={t('settings.location_name_placeholder')} />
-        <input className="input" value={form.address} onChange={e => setF('address', e.target.value)} placeholder={t('settings.location_address_placeholder')} />
+    <div
+      className={styles.locationForm}
+      style={{ border: '1px solid var(--color-terracotta)' }}
+    >
+      <div className={styles.locationFormFields}>
+        <Input autoFocus value={form.name} onChange={e => setF('name', e.target.value)} placeholder={t('settings.location_name_placeholder')} />
+        <Input value={form.address} onChange={e => setF('address', e.target.value)} placeholder={t('settings.location_address_placeholder')} />
       </div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button className="btn-primary" style={{ fontSize: '0.85rem', padding: '6px 14px' }} onClick={onSave} disabled={!form.name.trim()}>{t('common.save')}</button>
-        <button className="btn-secondary" style={{ fontSize: '0.85rem', padding: '6px 14px' }} onClick={onCancel}>{t('common.cancel')}</button>
+      <div className={styles.locationFormActions}>
+        <Button variant="primary" onClick={onSave} disabled={!form.name.trim()}>{t('common.save')}</Button>
+        <Button variant="secondary" onClick={onCancel}>{t('common.cancel')}</Button>
       </div>
     </div>
-  )
-}
-
-function IconBtn({ onClick, title, children }) {
-  return (
-    <button onClick={onClick} title={title}
-      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.9rem', padding: '2px 5px', color: 'var(--color-charcoal-light)', lineHeight: 1 }}>
-      {children}
-    </button>
   )
 }

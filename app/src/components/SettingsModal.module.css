@@ -1,0 +1,256 @@
+.modalInner {
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-24);
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: var(--color-charcoal-light);
+  padding: var(--space-4);
+  line-height: 1;
+}
+
+/* ── Organisation section ── */
+.fieldRow {
+  margin-bottom: var(--space-20);
+}
+
+.nameRow {
+  display: flex;
+  gap: var(--space-8);
+}
+
+.nameInput {
+  flex: 1;
+}
+
+.locationHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.locationList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.locationsSection {
+  margin-bottom: var(--space-28);
+}
+
+.emptyText {
+  color: var(--color-charcoal-light);
+  font-size: 0.85rem;
+  margin: 0 0 12px;
+}
+
+.divider {
+  border-top: 1px solid var(--color-sand);
+  margin-bottom: var(--space-28);
+}
+
+/* ── Appearance section ── */
+.logoRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+}
+
+.logoPreview {
+  width: 80px;
+  height: 48px;
+  border: 1px solid var(--color-sand);
+  background: var(--color-cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.logoPreviewImg {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.logoPlaceholder {
+  font-size: 1.5rem;
+}
+
+.logoBtns {
+  display: flex;
+  gap: var(--space-8);
+}
+
+.fileBtn {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.82rem;
+  padding: var(--space-6) var(--space-12);
+  border: 1px solid var(--color-charcoal);
+  font-family: var(--font-sans);
+  font-weight: 600;
+}
+
+/* ── Color picker ── */
+.colorPickerRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  flex-wrap: wrap;
+}
+
+.hexInputGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: var(--space-4);
+}
+
+.colorSwatch {
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--color-sand-dark);
+  flex-shrink: 0;
+}
+
+.hexInputWrap {
+  width: 88px;
+}
+
+/* ── Font picker ── */
+.fontRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fontSelect {
+  flex: 1;
+}
+
+.fontPreview {
+  font-size: 1.1rem;
+  color: var(--color-charcoal);
+  white-space: nowrap;
+}
+
+/* ── Error/save state ── */
+.saveError {
+  margin-bottom: var(--space-16);
+  padding: 10px 14px;
+  background: rgba(196, 45, 45, 0.08);
+  border: 1px solid rgba(196, 45, 45, 0.3);
+  color: #c42d2d;
+  font-size: 0.85rem;
+}
+
+/* ── Location card ── */
+.locationCard {
+  padding: 12px 14px;
+}
+
+.locationCardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+.locationCardBody {
+  min-width: 0;
+}
+
+.locationNameRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  margin-bottom: 2px;
+}
+
+.locationName {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--color-charcoal);
+}
+
+.locationDefaultBadge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-terracotta);
+  background: rgba(196, 98, 45, 0.1);
+  padding: 1px 7px;
+}
+
+.locationAddress {
+  font-size: 0.82rem;
+  color: var(--color-charcoal-light);
+  margin-bottom: 4px;
+}
+
+.locationMapsLink {
+  font-size: 0.8rem;
+  color: var(--color-terracotta);
+  text-decoration: none;
+}
+
+.locationCardActions {
+  display: flex;
+  gap: var(--space-4);
+  flex-shrink: 0;
+}
+
+.iconBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 2px 5px;
+  color: var(--color-charcoal-light);
+  line-height: 1;
+}
+
+.setDefaultBtn {
+  margin-top: var(--space-8);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.78rem;
+  color: var(--color-charcoal-light);
+  padding: 0;
+}
+
+/* ── Location form ── */
+.locationForm {
+  padding: 14px;
+  background: rgba(196, 98, 45, 0.03);
+}
+
+.locationFormFields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.locationFormActions {
+  display: flex;
+  gap: var(--space-8);
+}

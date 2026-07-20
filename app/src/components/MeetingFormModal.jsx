@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createMeeting, updateMeeting, deleteMeeting } from '../api/client'
 import RichTextEditor from './RichTextEditor'
+import { Modal, Button, Input, Select, Label, Heading, ErrorText } from '@ecommons/ui'
+import styles from './MeetingFormModal.module.css'
 
 function buildName(date) {
   if (!date) return 'ALV'
@@ -76,42 +78,41 @@ export default function MeetingFormModal({ meeting, communityId, communityLocati
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" style={{ maxWidth: 540 }} onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h3 style={{ margin: 0, fontFamily: 'var(--font-title)', fontSize: '1.2rem' }}>
+    <Modal onOverlayClick={onClose}>
+      <div className={styles.modalInner} onClick={e => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <Heading as="span" fontSize="1.2rem">
             {isEdit ? t('dashboard.edit_meeting') : t('dashboard.new_meeting')}
-          </h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: 'var(--color-charcoal-light)', padding: 4 }}>✕</button>
+          </Heading>
+          <button onClick={onClose} className={styles.closeBtn}>✕</button>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+        <div className={styles.fields}>
+          <div className={styles.dateGrid}>
             <div>
-              <label>{t('dashboard.meeting_date')}</label>
-              <input className="input" type="date" value={form.date} onChange={e => set('date', e.target.value)} />
+              <Label>{t('dashboard.meeting_date')}</Label>
+              <Input type="date" value={form.date} onChange={e => set('date', e.target.value)} />
             </div>
             <div>
-              <label>{t('dashboard.meeting_time')}</label>
-              <input className="input" type="time" value={form.time} onChange={e => set('time', e.target.value)} />
+              <Label>{t('dashboard.meeting_time')}</Label>
+              <Input type="time" value={form.time} onChange={e => set('time', e.target.value)} />
             </div>
             <div>
-              <label>{t('dashboard.meeting_end_time')}</label>
-              <input className="input" type="time" value={form.end_time} onChange={e => set('end_time', e.target.value)} />
+              <Label>{t('dashboard.meeting_end_time')}</Label>
+              <Input type="time" value={form.end_time} onChange={e => set('end_time', e.target.value)} />
             </div>
           </div>
 
           <div>
-            <label>{t('dashboard.meeting_location')}</label>
+            <Label>{t('dashboard.meeting_location')}</Label>
             {locations.length > 0 ? (
-              <select className="input" value={form.location} onChange={e => set('location', e.target.value)}>
+              <Select value={form.location} onChange={e => set('location', e.target.value)}>
                 {locations.map(l => (
                   <option key={l.id} value={l.name}>{l.name}</option>
                 ))}
-              </select>
+              </Select>
             ) : (
-              <input
-                className="input"
+              <Input
                 value={form.location}
                 onChange={e => set('location', e.target.value)}
                 placeholder={t('dashboard.meeting_location_placeholder')}
@@ -120,7 +121,7 @@ export default function MeetingFormModal({ meeting, communityId, communityLocati
           </div>
 
           <div>
-            <label>{t('dashboard.meeting_agenda')}</label>
+            <Label>{t('dashboard.meeting_agenda')}</Label>
             <RichTextEditor
               value={form.agenda_text}
               onChange={v => set('agenda_text', v)}
@@ -129,9 +130,8 @@ export default function MeetingFormModal({ meeting, communityId, communityLocati
 
           {facilitators.length > 0 && (
             <div>
-              <label>{t('dashboard.meeting_facilitator')}</label>
-              <select
-                className="input"
+              <Label>{t('dashboard.meeting_facilitator')}</Label>
+              <Select
                 value={form.facilitator_ename}
                 onChange={e => {
                   const selected = facilitators.find(m => m.ename === e.target.value)
@@ -143,54 +143,52 @@ export default function MeetingFormModal({ meeting, communityId, communityLocati
                 {facilitators.map(m => (
                   <option key={m.id} value={m.ename ?? m.id}>{[m.app_first_name, m.app_last_name].filter(s => s?.trim()).join(' ') || m.ename}</option>
                 ))}
-              </select>
+              </Select>
             </div>
           )}
         </div>
 
-        {error && (
-          <p style={{ color: 'var(--color-red)', fontSize: '0.85rem', marginBottom: 14 }}>{error}</p>
-        )}
+        {error && <ErrorText as="p">{error}</ErrorText>}
 
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button
-              className="btn-primary"
+        <div className={styles.actions}>
+          <div className={styles.actionsLeft}>
+            <Button
+              variant="primary"
               onClick={handleSubmit}
               disabled={saving || !form.date || !form.time || !form.location.trim()}
             >
               {saving ? t('common.loading') : isEdit ? t('common.save') : t('dashboard.create_btn')}
-            </button>
-            <button className="btn-secondary" onClick={onClose}>{t('common.cancel')}</button>
+            </Button>
+            <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
           </div>
 
           {isEdit && (
             confirmDelete
-              ? <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: '0.82rem', color: 'var(--color-charcoal-light)' }}>{t('dashboard.delete_confirm')}</span>
+              ? <div className={styles.deleteConfirm}>
+                  <span className={styles.deleteConfirmText}>{t('dashboard.delete_confirm')}</span>
                   <button
                     onClick={handleDelete}
                     disabled={saving}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--color-red)', fontWeight: 600, padding: '4px 8px' }}
+                    className={styles.deleteBtn}
                   >
                     {t('dashboard.delete_yes')}
                   </button>
                   <button
                     onClick={() => setConfirmDelete(false)}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--color-charcoal-light)', padding: '4px 8px' }}
+                    className={styles.ghostBtn}
                   >
                     {t('common.cancel')}
                   </button>
                 </div>
               : <button
                   onClick={() => setConfirmDelete(true)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--color-charcoal-light)', padding: '4px 8px' }}
+                  className={styles.ghostBtn}
                 >
                   🗑️ {t('common.delete')}
                 </button>
           )}
         </div>
       </div>
-    </div>
+    </Modal>
   )
 }

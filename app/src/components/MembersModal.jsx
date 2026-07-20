@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCommunity } from '../context/CommunityContext'
 import { useUser } from '../context/UserContext'
+import { Modal, Button, Input, Badge, Heading, SectionLabel } from '@ecommons/ui'
+import styles from './MembersModal.module.css'
 
 const EMPTY = { app_first_name: '', app_last_name: '', email: '', phone: '', ename: '', is_aspirant: false, is_facilitator: false }
 
@@ -82,98 +84,84 @@ export default function MembersModal({ onClose }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div
-        className="modal"
-        style={{ maxWidth: 520, maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}
-        onClick={e => e.stopPropagation()}
-      >
+    <Modal onOverlayClick={onClose}>
+      <div className={styles.modalInner} onClick={e => e.stopPropagation()}>
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h3 style={{ margin: 0, fontFamily: 'var(--font-title)', fontSize: '1.2rem' }}>
+        <div className={styles.modalHeader}>
+          <Heading as="span" fontSize="1.2rem">
             {community?.name ?? t('settings.members_label')}
-          </h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          </Heading>
+          <div className={styles.headerRight}>
             {editing !== 'new' && (
-              <button className="btn-primary" style={{ fontSize: '0.8rem', padding: '5px 12px' }} onClick={openNew}>
+              <Button variant="primary" onClick={openNew}>
                 + {t('settings.member_add')}
-              </button>
+              </Button>
             )}
-            <button
-              onClick={onClose}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: 'var(--color-charcoal-light)', padding: 4 }}
-            >
-              ✕
-            </button>
+            <button onClick={onClose} className={styles.closeBtn}>✕</button>
           </div>
         </div>
 
         {/* Inline add/edit form */}
         {editing && (
-          <div style={{ marginBottom: 20, padding: 16, background: 'var(--color-cream)', borderRadius: 10, border: '1px solid var(--color-sand)' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <input
-                  className="input"
-                  autoFocus
-                  value={form.app_first_name}
-                  onChange={e => set('app_first_name', e.target.value)}
-                  placeholder={t('settings.member_first_name_placeholder')}
-                  style={{ flex: 1 }}
-                />
-                <input
-                  className="input"
-                  value={form.app_last_name}
-                  onChange={e => set('app_last_name', e.target.value)}
-                  placeholder={t('settings.member_last_name_placeholder')}
-                  style={{ flex: 1 }}
-                  onKeyDown={e => e.key === 'Enter' && handleSave()}
-                />
+          <div className={styles.editForm}>
+            <div className={styles.editFormFields}>
+              <div className={styles.nameRow}>
+                <div className={styles.nameInput}>
+                  <Input
+                    autoFocus
+                    value={form.app_first_name}
+                    onChange={e => set('app_first_name', e.target.value)}
+                    placeholder={t('settings.member_first_name_placeholder')}
+                  />
+                </div>
+                <div className={styles.nameInput}>
+                  <Input
+                    value={form.app_last_name}
+                    onChange={e => set('app_last_name', e.target.value)}
+                    placeholder={t('settings.member_last_name_placeholder')}
+                    onKeyDown={e => e.key === 'Enter' && handleSave()}
+                  />
+                </div>
               </div>
-              <input
-                className="input"
+              <Input
                 value={form.email}
                 onChange={e => set('email', e.target.value)}
                 placeholder={t('settings.member_email_placeholder')}
                 type="email"
               />
-              <input
-                className="input"
+              <Input
                 value={form.phone}
                 onChange={e => set('phone', e.target.value)}
                 placeholder={t('settings.member_phone_placeholder')}
                 type="tel"
               />
-              <input
-                className="input"
+              <Input
                 value={form.ename}
                 onChange={e => set('ename', e.target.value)}
                 placeholder={t('settings.member_ename_placeholder')}
               />
               {editingMember?.ename && (
-                <div style={{ marginTop: 8, padding: '12px 16px', background: 'var(--color-sand)', borderRadius: 8 }}>
-                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
-                    {t('settings.evault_identity')}
-                  </div>
+                <div className={styles.evaultPanel}>
+                  <div className={styles.evaultLabel}>{t('settings.evault_identity')}</div>
                   {editingMember.avatar_url && (
                     <img
                       src={editingMember.avatar_url}
                       alt="avatar"
-                      style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', marginBottom: 8, display: 'block' }}
+                      className={styles.evaultAvatar}
                     />
                   )}
-                  <div style={{ fontSize: '0.85rem', color: 'var(--color-charcoal)' }}>
+                  <div className={styles.evaultText}>
                     <strong>{t('settings.evault_ename')}:</strong> {editingMember.ename}
                   </div>
                   {(editingMember.first_name || editingMember.last_name) && (
-                    <div style={{ fontSize: '0.85rem', color: 'var(--color-charcoal)', marginTop: 4 }}>
+                    <div className={styles.evaultTextMt}>
                       <strong>{t('settings.evault_name')}:</strong>{' '}
                       {[editingMember.first_name, editingMember.last_name].filter(Boolean).join(' ')}
                     </div>
                   )}
                 </div>
               )}
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.88rem', cursor: 'pointer' }}>
+              <label className={styles.checkboxLabel}>
                 <input
                   type="checkbox"
                   checked={form.is_aspirant}
@@ -184,7 +172,7 @@ export default function MembersModal({ onClose }) {
               {(() => {
                 const isSelf = form.ename && user?.ename && form.ename === user.ename
                 return (
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.88rem', cursor: isSelf ? 'not-allowed' : 'pointer', opacity: isSelf ? 0.5 : 1 }}>
+                  <label className={isSelf ? styles.checkboxLabelDisabled : styles.checkboxLabel}>
                     <input
                       type="checkbox"
                       checked={form.is_facilitator}
@@ -192,26 +180,26 @@ export default function MembersModal({ onClose }) {
                       onChange={e => set('is_facilitator', e.target.checked)}
                     />
                     {t('settings.member_facilitator_label')}
-                    {isSelf && <span style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)' }}>({t('settings.member_facilitator_self')})</span>}
+                    {isSelf && <span className={styles.selfNote}>({t('settings.member_facilitator_self')})</span>}
                   </label>
                 )
               })()}
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button className="btn-primary" onClick={handleSave} disabled={saving || !form.app_first_name.trim() || !form.app_last_name.trim()}>
+              <div className={styles.formActions}>
+                <Button variant="primary" onClick={handleSave} disabled={saving || !form.app_first_name.trim() || !form.app_last_name.trim()}>
                   {saving ? t('common.loading') : t('common.save')}
-                </button>
-                <button className="btn-secondary" onClick={cancel}>{t('common.cancel')}</button>
+                </Button>
+                <Button variant="secondary" onClick={cancel}>{t('common.cancel')}</Button>
               </div>
             </div>
           </div>
         )}
 
         {/* Lists */}
-        <div style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <div className={styles.listContainer}>
           <MemberList
             label={t('settings.members_regular')}
             members={regular}
-            badgeClass="badge-green"
+            badgeVariant="green"
             rowBg="var(--color-cream)"
             editing={editing}
             confirmDelete={confirmDelete}
@@ -225,7 +213,7 @@ export default function MembersModal({ onClose }) {
           <MemberList
             label={t('settings.members_aspirants')}
             members={aspirants}
-            badgeClass="badge-orange"
+            badgeVariant="orange"
             rowBg="rgba(196,98,45,0.06)"
             editing={editing}
             confirmDelete={confirmDelete}
@@ -240,33 +228,27 @@ export default function MembersModal({ onClose }) {
 
         {/* Group eVault eName */}
         {community?.ename && (
-          <div style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid var(--color-sand)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.07em', flexShrink: 0 }}>
-              Group eVault
-            </span>
-            <span style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', fontFamily: 'monospace', wordBreak: 'break-all' }}>
-              {community.ename}
-            </span>
+          <div className={styles.groupEname}>
+            <span className={styles.groupEnameLabel}>Group eVault</span>
+            <span className={styles.groupEnameValue}>{community.ename}</span>
           </div>
         )}
       </div>
-    </div>
+    </Modal>
   )
 }
 
-function MemberList({ label, members, badgeClass, rowBg, editing, confirmDelete, onEdit, onDelete, onConfirmDelete, onCancelDelete, saving, t }) {
+function MemberList({ label, members, badgeVariant, rowBg, editing, confirmDelete, onEdit, onDelete, onConfirmDelete, onCancelDelete, saving, t }) {
   return (
     <section>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-charcoal-light)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
-          {label}
-        </span>
-        <span className={`badge ${badgeClass}`}>{members.length}</span>
+      <div className={styles.sectionHeader}>
+        <SectionLabel>{label}</SectionLabel>
+        <Badge variant={badgeVariant}>{members.length}</Badge>
       </div>
 
       {members.length === 0
-        ? <p style={{ color: 'var(--color-charcoal-light)', fontSize: '0.85rem', margin: 0 }}>{t('settings.members_empty')}</p>
-        : <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        ? <p className={styles.emptyText}>{t('settings.members_empty')}</p>
+        : <div className={styles.memberRows}>
             {members.map(m => (
               <MemberRow
                 key={m.id}
@@ -295,68 +277,57 @@ function MemberRow({ member: m, rowBg, isEditing, confirmDelete, onEdit, onDelet
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); if (confirmDelete) onCancelDelete() }}
-      style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '8px 12px', borderRadius: 7, background: isEditing ? 'rgba(196,98,45,0.1)' : rowBg,
-        minHeight: 38,
-      }}
+      className={styles.memberRow}
+      style={{ background: isEditing ? 'rgba(196,98,45,0.1)' : rowBg }}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: '0.92rem', color: 'var(--color-charcoal)', fontWeight: 500 }}>{[m.app_first_name, m.app_last_name].filter(Boolean).join(' ') || m.ename || '?'}</span>
+      <div className={styles.memberInfo}>
+        <div className={styles.memberNameRow}>
+          <span className={styles.memberName}>{[m.app_first_name, m.app_last_name].filter(Boolean).join(' ') || m.ename || '?'}</span>
           {!m.ename && (
-            <span title={t('settings.member_no_eid')} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 16, height: 16, borderRadius: '50%', background: 'var(--color-sand-dark)', color: 'var(--color-charcoal-light)', fontSize: '0.65rem', fontWeight: 700, flexShrink: 0 }}>
-              ?
-            </span>
+            <span title={t('settings.member_no_eid')} className={styles.noEidBadge}>?</span>
           )}
           {m.is_facilitator && (
-            <span className="badge badge-blue" style={{ fontSize: '0.68rem', padding: '1px 7px' }}>
-              {t('settings.member_facilitator_badge')}
-            </span>
+            <Badge variant="blue">{t('settings.member_facilitator_badge')}</Badge>
           )}
         </div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {m.email && (
-            <span style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)' }}>{m.email}</span>
-          )}
-          {m.phone && (
-            <span style={{ fontSize: '0.75rem', color: 'var(--color-charcoal-light)' }}>{m.phone}</span>
-          )}
+        <div className={styles.memberContacts}>
+          {m.email && <span className={styles.memberContact}>{m.email}</span>}
+          {m.phone && <span className={styles.memberContact}>{m.phone}</span>}
         </div>
       </div>
 
       {/* Actions — visible on hover */}
-      <div style={{ opacity: hovered ? 1 : 0, transition: 'opacity 0.15s', display: 'flex', alignItems: 'center', gap: 4 }}>
+      <div className={styles.rowActions} style={{ opacity: hovered ? 1 : 0 }}>
         {confirmDelete ? (
-          <>
-            <span style={{ fontSize: '0.78rem', color: 'var(--color-charcoal-light)', marginRight: 4 }}>{t('dashboard.delete_confirm')}</span>
+          <div className={styles.deleteConfirmInline}>
+            <span className={styles.deleteConfirmText}>{t('dashboard.delete_confirm')}</span>
             <button
               onClick={onDelete}
               disabled={saving}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--color-red)', fontWeight: 700, padding: '3px 6px' }}
+              className={styles.deleteBtn}
             >
               {t('dashboard.delete_yes')}
             </button>
             <button
               onClick={onCancelDelete}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--color-charcoal-light)', padding: '3px 6px' }}
+              className={styles.ghostBtn}
             >
               {t('common.cancel')}
             </button>
-          </>
+          </div>
         ) : (
           <>
             <button
               onClick={onEdit}
               title={t('common.edit')}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.95rem', padding: '3px 5px', borderRadius: 4, lineHeight: 1 }}
+              className={styles.iconBtn}
             >
               ✏️
             </button>
             <button
               onClick={onConfirmDelete}
               title={t('common.delete')}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.95rem', padding: '3px 5px', borderRadius: 4, lineHeight: 1 }}
+              className={styles.iconBtn}
             >
               🗑️
             </button>
