@@ -12,15 +12,6 @@
   margin-bottom: var(--space-24);
 }
 
-.closeBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.1rem;
-  color: var(--color-charcoal-light);
-  padding: var(--space-4);
-  line-height: 1;
-}
 
 /* ── Organisation section ── */
 .fieldRow {
@@ -158,7 +149,7 @@
   padding: 10px 14px;
   background: rgba(196, 45, 45, 0.08);
   border: 1px solid rgba(196, 45, 45, 0.3);
-  color: #c42d2d;
+  color: var(--color-red);
   font-size: 0.85rem;
 }
 
@@ -217,25 +208,6 @@
   flex-shrink: 0;
 }
 
-.iconBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 0.9rem;
-  padding: 2px 5px;
-  color: var(--color-charcoal-light);
-  line-height: 1;
-}
-
-.setDefaultBtn {
-  margin-top: var(--space-8);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 0.78rem;
-  color: var(--color-charcoal-light);
-  padding: 0;
-}
 
 /* ── Location form ── */
 .locationForm {

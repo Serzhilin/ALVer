@@ -119,8 +119,8 @@
 
 .noEvaultBadge {
   font-size: 0.7rem;
-  color: #b45309;
-  background: #fef3c7;
+  color: var(--color-warning-dark);
+  background: var(--color-warning-bg);
   padding: 1px 6px;
 }
 

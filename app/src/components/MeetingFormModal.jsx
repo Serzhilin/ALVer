@@ -84,7 +84,7 @@ export default function MeetingFormModal({ meeting, communityId, communityLocati
           <Heading as="span" fontSize="1.2rem">
             {isEdit ? t('dashboard.edit_meeting') : t('dashboard.new_meeting')}
           </Heading>
-          <button onClick={onClose} className={styles.closeBtn}>✕</button>
+          <Button variant="ghost" onClick={onClose}>✕</Button>
         </div>
 
         <div className={styles.fields}>
@@ -166,26 +166,16 @@ export default function MeetingFormModal({ meeting, communityId, communityLocati
             confirmDelete
               ? <div className={styles.deleteConfirm}>
                   <span className={styles.deleteConfirmText}>{t('dashboard.delete_confirm')}</span>
-                  <button
-                    onClick={handleDelete}
-                    disabled={saving}
-                    className={styles.deleteBtn}
-                  >
+                  <Button variant="ghost-danger" onClick={handleDelete} disabled={saving}>
                     {t('dashboard.delete_yes')}
-                  </button>
-                  <button
-                    onClick={() => setConfirmDelete(false)}
-                    className={styles.ghostBtn}
-                  >
+                  </Button>
+                  <Button variant="ghost" onClick={() => setConfirmDelete(false)}>
                     {t('common.cancel')}
-                  </button>
+                  </Button>
                 </div>
-              : <button
-                  onClick={() => setConfirmDelete(true)}
-                  className={styles.ghostBtn}
-                >
+              : <Button variant="ghost-danger" onClick={() => setConfirmDelete(true)}>
                   🗑️ {t('common.delete')}
-                </button>
+                </Button>
           )}
         </div>
       </div>

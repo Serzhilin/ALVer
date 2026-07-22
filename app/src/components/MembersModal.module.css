@@ -19,16 +19,6 @@
   gap: 10px;
 }
 
-.closeBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.1rem;
-  color: var(--color-charcoal-light);
-  padding: var(--space-4);
-  line-height: 1;
-}
-
 .editForm {
   margin-bottom: var(--space-20);
   padding: var(--space-16);
@@ -204,33 +194,6 @@
   margin-right: var(--space-4);
 }
 
-.iconBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 0.95rem;
-  padding: 3px 5px;
-  line-height: 1;
-}
-
-.deleteBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 0.8rem;
-  color: var(--color-red);
-  font-weight: 700;
-  padding: 3px 6px;
-}
-
-.ghostBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 0.8rem;
-  color: var(--color-charcoal-light);
-  padding: 3px 6px;
-}
 
 .emptyText {
   font-size: 0.85rem;

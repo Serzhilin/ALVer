@@ -47,7 +47,7 @@
 }
 
 .statValueBlue {
-  color: #2d62c4;
+  color: var(--color-blue);
 }
 
 .statValueTerracotta {

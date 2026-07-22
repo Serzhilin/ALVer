@@ -97,7 +97,7 @@ export default function MembersModal({ onClose }) {
                 + {t('settings.member_add')}
               </Button>
             )}
-            <button onClick={onClose} className={styles.closeBtn}>✕</button>
+            <Button variant="ghost" onClick={onClose}>✕</Button>
           </div>
         </div>
 
@@ -301,36 +301,17 @@ function MemberRow({ member: m, rowBg, isEditing, confirmDelete, onEdit, onDelet
         {confirmDelete ? (
           <div className={styles.deleteConfirmInline}>
             <span className={styles.deleteConfirmText}>{t('dashboard.delete_confirm')}</span>
-            <button
-              onClick={onDelete}
-              disabled={saving}
-              className={styles.deleteBtn}
-            >
+            <Button variant="ghost-danger" onClick={onDelete} disabled={saving}>
               {t('dashboard.delete_yes')}
-            </button>
-            <button
-              onClick={onCancelDelete}
-              className={styles.ghostBtn}
-            >
+            </Button>
+            <Button variant="ghost" onClick={onCancelDelete}>
               {t('common.cancel')}
-            </button>
+            </Button>
           </div>
         ) : (
           <>
-            <button
-              onClick={onEdit}
-              title={t('common.edit')}
-              className={styles.iconBtn}
-            >
-              ✏️
-            </button>
-            <button
-              onClick={onConfirmDelete}
-              title={t('common.delete')}
-              className={styles.iconBtn}
-            >
-              🗑️
-            </button>
+            <Button variant="ghost" onClick={onEdit} title={t('common.edit')}>✏️</Button>
+            <Button variant="ghost" onClick={onConfirmDelete} title={t('common.delete')}>🗑️</Button>
           </>
         )}
       </div>

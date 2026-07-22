@@ -17,15 +17,7 @@ function applyTheme(community) {
   root.style.setProperty('--color-amber', color + 'CC')
 
   const font = community.title_font || 'Barlow Condensed'
-  // inject Google Fonts link if not already present
-  const linkId = `gfont-${font.replace(/\s+/g, '-')}`
-  if (!document.getElementById(linkId)) {
-    const link = document.createElement('link')
-    link.id = linkId
-    link.rel = 'stylesheet'
-    link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(font)}:wght@400;600;700&display=swap`
-    document.head.appendChild(link)
-  }
+  // Both fonts (Barlow Condensed, Instrument Sans) are already loaded by ecommons-ui tokens.css
   root.style.setProperty('--font-title', `"${font.replace(/['"\\]/g, '')}", serif`)
 }
 

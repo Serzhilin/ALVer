@@ -168,7 +168,7 @@ export default function SettingsModal({ onClose }) {
           <Heading as="span" fontSize="1.2rem">
             ⚙️ {t('settings.title')}
           </Heading>
-          <button onClick={onClose} className={styles.closeBtn}>✕</button>
+          <Button variant="ghost" onClick={onClose}>✕</Button>
         </div>
 
         {/* ── Organisation ── */}
@@ -347,14 +347,14 @@ function LocationCard({ loc, onEdit, onDelete, onSetDefault, t }) {
           )}
         </div>
         <div className={styles.locationCardActions}>
-          <button onClick={onEdit} title={t('common.edit')} className={styles.iconBtn}>✏️</button>
-          <button onClick={onDelete} title={t('common.delete')} className={styles.iconBtn}>🗑️</button>
+          <Button variant="ghost" onClick={onEdit} title={t('common.edit')}>✏️</Button>
+          <Button variant="ghost" onClick={onDelete} title={t('common.delete')}>🗑️</Button>
         </div>
       </div>
       {!loc.isDefault && (
-        <button onClick={onSetDefault} className={styles.setDefaultBtn}>
+        <Button variant="ghost" onClick={onSetDefault}>
           {t('settings.location_set_default')}
-        </button>
+        </Button>
       )}
     </div>
   )

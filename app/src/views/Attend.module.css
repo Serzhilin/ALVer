@@ -109,7 +109,7 @@
 
 /* ── Reconnecting banner ────────────────────────────────────────────────── */
 .reconnBanner {
-  background: #f59e0b;
+  background: var(--color-warning);
   color: white;
   text-align: center;
   padding: 6px var(--space-16);
@@ -139,7 +139,7 @@
 
 .mandateText {
   font-size: 0.85rem;
-  color: #2d62c4;
+  color: var(--color-blue);
   font-weight: 500;
 }
 
@@ -354,7 +354,7 @@
   margin: 0 0 var(--space-12);
   font-size: 0.9rem;
   font-weight: 600;
-  color: #2d62c4;
+  color: var(--color-blue);
 }
 
 .mandateVoteOptions {
@@ -367,7 +367,7 @@
   padding: 14px 18px !important;
   font-weight: 500 !important;
   font-size: 0.95rem !important;
-  color: #2d62c4 !important;
+  color: var(--color-blue) !important;
   border-color: rgba(45, 98, 196, 0.3) !important;
   width: 100%;
   text-align: left;
@@ -389,7 +389,7 @@
 
 .mandateVoteDoneText {
   font-size: 0.85rem;
-  color: #2d62c4;
+  color: var(--color-blue);
   font-weight: 500;
 }
 
